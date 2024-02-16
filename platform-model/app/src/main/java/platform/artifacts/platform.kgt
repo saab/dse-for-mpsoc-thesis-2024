@@ -1,120 +1,14 @@
 knode forsyde {
    klabel "ForSyDe Model"
-   knode v_bram_axi {
-      klabel "bram_axi [GenericCommunicationModule, HardwareModule, DigitalModule]"
-      kedge ( -> v_uBlaze2_tile:buses)
-      kedge ( -> v_uBlaze0_tile:buses)
-      kedge (  -> v_Shared_BRAM)
-      kedge ( -> v_uBlaze1_tile:buses)
-      kedge (  -> v_ps7_0_axi)
+   knode v_Platform_RPU {
+      klabel "Platform.RPU [HardwareModule, Structure]"
    }
-   knode v_uBlaze2_tile {
-      klabel "uBlaze2_tile []"
-      kport buses {
-         klabel "buses"
-      }
-      knode v_uBlaze2_tile_v_uBlaze2_axi {
-         klabel "uBlaze2_axi [GenericCommunicationModule, HardwareModule, DigitalModule]"
-         kedge (  -> v_uBlaze2_tile_v_uBlaze2)
-         kedge ( -> v_uBlaze2_tile:buses)
-      }
-      knode v_uBlaze2_tile_v_uBlaze2 {
-         klabel "uBlaze2 [HardwareModule, GenericProcessingModule, DigitalModule]"
-         kedge (  -> v_uBlaze2_tile_v_uBlaze2_axi)
-         kedge (  -> v_uBlaze2_tile_v_OCM2)
-      }
-      knode v_uBlaze2_tile_v_OCM2 {
-         klabel "OCM2 [HardwareModule, GenericMemoryModule, DigitalModule]"
-         kedge (  -> v_uBlaze2_tile_v_uBlaze2)
-      }
-      kedge ( :buses -> v_bram_axi)
-      kedge ( :buses -> v_uBlaze2_tile_v_uBlaze2_axi)
+   knode v_MPSoC {
+      klabel "MPSoC [HardwareModule, Structure]"
+      kedge (  -> v_Platform_APU)
+      kedge (  -> v_Platform_RPU)
    }
-   knode v_MBox0 {
-      klabel "MBox0 [HardwareModule, GenericMemoryModule, DigitalModule]"
-      kedge (  -> v_ps7_0_axi)
-   }
-   knode v_MBox1 {
-      klabel "MBox1 [HardwareModule, GenericMemoryModule, DigitalModule]"
-      kedge (  -> v_ps7_0_axi)
-   }
-   knode v_MBox2 {
-      klabel "MBox2 [HardwareModule, GenericMemoryModule, DigitalModule]"
-      kedge (  -> v_ps7_0_axi)
-   }
-   knode v_hp_video_axi {
-      klabel "hp_video_axi [GenericCommunicationModule, HardwareModule, DigitalModule]"
-      kedge (  -> v_hp_video_ss)
-      kedge (  -> v_ps7_0_axi)
-   }
-   knode v_hp_video_ss {
-      klabel "hp_video_ss [HardwareModule, GenericProcessingModule, DigitalModule]"
-      kedge (  -> v_hp_video_axi)
-   }
-   knode v_ZYNQ_ARM_x2 {
-      klabel "ZYNQ_ARM_x2 [HardwareModule, GenericProcessingModule, DigitalModule]"
-      kedge (  -> v_DRAM)
-      kedge (  -> v_ps7_0_axi)
-   }
-   knode v_DRAM {
-      klabel "DRAM [HardwareModule, GenericMemoryModule, DigitalModule]"
-      kedge (  -> v_ZYNQ_ARM_x2)
-   }
-   knode v_ps7_0_axi {
-      klabel "ps7_0_axi [GenericCommunicationModule, HardwareModule, DigitalModule]"
-      kedge (  -> v_bram_axi)
-      kedge (  -> v_hp_video_axi)
-      kedge (  -> v_MBox0)
-      kedge (  -> v_MBox1)
-      kedge (  -> v_MBox2)
-      kedge (  -> v_ZYNQ_ARM_x2)
-   }
-   knode v_Shared_BRAM {
-      klabel "Shared_BRAM [HardwareModule, GenericMemoryModule, DigitalModule]"
-      kedge (  -> v_bram_axi)
-   }
-   knode v_uBlaze1_tile {
-      klabel "uBlaze1_tile []"
-      kport buses {
-         klabel "buses"
-      }
-      knode v_uBlaze1_tile_v_uBlaze1_axi {
-         klabel "uBlaze1_axi [GenericCommunicationModule, HardwareModule, DigitalModule]"
-         kedge ( -> v_uBlaze1_tile:buses)
-         kedge (  -> v_uBlaze1_tile_v_uBlaze1)
-      }
-      knode v_uBlaze1_tile_v_OCM1 {
-         klabel "OCM1 [HardwareModule, GenericMemoryModule, DigitalModule]"
-         kedge (  -> v_uBlaze1_tile_v_uBlaze1)
-      }
-      knode v_uBlaze1_tile_v_uBlaze1 {
-         klabel "uBlaze1 [HardwareModule, GenericProcessingModule, DigitalModule]"
-         kedge (  -> v_uBlaze1_tile_v_OCM1)
-         kedge (  -> v_uBlaze1_tile_v_uBlaze1_axi)
-      }
-      kedge ( :buses -> v_bram_axi)
-      kedge ( :buses -> v_uBlaze1_tile_v_uBlaze1_axi)
-   }
-   knode v_uBlaze0_tile {
-      klabel "uBlaze0_tile []"
-      kport buses {
-         klabel "buses"
-      }
-      knode v_uBlaze0_tile_v_OCM0 {
-         klabel "OCM0 [HardwareModule, GenericMemoryModule, DigitalModule]"
-         kedge (  -> v_uBlaze0_tile_v_uBlaze0)
-      }
-      knode v_uBlaze0_tile_v_uBlaze0 {
-         klabel "uBlaze0 [HardwareModule, GenericProcessingModule, DigitalModule]"
-         kedge (  -> v_uBlaze0_tile_v_OCM0)
-         kedge (  -> v_uBlaze0_tile_v_uBlaze0_axi)
-      }
-      knode v_uBlaze0_tile_v_uBlaze0_axi {
-         klabel "uBlaze0_axi [GenericCommunicationModule, HardwareModule, DigitalModule]"
-         kedge (  -> v_uBlaze0_tile_v_uBlaze0)
-         kedge ( -> v_uBlaze0_tile:buses)
-      }
-      kedge ( :buses -> v_bram_axi)
-      kedge ( :buses -> v_uBlaze0_tile_v_uBlaze0_axi)
+   knode v_Platform_APU {
+      klabel "Platform.APU [HardwareModule, Structure]"
    }
 }
