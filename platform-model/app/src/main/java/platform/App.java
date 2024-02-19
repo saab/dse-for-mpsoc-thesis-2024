@@ -55,8 +55,13 @@ public class App {
 
     private static SystemGraph MPSoCPlatformGraph() throws Exception {
         MPSoC mpsoc = new MPSoC();
-        mpsoc.addAPU();
-        mpsoc.addRPU();
+        mpsoc.AddOCM();
+        mpsoc.AddOCMSwitch();
+
+        mpsoc.AddAPU();
+        mpsoc.AddRPU();
+        // mpsoc.addFPGA();
+
         return mpsoc.sGraph;
     }
 

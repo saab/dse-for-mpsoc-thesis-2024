@@ -7,12 +7,10 @@
  */
 
 plugins {
-    // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
 }
 
 repositories {
-    // Use Maven Central for resolving dependencies.
     mavenCentral()
     maven { url 'https://jitpack.io' }
 }
@@ -33,7 +31,7 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass = 'platform.model.App'
+    mainClass = 'platform.App'
 }
 
 tasks.named('test') {
