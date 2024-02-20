@@ -1,0 +1,32 @@
+systemgraph {
+  vertex "Actor A"
+  [forsyde::io::lib::hierarchy::behavior::moc::MoCEntity, forsyde::io::lib::hierarchy::behavior::moc::sdf::SDFActor]
+  (combFunctions, s1, s_in)
+  {
+    "production": {
+      "s1": 2_i
+    },
+    "consumption": {
+      "s_in": 2_i
+    }
+  }
+  vertex "Actor B"
+  [forsyde::io::lib::hierarchy::behavior::moc::MoCEntity, forsyde::io::lib::hierarchy::behavior::moc::sdf::SDFActor]
+  (combFunctions, s1, s_out)
+  {
+    "production": {
+      "s_out": 1_i
+    },
+    "consumption": {
+      "s1": 3_i
+    }
+  }
+  vertex "Channel A-B"
+  [forsyde::io::lib::hierarchy::behavior::moc::MoCEntity, forsyde::io::lib::hierarchy::behavior::moc::sdf::SDFChannel]
+  (consumer, producer, tokenDataType)
+  {
+    "numInitialTokens": 0_i
+  }
+  edge [forsyde::io::lib::hierarchy::behavior::moc::sdf::SDFNetworkEdge,forsyde::io::lib::hierarchy::visualization::VisualConnection] from "Actor A" to "Channel A-B" 
+  edge [forsyde::io::lib::hierarchy::behavior::moc::sdf::SDFNetworkEdge,forsyde::io::lib::hierarchy::visualization::VisualConnection] from "Channel A-B" to "Actor B" 
+}
