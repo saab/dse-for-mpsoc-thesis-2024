@@ -6,7 +6,7 @@ import forsyde.io.core.ModelHandler;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy;
 import forsyde.io.visual.kgt.drivers.KGTDriver;
 
-import application.ApplicationRepo.*;
+import application.applicationrepo.*;
 
 public class Application {
 
