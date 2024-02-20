@@ -23,10 +23,6 @@ public class App {
         "/Documents/degree-project/dse-for-mpsoc-thesis-2024/platform-model";
     private static final String ARTIFACTS_DST = 
         APP_DIR + "/app/src/main/java/platform/artifacts";
-    private static final String FIODL_DST = 
-        ARTIFACTS_DST + "/platform.fiodl";
-    private static final String KGT_DST = 
-        ARTIFACTS_DST + "/platform.kgt";
         
     private static final Platform PLATFORM = Platform.MPSoC;
     public static void main(String[] args) throws Exception {
@@ -40,8 +36,12 @@ public class App {
                 .registerTraitHierarchy(new ForSyDeHierarchy())
                 .registerDriver(new KGTDriver());
 
-        handlerWithRegistrations.writeModel(sGraph, FIODL_DST);
-        handlerWithRegistrations.writeModel(sGraph, KGT_DST);
+        handlerWithRegistrations.writeModel(sGraph, 
+            ARTIFACTS_DST + "/" + PLATFORM + ".fiodl"
+        );
+        handlerWithRegistrations.writeModel(sGraph, 
+            ARTIFACTS_DST + "/" + PLATFORM + ".kgt"
+        );
 	}
 
 	private static SystemGraph ToyPlatformGraph() throws Exception { 
