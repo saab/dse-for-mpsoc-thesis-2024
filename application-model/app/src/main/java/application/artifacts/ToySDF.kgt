@@ -1,14 +1,14 @@
 knode forsyde {
    klabel "ForSyDe Model"
-   knode v_Channel_A_B {
-      klabel "Channel A-B [SDFChannel, MoCEntity]"
-      kedge (  -> v_Actor_B)
-   }
    knode v_Actor_B {
-      klabel "Actor B [SDFActor, MoCEntity]"
+      klabel "Actor_B [SDFActor, MoCEntity]"
    }
    knode v_Actor_A {
-      klabel "Actor A [SDFActor, MoCEntity]"
+      klabel "Actor_A [SDFActor, MoCEntity, InstrumentedBehaviour, BehaviourEntity]"
       kedge (  -> v_Channel_A_B)
+   }
+   knode v_Channel_A_B {
+      klabel "Channel_A_B [MoCEntity, SDFChannel]"
+      kedge (  -> v_Actor_B)
    }
 }

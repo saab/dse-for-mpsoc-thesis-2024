@@ -6,6 +6,7 @@ import forsyde.io.lib.hierarchy.ForSyDeHierarchy.*;
 import forsyde.io.lib.hierarchy.behavior.FunctionLikeEntity;
 import forsyde.io.lib.hierarchy.behavior.moc.sdf.SDFActorViewer;
 import forsyde.io.lib.hierarchy.behavior.moc.sdf.SDFChannelViewer;
+// import forsyde.io.lib.hierarchy.implementation.functional.InstrumentedBehaviourViewer;
 
 import java.util.Map;
 
@@ -18,12 +19,13 @@ public class ToySDF {
 
     public SystemGraph build() {
         SystemGraph sGraph = new SystemGraph();
-        
-        SDFActorViewer a = SDFActor.enforce(sGraph, sGraph.newVertex("Actor_A"));
+        var viewer = InstrumentedBehaviour.enforce(sGraph, sGraph.newVertex("Actor_A"));
+        SDFActorViewer a = SDFActor.enforce(sGraph, sGraph.newVertex("Actor_A")); // same name as above to connect (create variable)
         a.consumption(Map.of("s_in", 2));
         a.production(Map.of("s1", 2));
         a.addPorts("s_in", "s1");
         a.getViewedVertex().putProperty("LogicArea", 100); // "worth on FPGA"
+        viewer.computationalRequirements();
         // a.addCombFunctions(); // what is this?
         Visualizable.enforce(a);
 
