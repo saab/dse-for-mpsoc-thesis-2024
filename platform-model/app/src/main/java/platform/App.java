@@ -11,8 +11,6 @@ import forsyde.io.visual.kgt.drivers.KGTDriver;
 
 import platform.components.*;
 
-
-
 public class App {
 
     private enum Platform {
@@ -55,11 +53,11 @@ public class App {
 
     private static SystemGraph MPSoCPlatformGraph() throws Exception {
         MPSoC mpsoc = new MPSoC();
-        mpsoc.AddOCM();
-        mpsoc.AddOCMSwitch();
-
         mpsoc.AddAPU();
         mpsoc.AddRPU();
+        mpsoc.AddOCMSwitch();
+        mpsoc.AddOCM();
+
         // mpsoc.addFPGA();
 
         return mpsoc.sGraph;
