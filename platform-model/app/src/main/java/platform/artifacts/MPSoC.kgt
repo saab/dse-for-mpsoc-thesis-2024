@@ -49,21 +49,20 @@ knode forsyde {
       }
       knode v_MPSoC_v_MPSoC_PS_OCM {
          klabel "MPSoC.PS.OCM [DigitalModule, HardwareModule, GenericMemoryModule]"
+         kport portToOCMSwitch {
+            klabel "portToOCMSwitch"
+         }
+         kedge ( :portToOCMSwitch -> v_MPSoC_v_MPSoC_PS_OCMSwitch:PortToOCM)
       }
       knode v_MPSoC_v_MPSoC_PS_OCMSwitch {
-         klabel "MPSoC.PS.OCMSwitch [DigitalModule, GenericCommunicationModule, HardwareModule, InstrumentedCommunicationModule]"
+         klabel "MPSoC.PS.OCMSwitch [DigitalModule, TimeDivisionMultiplexingRuntime, AbstractRuntime, GenericCommunicationModule, HardwareModule, InstrumentedCommunicationModule]"
          kport OCMSwitchPort1 {
             klabel "OCMSwitchPort1"
          }
-         kport OCMSwitchPort4 {
-            klabel "OCMSwitchPort4"
+         kport PortToOCM {
+            klabel "PortToOCM"
          }
-         kport OCMSwitchPort2 {
-            klabel "OCMSwitchPort2"
-         }
-         kport OCMSwitchPort3 {
-            klabel "OCMSwitchPort3"
-         }
+         kedge ( :PortToOCM -> v_MPSoC_v_MPSoC_PS_OCM:portToOCMSwitch)
       }
    }
 }

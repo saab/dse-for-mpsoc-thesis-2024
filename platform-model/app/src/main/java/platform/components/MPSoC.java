@@ -1,29 +1,31 @@
+
 package platform.components;
 
 import java.util.*;
 
-import org.antlr.v4.runtime.misc.Pair;
-
-import forsyde.io.core.EdgeTrait;
 import forsyde.io.core.SystemGraph;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy.*;
-import forsyde.io.lib.hierarchy.platform.hardware.GenericMemoryModuleViewer;
-import forsyde.io.lib.hierarchy.platform.hardware.InstrumentedCommunicationModuleViewer;
 import forsyde.io.lib.hierarchy.platform.hardware.StructureViewer;
-import forsyde.io.lib.hierarchy.visualization.GreyBoxViewer;
+import forsyde.io.lib.hierarchy.platform.hardware.GenericMemoryModuleViewer;
 import forsyde.io.lib.hierarchy.platform.hardware.InstrumentedProcessingModuleViewer;
+import forsyde.io.lib.hierarchy.platform.hardware.InstrumentedCommunicationModuleViewer;
+import forsyde.io.lib.hierarchy.visualization.GreyBoxViewer;
+import platform.utils.Units;
 
 public class MPSoC {
-
     public SystemGraph sGraph;
     private StructureViewer platform = null;
+    private GreyBoxViewer platformGreyBox = null;
     private StructureViewer PS = null;
+    private GreyBoxViewer psGreyBox = null;
+    private InstrumentedCommunicationModuleViewer OCMSwitch = null;
     private StructureViewer APU = null;
     private StructureViewer RPU = null;
+    private Map<InstrumentedProcessingModuleViewer, String> PSCores = new HashMap<>();
 
-    private GreyBoxViewer platformGreyBox = null;
-    private GreyBoxViewer psGreyBox = null;
+    private final String PORT_TO_OCMSWITCH = "portToOCMSwitch";
+
     public MPSoC() {
         SystemGraph sGraph = new SystemGraph();
 
@@ -38,172 +40,115 @@ public class MPSoC {
 
         this.sGraph = sGraph;
         this.platform = platform;
-        this.PS = PS;
         this.platformGreyBox = platformGreyBox;
+        this.PS = PS;
         this.psGreyBox = psGreyBox;
     }
 
-    // Real-time Processing Unit (RPU): 2 cores @ 600 MHz
-    // - Execution time varies between instructions
-    // Connected to platform structurally
-    public List<InstrumentedProcessingModuleViewer> rpuCores = new ArrayList<>();
-    public void AddRPU() {
-        if (this.platform == null) {
-            throw new IllegalStateException("Platform must be added first");
+    public void AddProcessingSystemModule(String name, int cores, long frequency,
+            Map<String, Map<String, Double>> modalInstructions) {
+
+        if (this.PS == null) {
+            throw new IllegalStateException("Processing system structure is not added yet.");
         }
 
-        final String RPU_NAME = "MPSoC.PS.RPU";
-        StructureViewer RPU = Structure.enforce(
-                sGraph, sGraph.newVertex(RPU_NAME));
-        sGraph.connect(PS, RPU, EdgeTraits.StructuralContainment);
+        String moduleName = "MPSoC.PS." + name;
+        StructureViewer module = Structure.enforce(sGraph, sGraph.newVertex(moduleName));
+        sGraph.connect(PS, module, EdgeTraits.StructuralContainment);
+        GreyBoxViewer box = GreyBox.enforce(Visualizable.enforce(module));
 
-        var rpuGreyBox = GreyBox.enforce(Visualizable.enforce(RPU));
-
-        int rpuCores = 2;
-        for (int i = 0; i < rpuCores; i++) {
+        for (int i = 0; i < cores; i++) {
             var core = InstrumentedProcessingModule.enforce(
-                    sGraph, sGraph.newVertex(RPU_NAME + ".C" + i));
+                    sGraph, sGraph.newVertex(moduleName + ".C" + i));
             core.maximumComputationParallelism(1);
-            core.operatingFrequencyInHertz(15 * 100000000L);
-            core.modalInstructionsPerCycle(Map.of(
-                "economy", Map.of(
-                    "FloatOp", 0.43, // the applicaiton must provide a subset of these instructions
-                    "NonFloatOp", 2.325
-                )
-            ));
+            core.operatingFrequencyInHertz(frequency);
+            core.modalInstructionsPerCycle(modalInstructions);
 
-            core.addPorts("portToOCMSwitch");
+            core.addPorts(PORT_TO_OCMSWITCH);
 
-            sGraph.connect(APU, core, EdgeTraits.StructuralContainment, EdgeTraits.VisualConnection);
-            rpuGreyBox.addContained(Visualizable.enforce(core));
+            sGraph.connect(module, core, EdgeTraits.StructuralContainment);
+            box.addContained(Visualizable.enforce(core));
 
-            this.rpuCores.add(core);
+            this.PSCores.put(core, moduleName);
         }
 
-        this.RPU = RPU;
-        this.psGreyBox.addContained(rpuGreyBox);
-    }
-
-    public List<InstrumentedProcessingModuleViewer> apuCores = new ArrayList<>();
-
-    // Application Processing Unit (APU): 4 cores @ 1.5 GHz
-    // - Execution time varies between instructions
-    // Connected to platform structurally
-    public void AddAPU() {
-        if (this.platform == null) {
-            throw new IllegalStateException("Platform must be added first");
-        }
-
-        final String APU_NAME = "MPSoC.PS.APU";
-        StructureViewer APU = Structure.enforce(sGraph, sGraph.newVertex(APU_NAME));
-        sGraph.connect(PS, APU, EdgeTraits.StructuralContainment);
-        var apuGreyBox = GreyBox.enforce(Visualizable.enforce(APU));
-
-        int apuCores = 4;
-        for (int i = 0; i < apuCores; i++) {
-            var core = InstrumentedProcessingModule.enforce(
-                    sGraph, sGraph.newVertex(APU_NAME + ".C" + i));
-            core.maximumComputationParallelism(1);
-            core.operatingFrequencyInHertz(15 * 100000000L);
-            core.modalInstructionsPerCycle(Map.of(
-                "economy", Map.of(
-                    "FloatOp", 0.43, // the applicaiton must provide a subset of these instructions
-                    "NonFloatOp", 2.325
-                )
-            ));
-
-            core.addPorts("portToOCMSwitch");
-
-            sGraph.connect(APU, core, EdgeTraits.StructuralContainment);
-            apuGreyBox.addContained(Visualizable.enforce(core));
-
-            this.apuCores.add(core);
-        }
-
-        this.APU = APU;
-        this.psGreyBox.addContained(apuGreyBox);
+        this.psGreyBox.addContained(box);
     }
 
     // Memory: 4GB, 600 MHz
-    public void AddOCM() {
+    public void AddOCM(long frequency, long spaceInBits) {
         if (this.platform == null) {
             throw new IllegalStateException("Platform must be added first");
         }
 
+        final String PORT_TO_OCM = "PortToOCM";
+
         GenericMemoryModuleViewer ocm = GenericMemoryModule.enforce(
                 sGraph, sGraph.newVertex("MPSoC.PS.OCM"));
-        ocm.operatingFrequencyInHertz(6 * 100000000L);
-        ocm.spaceInBits(4 * 8 * 1024 * 1024 * 1024L); // 4GB
+        ocm.operatingFrequencyInHertz(frequency);
+        ocm.spaceInBits(spaceInBits);
 
-        ocm.getViewedVertex().addPort("OCMPortToSwitch");
-        sGraph.connect(this.OcmSwitch, ocm, "OCMSwitchPort1", "OCMPortToSwitch");
-        sGraph.connect(ocm, this.OcmSwitch, "OCMPortToSwitch", "OCMSwitchPort1");
+        ocm.addPorts(PORT_TO_OCMSWITCH);
+        sGraph.connect(
+            this.OCMSwitch, 
+            ocm, 
+            PORT_TO_OCM, 
+            PORT_TO_OCMSWITCH,
+            EdgeTraits.PhysicalConnection,
+            EdgeTraits.VisualConnection);
+        sGraph.connect(
+            ocm, 
+            this.OCMSwitch, 
+            PORT_TO_OCMSWITCH, 
+            PORT_TO_OCM,
+            EdgeTraits.PhysicalConnection,
+            EdgeTraits.VisualConnection);
 
         sGraph.connect(this.platform, ocm, EdgeTraits.StructuralContainment);
         this.platformGreyBox.addContained(Visualizable.enforce(ocm));
     }
-
-    public InstrumentedCommunicationModuleViewer OcmSwitch = null;
 
     public void AddOCMSwitch() {
         if (this.platform == null) {
             throw new IllegalStateException("Platform must be added first");
         }
 
-        InstrumentedCommunicationModuleViewer ocmSwitch = InstrumentedCommunicationModule.enforce(
+        InstrumentedCommunicationModuleViewer OCMSwitch = InstrumentedCommunicationModule.enforce(
+                sGraph, sGraph.newVertex("MPSoC.PS.OCMSwitch"));
+        sGraph.connect(this.platform, OCMSwitch, EdgeTraits.StructuralContainment);
+        this.platformGreyBox.addContained(Visualizable.enforce(OCMSwitch));
+
+        // round robin??
+        ForSyDeHierarchy.TimeDivisionMultiplexingRuntime.enforce(
                 sGraph, sGraph.newVertex("MPSoC.PS.OCMSwitch"));
 
-        // scheduler?????
-        ForSyDeHierarchy.TimeDivisionMultiplexingRuntime.enforce(
-                sGraph, sGraph.newVertex("MPSoC.PS.OCMSwitch.TDM"));
+        OCMSwitch.operatingFrequencyInHertz(600 * Units.MHZ);
+        OCMSwitch.initialLatency(0L);
+        OCMSwitch.flitSizeInBits(8L); // one flit is 1 byte
+        OCMSwitch.maxCyclesPerFlit(1); // cycles to send 1 byte
+        OCMSwitch.maxConcurrentFlits(1); // could match ports below with = 4
 
-        // can't find round robin class
-        ocmSwitch.operatingFrequencyInHertz(600 * 100000000L);
-        ocmSwitch.flitSizeInBits(8L);
-        ocmSwitch.initialLatency(0L);
-        ocmSwitch.maxCyclesPerFlit(1); // cycles to send 1 byte
-        ocmSwitch.maxConcurrentFlits(1); // could match ports below with = 4
+        OCMSwitch.addPorts("OCMSwitchPort1", "OCMSwitchPort2", "OCMSwitchPort3", "OCMSwitchPort4", "PortToOCM");
 
-        ocmSwitch.addPorts("OCMSwitchPort1", "OCMSwitchPort2", "OCMSwitchPort3", "OCMSwitchPort4");
-        for (int i = 0; i < 4; i++) {
+        this.PSCores.forEach((core, moduleName) -> {
             sGraph.connect(
-                    this.apuCores.get(i),
-                    ocmSwitch,
-                    "portToOCMSwitch",
-                    "OCMSwitchPort" + (i + 1),
+                    core,
+                    OCMSwitch,
+                    PORT_TO_OCMSWITCH,
+                    "OCMSwitchPort1",
                     EdgeTraits.PhysicalConnection,
                     EdgeTraits.VisualConnection);
             sGraph.connect(
-                    ocmSwitch,
-                    this.apuCores.get(i),
-                    "OCMSwitchPort" + (i + 1),
-                    "portToMemSwitch",
+                    OCMSwitch,
+                    core,
+                    "OCMSwitchPort1", // could be any port, Rodolfo: doesn't affect IDeSyDe 
+                    PORT_TO_OCMSWITCH,
                     EdgeTraits.PhysicalConnection,
                     EdgeTraits.VisualConnection);
 
-            if (i >= this.rpuCores.size()) {
-                continue;
-            }
-            sGraph.connect(
-                    this.rpuCores.get(i),
-                    ocmSwitch,
-                    "portToOCMSwitch",
-                    "OCMSwitchPort" + (i + 1),
-                    EdgeTraits.PhysicalConnection,
-                    EdgeTraits.VisualConnection);
-            sGraph.connect(
-                    ocmSwitch,
-                    this.rpuCores.get(i),
-                    "OCMSwitchPort" + (i + 1),
-                    "portToMemSwitch",
-                    EdgeTraits.PhysicalConnection,
-                    EdgeTraits.VisualConnection);
-        }
+        });
 
-        sGraph.connect(this.platform, ocmSwitch, EdgeTraits.StructuralContainment);
-        this.platformGreyBox.addContained(Visualizable.enforce(ocmSwitch));
-
-        this.OcmSwitch = ocmSwitch;
+        this.OCMSwitch = OCMSwitch;
     }
 
     public void AddFPGA() {

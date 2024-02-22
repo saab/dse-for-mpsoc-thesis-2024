@@ -8,23 +8,27 @@ import forsyde.io.core.SystemGraph;
 import forsyde.io.core.ModelHandler;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy;
 import forsyde.io.visual.kgt.drivers.KGTDriver;
+import java.util.*;
 
 import platform.components.*;
+import platform.utils.Units;
 
 public class App {
+    private static long ONE_MHZ = 1_000_000L;
+    private static long ONE_GHZ = 1_000_000_000L;
 
     private enum Platform {
         Zynq, MPSoC
     }
 
-    private static final String APP_DIR = System.getProperty("user.home") + 
-        "/Documents/degree-project/dse-for-mpsoc-thesis-2024/platform-model";
-    private static final String ARTIFACTS_DST = 
-        APP_DIR + "/app/src/main/java/platform/artifacts";
-        
+    private static final String APP_DIR = System.getProperty("user.home") +
+            "/Documents/degree-project/dse-for-mpsoc-thesis-2024/platform-model";
+    private static final String ARTIFACTS_DST = APP_DIR + "/app/src/main/java/platform/artifacts";
+
     private static final Platform PLATFORM = Platform.MPSoC;
+
     public static void main(String[] args) throws Exception {
-		var sGraph = switch (PLATFORM) {
+        var sGraph = switch (PLATFORM) {
             case MPSoC -> MPSoCPlatformGraph();
             case Zynq -> ZynqPlatformGraph();
             default -> ToyPlatformGraph();
@@ -34,37 +38,52 @@ public class App {
                 .registerTraitHierarchy(new ForSyDeHierarchy())
                 .registerDriver(new KGTDriver());
 
-        handlerWithRegistrations.writeModel(sGraph, 
-            ARTIFACTS_DST + "/" + PLATFORM + ".fiodl"
-        );
-        handlerWithRegistrations.writeModel(sGraph, 
-            ARTIFACTS_DST + "/" + PLATFORM + ".kgt"
-        );
-	}
+        handlerWithRegistrations.writeModel(sGraph,
+                ARTIFACTS_DST + "/" + PLATFORM + ".fiodl");
+        handlerWithRegistrations.writeModel(sGraph,
+                ARTIFACTS_DST + "/" + PLATFORM + ".kgt");
+    }
 
-	private static SystemGraph ToyPlatformGraph() throws Exception { 
-		var handler = new ModelHandler();
-		handler.registerTraitHierarchy(new ForSyDeHierarchy());
-		var sGraph = handler.loadModel(
-            APP_DIR + "/app/src/main/java/platform/toy_sdf_tiny.fiodl"
-        );
+    private static SystemGraph ToyPlatformGraph() throws Exception {
+        var handler = new ModelHandler();
+        handler.registerTraitHierarchy(new ForSyDeHierarchy());
+        var sGraph = handler.loadModel(
+                APP_DIR + "/app/src/main/java/platform/toy_sdf_tiny.fiodl");
         return sGraph;
-	}
+    }
 
     private static SystemGraph MPSoCPlatformGraph() throws Exception {
-        MPSoC mpsoc = new MPSoC();
-        mpsoc.AddAPU();
-        mpsoc.AddRPU();
-        mpsoc.AddOCMSwitch();
-        mpsoc.AddOCM();
+        MPSoC platform = new MPSoC();
+
+        platform.AddProcessingSystemModule(
+                "APU",
+                4,
+                (long) 1.5 * Units.GHZ, // 1.5GHz
+                Map.of(
+                        "economy", Map.of(
+                                "FloatOp", 0.43, // the applicaiton must provide a subset of these instructions
+                                "NonFloatOp", 2.325)));
+
+        platform.AddProcessingSystemModule(
+                "RPU",
+                2,
+                (long) 600 * Units.MHZ, // 600MHz
+                Map.of(
+                        "economy", Map.of(
+                                "FloatOp", 0.73, // the applicaiton must provide a subset of these instructions
+                                "NonFloatOp", 3.128)));
+        platform.AddOCMSwitch();
+        platform.AddOCM(
+                (long) 600 * Units.MHZ, // 600MHz
+                (long) 4 * Units.GB * Units.BYTES_TO_BITS); // 4GB/32Gb
 
         // mpsoc.addFPGA();
 
-        return mpsoc.sGraph;
+        return platform.sGraph;
     }
 
-	private static SystemGraph ZynqPlatformGraph() throws Exception {
-		Zynq zynq = new Zynq();
+    private static SystemGraph ZynqPlatformGraph() throws Exception {
+        Zynq zynq = new Zynq();
         return zynq.sGraph;
     }
 }
