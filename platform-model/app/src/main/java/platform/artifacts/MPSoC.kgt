@@ -1,0 +1,68 @@
+knode forsyde {
+   klabel "ForSyDe Model"
+   knode v_MPSoC {
+      klabel "MPSoC [Structure, HardwareModule]"
+      knode v_MPSoC_v_MPSoC_PS {
+         klabel "MPSoC.PS [Structure, HardwareModule]"
+         knode v_MPSoC_v_MPSoC_PS_v_MPSoC_PS_RPU {
+            klabel "MPSoC.PS.RPU [Structure, HardwareModule]"
+            knode v_MPSoC_v_MPSoC_PS_v_MPSoC_PS_RPU_v_MPSoC_PS_RPU_C1 {
+               klabel "MPSoC.PS.RPU.C1 [DigitalModule, InstrumentedProcessingModule, GenericProcessingModule, HardwareModule]"
+               kport portToOCMSwitch {
+                  klabel "portToOCMSwitch"
+               }
+            }
+            knode v_MPSoC_v_MPSoC_PS_v_MPSoC_PS_RPU_v_MPSoC_PS_RPU_C0 {
+               klabel "MPSoC.PS.RPU.C0 [DigitalModule, InstrumentedProcessingModule, GenericProcessingModule, HardwareModule]"
+               kport portToOCMSwitch {
+                  klabel "portToOCMSwitch"
+               }
+            }
+         }
+         knode v_MPSoC_v_MPSoC_PS_v_MPSoC_PS_APU {
+            klabel "MPSoC.PS.APU [Structure, HardwareModule]"
+            knode v_MPSoC_v_MPSoC_PS_v_MPSoC_PS_APU_v_MPSoC_PS_APU_C3 {
+               klabel "MPSoC.PS.APU.C3 [DigitalModule, InstrumentedProcessingModule, GenericProcessingModule, HardwareModule]"
+               kport portToOCMSwitch {
+                  klabel "portToOCMSwitch"
+               }
+            }
+            knode v_MPSoC_v_MPSoC_PS_v_MPSoC_PS_APU_v_MPSoC_PS_APU_C0 {
+               klabel "MPSoC.PS.APU.C0 [DigitalModule, InstrumentedProcessingModule, GenericProcessingModule, HardwareModule]"
+               kport portToOCMSwitch {
+                  klabel "portToOCMSwitch"
+               }
+            }
+            knode v_MPSoC_v_MPSoC_PS_v_MPSoC_PS_APU_v_MPSoC_PS_APU_C2 {
+               klabel "MPSoC.PS.APU.C2 [DigitalModule, InstrumentedProcessingModule, GenericProcessingModule, HardwareModule]"
+               kport portToOCMSwitch {
+                  klabel "portToOCMSwitch"
+               }
+            }
+            knode v_MPSoC_v_MPSoC_PS_v_MPSoC_PS_APU_v_MPSoC_PS_APU_C1 {
+               klabel "MPSoC.PS.APU.C1 [DigitalModule, InstrumentedProcessingModule, GenericProcessingModule, HardwareModule]"
+               kport portToOCMSwitch {
+                  klabel "portToOCMSwitch"
+               }
+            }
+         }
+      }
+      knode v_MPSoC_v_MPSoC_PS_OCM {
+         klabel "MPSoC.PS.OCM [DigitalModule, HardwareModule, GenericMemoryModule]"
+         kport portToOCMSwitch {
+            klabel "portToOCMSwitch"
+         }
+         kedge ( :portToOCMSwitch -> v_MPSoC_v_MPSoC_PS_OCMSwitch:PortToOCM)
+      }
+      knode v_MPSoC_v_MPSoC_PS_OCMSwitch {
+         klabel "MPSoC.PS.OCMSwitch [DigitalModule, TimeDivisionMultiplexingRuntime, AbstractRuntime, GenericCommunicationModule, HardwareModule, InstrumentedCommunicationModule]"
+         kport OCMSwitchPort1 {
+            klabel "OCMSwitchPort1"
+         }
+         kport PortToOCM {
+            klabel "PortToOCM"
+         }
+         kedge ( :PortToOCM -> v_MPSoC_v_MPSoC_PS_OCM:portToOCMSwitch)
+      }
+   }
+}
