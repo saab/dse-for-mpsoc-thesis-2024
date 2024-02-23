@@ -1,0 +1,17 @@
+knode forsyde {
+   klabel "ForSyDe Model"
+   knode v_Application {
+      klabel "Application [Structure, HardwareModule]"
+      knode v_Application_v_Channel_A_B {
+         klabel "Channel_A_B [MoCEntity, SDFChannel]"
+         kedge (  -> v_Application_v_Actor_B)
+      }
+      knode v_Application_v_Actor_B {
+         klabel "Actor_B [SDFActor, MoCEntity]"
+      }
+      knode v_Application_v_Actor_A {
+         klabel "Actor_A [SDFActor, MoCEntity]"
+         kedge (  -> v_Application_v_Channel_A_B)
+      }
+   }
+}

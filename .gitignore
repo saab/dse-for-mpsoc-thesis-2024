@@ -5,3 +5,8 @@
 
 # Ignore Gradle build output directory
 build
+
+# Custom
+experiments/idesyde
+experiments/run
+experiments/modules
