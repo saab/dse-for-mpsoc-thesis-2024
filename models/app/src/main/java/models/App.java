@@ -62,7 +62,7 @@ public class App {
         
         String action = args[0];
         if (action.equals("build")) {
-            BuildSpecification(Platform, Application);
+            CreateBuildSpecification(Platform, Application);
         } else if (action.equals("to_kgt")) {
             if (args.length < 2) {
                 System.out.println(USAGE);
@@ -80,7 +80,7 @@ public class App {
         Printer.Print(g, PrintType.KGT, ModelTargetType.DseResult);
     }
 
-    private static void BuildSpecification(ModelTargetType Platform, ModelTargetType Application) throws Exception {
+    private static void CreateBuildSpecification(ModelTargetType Platform, ModelTargetType Application) throws Exception {
         // Platform
         SystemGraph gPlatform = switch (Platform) {
             case MPSoC -> PlatformHandler.MPSoCGraph();

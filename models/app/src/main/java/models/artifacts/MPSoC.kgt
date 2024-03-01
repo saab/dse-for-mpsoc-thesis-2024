@@ -19,33 +19,6 @@ knode forsyde {
                }
             }
          }
-         knode v_MPSoC_v_MPSoC_dot_PS_v_MPSoC_dot_PS_dot_APU {
-            klabel "MPSoC.PS.APU [Structure, HardwareModule]"
-            knode v_MPSoC_v_MPSoC_dot_PS_v_MPSoC_dot_PS_dot_APU_v_MPSoC_dot_PS_dot_APU_dot_C3 {
-               klabel "MPSoC.PS.APU.C3 [InstrumentedProcessingModule, GenericProcessingModule, DigitalModule, HardwareModule]"
-               kport portToOCMSwitch {
-                  klabel "portToOCMSwitch"
-               }
-            }
-            knode v_MPSoC_v_MPSoC_dot_PS_v_MPSoC_dot_PS_dot_APU_v_MPSoC_dot_PS_dot_APU_dot_C0 {
-               klabel "MPSoC.PS.APU.C0 [InstrumentedProcessingModule, GenericProcessingModule, DigitalModule, HardwareModule]"
-               kport portToOCMSwitch {
-                  klabel "portToOCMSwitch"
-               }
-            }
-            knode v_MPSoC_v_MPSoC_dot_PS_v_MPSoC_dot_PS_dot_APU_v_MPSoC_dot_PS_dot_APU_dot_C2 {
-               klabel "MPSoC.PS.APU.C2 [InstrumentedProcessingModule, GenericProcessingModule, DigitalModule, HardwareModule]"
-               kport portToOCMSwitch {
-                  klabel "portToOCMSwitch"
-               }
-            }
-            knode v_MPSoC_v_MPSoC_dot_PS_v_MPSoC_dot_PS_dot_APU_v_MPSoC_dot_PS_dot_APU_dot_C1 {
-               klabel "MPSoC.PS.APU.C1 [InstrumentedProcessingModule, GenericProcessingModule, DigitalModule, HardwareModule]"
-               kport portToOCMSwitch {
-                  klabel "portToOCMSwitch"
-               }
-            }
-         }
       }
       knode v_MPSoC_v_MPSoC_dot_PS_dot_OCM {
          klabel "MPSoC.PS.OCM [GenericMemoryModule, DigitalModule, HardwareModule]"

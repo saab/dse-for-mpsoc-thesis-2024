@@ -13,14 +13,14 @@ public class PlatformHandler {
     public static SystemGraph MPSoCGraph() throws Exception {
         MPSoC platform = new MPSoC();
 
-        platform.AddProcessingSystemModule(
-                "APU",
-                4,
-                (long) 1.5 * Units.GHZ, // 1.5GHz
-                Map.of(
-                        "economy", Map.of(
-                                "FloatOp", 0.43, // the applicaiton must provide a subset of these instructions
-                                "NonFloatOp", 2.325)));
+        // platform.AddProcessingSystemModule(
+        //         "APU",
+        //         4,
+        //         (long) 1.5 * Units.GHZ, // 1.5GHz
+        //         Map.of(
+        //                 "economy", Map.of(
+        //                         "FloatOp", 0.43, // the applicaiton must provide a subset of these instructions
+        //                         "NonFloatOp", 2.325)));
 
         platform.AddProcessingSystemModule(
                 "RPU",

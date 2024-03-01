@@ -7,74 +7,6 @@ systemgraph {
   [forsyde::io::lib::hierarchy::platform::hardware::HardwareModule, forsyde::io::lib::hierarchy::platform::hardware::Structure, forsyde::io::lib::hierarchy::visualization::GreyBox, forsyde::io::lib::hierarchy::visualization::Visualizable]
   (contained, containedModules)
   {}
-  vertex "MPSoC.PS.APU"
-  [forsyde::io::lib::hierarchy::platform::hardware::HardwareModule, forsyde::io::lib::hierarchy::platform::hardware::Structure, forsyde::io::lib::hierarchy::visualization::GreyBox, forsyde::io::lib::hierarchy::visualization::Visualizable]
-  (contained, containedModules)
-  {}
-  vertex "MPSoC.PS.APU.C0"
-  [forsyde::io::lib::hierarchy::platform::hardware::DigitalModule, forsyde::io::lib::hierarchy::platform::hardware::GenericProcessingModule, forsyde::io::lib::hierarchy::platform::hardware::HardwareModule, forsyde::io::lib::hierarchy::platform::hardware::InstrumentedProcessingModule, forsyde::io::lib::hierarchy::visualization::Visualizable]
-  (portToOCMSwitch)
-  {
-    "modalInstructionCategory": [
-
-    ],
-    "maximumComputationParallelism": 1_i,
-    "operatingFrequencyInHertz": 1000000000_l,
-    "modalInstructionsPerCycle": {
-      "economy": {
-        "NonFloatOp":      2.32500000000_64,
-        "FloatOp":      0.43000000000_64
-      }
-    }
-  }
-  vertex "MPSoC.PS.APU.C1"
-  [forsyde::io::lib::hierarchy::platform::hardware::DigitalModule, forsyde::io::lib::hierarchy::platform::hardware::GenericProcessingModule, forsyde::io::lib::hierarchy::platform::hardware::HardwareModule, forsyde::io::lib::hierarchy::platform::hardware::InstrumentedProcessingModule, forsyde::io::lib::hierarchy::visualization::Visualizable]
-  (portToOCMSwitch)
-  {
-    "modalInstructionCategory": [
-
-    ],
-    "maximumComputationParallelism": 1_i,
-    "operatingFrequencyInHertz": 1000000000_l,
-    "modalInstructionsPerCycle": {
-      "economy": {
-        "NonFloatOp":      2.32500000000_64,
-        "FloatOp":      0.43000000000_64
-      }
-    }
-  }
-  vertex "MPSoC.PS.APU.C2"
-  [forsyde::io::lib::hierarchy::platform::hardware::DigitalModule, forsyde::io::lib::hierarchy::platform::hardware::GenericProcessingModule, forsyde::io::lib::hierarchy::platform::hardware::HardwareModule, forsyde::io::lib::hierarchy::platform::hardware::InstrumentedProcessingModule, forsyde::io::lib::hierarchy::visualization::Visualizable]
-  (portToOCMSwitch)
-  {
-    "modalInstructionCategory": [
-
-    ],
-    "maximumComputationParallelism": 1_i,
-    "operatingFrequencyInHertz": 1000000000_l,
-    "modalInstructionsPerCycle": {
-      "economy": {
-        "NonFloatOp":      2.32500000000_64,
-        "FloatOp":      0.43000000000_64
-      }
-    }
-  }
-  vertex "MPSoC.PS.APU.C3"
-  [forsyde::io::lib::hierarchy::platform::hardware::DigitalModule, forsyde::io::lib::hierarchy::platform::hardware::GenericProcessingModule, forsyde::io::lib::hierarchy::platform::hardware::HardwareModule, forsyde::io::lib::hierarchy::platform::hardware::InstrumentedProcessingModule, forsyde::io::lib::hierarchy::visualization::Visualizable]
-  (portToOCMSwitch)
-  {
-    "modalInstructionCategory": [
-
-    ],
-    "maximumComputationParallelism": 1_i,
-    "operatingFrequencyInHertz": 1000000000_l,
-    "modalInstructionsPerCycle": {
-      "economy": {
-        "NonFloatOp":      2.32500000000_64,
-        "FloatOp":      0.43000000000_64
-      }
-    }
-  }
   vertex "MPSoC.PS.RPU"
   [forsyde::io::lib::hierarchy::platform::hardware::HardwareModule, forsyde::io::lib::hierarchy::platform::hardware::Structure, forsyde::io::lib::hierarchy::visualization::GreyBox, forsyde::io::lib::hierarchy::visualization::Visualizable]
   (contained, containedModules)
@@ -139,16 +71,6 @@ systemgraph {
   }
   edge [forsyde::io::lib::hierarchy::platform::hardware::StructuralContainment] from "MPSoC" to "MPSoC.PS" 
   edge [forsyde::io::lib::hierarchy::visualization::VisualContainment] from "MPSoC" port "contained" to "MPSoC.PS" 
-  edge [forsyde::io::lib::hierarchy::platform::hardware::StructuralContainment] from "MPSoC.PS" to "MPSoC.PS.APU" 
-  edge [forsyde::io::lib::hierarchy::platform::hardware::StructuralContainment] from "MPSoC.PS.APU" to "MPSoC.PS.APU.C0" 
-  edge [forsyde::io::lib::hierarchy::visualization::VisualContainment] from "MPSoC.PS.APU" port "contained" to "MPSoC.PS.APU.C0" 
-  edge [forsyde::io::lib::hierarchy::platform::hardware::StructuralContainment] from "MPSoC.PS.APU" to "MPSoC.PS.APU.C1" 
-  edge [forsyde::io::lib::hierarchy::visualization::VisualContainment] from "MPSoC.PS.APU" port "contained" to "MPSoC.PS.APU.C1" 
-  edge [forsyde::io::lib::hierarchy::platform::hardware::StructuralContainment] from "MPSoC.PS.APU" to "MPSoC.PS.APU.C2" 
-  edge [forsyde::io::lib::hierarchy::visualization::VisualContainment] from "MPSoC.PS.APU" port "contained" to "MPSoC.PS.APU.C2" 
-  edge [forsyde::io::lib::hierarchy::platform::hardware::StructuralContainment] from "MPSoC.PS.APU" to "MPSoC.PS.APU.C3" 
-  edge [forsyde::io::lib::hierarchy::visualization::VisualContainment] from "MPSoC.PS.APU" port "contained" to "MPSoC.PS.APU.C3" 
-  edge [forsyde::io::lib::hierarchy::visualization::VisualContainment] from "MPSoC.PS" port "contained" to "MPSoC.PS.APU" 
   edge [forsyde::io::lib::hierarchy::platform::hardware::StructuralContainment] from "MPSoC.PS" to "MPSoC.PS.RPU" 
   edge [forsyde::io::lib::hierarchy::platform::hardware::StructuralContainment] from "MPSoC.PS.RPU" to "MPSoC.PS.RPU.C0" 
   edge [forsyde::io::lib::hierarchy::visualization::VisualContainment] from "MPSoC.PS.RPU" port "contained" to "MPSoC.PS.RPU.C0" 
@@ -157,16 +79,8 @@ systemgraph {
   edge [forsyde::io::lib::hierarchy::visualization::VisualContainment] from "MPSoC.PS" port "contained" to "MPSoC.PS.RPU" 
   edge [forsyde::io::lib::hierarchy::platform::hardware::StructuralContainment] from "MPSoC" to "MPSoC.PS.OCMSwitch" 
   edge [forsyde::io::lib::hierarchy::visualization::VisualContainment] from "MPSoC" port "contained" to "MPSoC.PS.OCMSwitch" 
-  edge [forsyde::io::lib::hierarchy::platform::hardware::PhysicalConnection,forsyde::io::lib::hierarchy::visualization::VisualConnection] from "MPSoC.PS.APU.C3" port "portToOCMSwitch" to "MPSoC.PS.OCMSwitch" port "OCMSwitchPort1"
-  edge [forsyde::io::lib::hierarchy::platform::hardware::PhysicalConnection,forsyde::io::lib::hierarchy::visualization::VisualConnection] from "MPSoC.PS.OCMSwitch" port "OCMSwitchPort1" to "MPSoC.PS.APU.C3" port "portToOCMSwitch"
-  edge [forsyde::io::lib::hierarchy::platform::hardware::PhysicalConnection,forsyde::io::lib::hierarchy::visualization::VisualConnection] from "MPSoC.PS.APU.C0" port "portToOCMSwitch" to "MPSoC.PS.OCMSwitch" port "OCMSwitchPort1"
-  edge [forsyde::io::lib::hierarchy::platform::hardware::PhysicalConnection,forsyde::io::lib::hierarchy::visualization::VisualConnection] from "MPSoC.PS.OCMSwitch" port "OCMSwitchPort1" to "MPSoC.PS.APU.C0" port "portToOCMSwitch"
-  edge [forsyde::io::lib::hierarchy::platform::hardware::PhysicalConnection,forsyde::io::lib::hierarchy::visualization::VisualConnection] from "MPSoC.PS.APU.C2" port "portToOCMSwitch" to "MPSoC.PS.OCMSwitch" port "OCMSwitchPort1"
-  edge [forsyde::io::lib::hierarchy::platform::hardware::PhysicalConnection,forsyde::io::lib::hierarchy::visualization::VisualConnection] from "MPSoC.PS.OCMSwitch" port "OCMSwitchPort1" to "MPSoC.PS.APU.C2" port "portToOCMSwitch"
   edge [forsyde::io::lib::hierarchy::platform::hardware::PhysicalConnection,forsyde::io::lib::hierarchy::visualization::VisualConnection] from "MPSoC.PS.RPU.C1" port "portToOCMSwitch" to "MPSoC.PS.OCMSwitch" port "OCMSwitchPort1"
   edge [forsyde::io::lib::hierarchy::platform::hardware::PhysicalConnection,forsyde::io::lib::hierarchy::visualization::VisualConnection] from "MPSoC.PS.OCMSwitch" port "OCMSwitchPort1" to "MPSoC.PS.RPU.C1" port "portToOCMSwitch"
-  edge [forsyde::io::lib::hierarchy::platform::hardware::PhysicalConnection,forsyde::io::lib::hierarchy::visualization::VisualConnection] from "MPSoC.PS.APU.C1" port "portToOCMSwitch" to "MPSoC.PS.OCMSwitch" port "OCMSwitchPort1"
-  edge [forsyde::io::lib::hierarchy::platform::hardware::PhysicalConnection,forsyde::io::lib::hierarchy::visualization::VisualConnection] from "MPSoC.PS.OCMSwitch" port "OCMSwitchPort1" to "MPSoC.PS.APU.C1" port "portToOCMSwitch"
   edge [forsyde::io::lib::hierarchy::platform::hardware::PhysicalConnection,forsyde::io::lib::hierarchy::visualization::VisualConnection] from "MPSoC.PS.RPU.C0" port "portToOCMSwitch" to "MPSoC.PS.OCMSwitch" port "OCMSwitchPort1"
   edge [forsyde::io::lib::hierarchy::platform::hardware::PhysicalConnection,forsyde::io::lib::hierarchy::visualization::VisualConnection] from "MPSoC.PS.OCMSwitch" port "OCMSwitchPort1" to "MPSoC.PS.RPU.C0" port "portToOCMSwitch"
   edge [forsyde::io::lib::hierarchy::platform::hardware::PhysicalConnection,forsyde::io::lib::hierarchy::visualization::VisualConnection] from "MPSoC.PS.OCMSwitch" port "PortToOCM" to "MPSoC.PS.OCM" port "portToOCMSwitch"

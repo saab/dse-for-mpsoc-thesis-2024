@@ -1,6 +1,7 @@
 systemgraph {
 
-    vertex p1 [moc::sdf::SDFActor, visualization::Visualizable, impl::InstrumentedExecutable] (sin, s1) {
+    vertex p1 [moc::sdf::SDFActor, visualization::Visualizable, impl::InstrumentedExecutable]
+    (sin, s1) {
         "sizeInBits": 800_l,
         "operationRequirements": {
             "default": {
@@ -15,7 +16,8 @@ systemgraph {
         }
     }
 
-    vertex p2 [moc::sdf::SDFActor, visualization::Visualizable, impl::InstrumentedExecutable] (s1, sout) {
+    vertex p2 [moc::sdf::SDFActor, visualization::Visualizable, impl::InstrumentedExecutable] 
+    (s1, sout) {
         "sizeInBits": 800_l,
         "operationRequirements": {
             "default": {
@@ -31,7 +33,8 @@ systemgraph {
     }
 
 
-    vertex s1Sig [moc::sdf::SDFChannel, visualization::Visualizable] (producer, consumer, initialTokenValues) {
+    vertex s1Sig [moc::sdf::SDFChannel, visualization::Visualizable] 
+    (producer, consumer, initialTokenValues) {
         "numOfInitialTokens": 0_i
     }
 

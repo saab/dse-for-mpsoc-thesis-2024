@@ -16,8 +16,14 @@ gradle run --args="build"
 rm -rf $DSE_OUTPUT_PATH/*
 
 # run the DSE tool with the input models from 
-$DSE_PATH/$DSE_EXECUTABLE -v DEBUG -p 4 -o $DSE_OUTPUT_PATH --x-improvement-time-out 10 \
-    $ARTIFACTS_PATH/MPSoC.fiodl $ARTIFACTS_PATH/ToySDF.fiodl
+
+cd $DSE_PATH
+./$DSE_EXECUTABLE -v DEBUG -p 4 -o $DSE_OUTPUT_PATH \
+    --x-improvement-time-out 10 \
+    $DSE_PATH/demo/toy_tiled_2core.fiodl \
+    $ARTIFACTS_PATH/ToySDF.fiodl
+    # $DSE_PATH/demo/toy_sdf_tiny.fiodl
+    # $ARTIFACTS_PATH/MPSoC.fiodl \
 
 echo $?
 

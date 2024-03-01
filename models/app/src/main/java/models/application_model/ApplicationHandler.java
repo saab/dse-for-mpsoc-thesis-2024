@@ -7,7 +7,7 @@ public class ApplicationHandler {
 
     public static SystemGraph ToySDFGraph() {
         ToySDF toySDF = new ToySDF();
-        SystemGraph sGraph = toySDF.build();
+        SystemGraph sGraph = toySDF.Build();
         return sGraph;
     }
 
