@@ -75,9 +75,8 @@ public class MPSoC {
         this.psGreyBox.addContained(box);
     }
 
-    // Memory: 4GB, 600 MHz
     public void AddOCM(long frequency, long spaceInBits) {
-        if (this.platform == null) 
+        if (this.platform == null)
             throw new IllegalStateException("Platform must be added first");
         if (this.OCMSwitch == null)
             throw new IllegalStateException("No OCM switch to connect to, must be added first");

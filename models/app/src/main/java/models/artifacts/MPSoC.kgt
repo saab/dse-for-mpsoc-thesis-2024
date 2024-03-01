@@ -1,19 +1,19 @@
 knode forsyde {
    klabel "ForSyDe Model"
    knode v_MPSoC {
-      klabel "MPSoC [Structure, HardwareModule]"
+      klabel "MPSoC [HardwareModule, Structure]"
       knode v_MPSoC_v_MPSoC_dot_PS {
-         klabel "MPSoC.PS [Structure, HardwareModule]"
+         klabel "MPSoC.PS [HardwareModule, Structure]"
          knode v_MPSoC_v_MPSoC_dot_PS_v_MPSoC_dot_PS_dot_RPU {
-            klabel "MPSoC.PS.RPU [Structure, HardwareModule]"
+            klabel "MPSoC.PS.RPU [HardwareModule, Structure]"
             knode v_MPSoC_v_MPSoC_dot_PS_v_MPSoC_dot_PS_dot_RPU_v_MPSoC_dot_PS_dot_RPU_dot_C1 {
-               klabel "MPSoC.PS.RPU.C1 [InstrumentedProcessingModule, GenericProcessingModule, DigitalModule, HardwareModule]"
+               klabel "MPSoC.PS.RPU.C1 [GenericProcessingModule, HardwareModule, InstrumentedProcessingModule, DigitalModule]"
                kport portToOCMSwitch {
                   klabel "portToOCMSwitch"
                }
             }
             knode v_MPSoC_v_MPSoC_dot_PS_v_MPSoC_dot_PS_dot_RPU_v_MPSoC_dot_PS_dot_RPU_dot_C0 {
-               klabel "MPSoC.PS.RPU.C0 [InstrumentedProcessingModule, GenericProcessingModule, DigitalModule, HardwareModule]"
+               klabel "MPSoC.PS.RPU.C0 [GenericProcessingModule, HardwareModule, InstrumentedProcessingModule, DigitalModule]"
                kport portToOCMSwitch {
                   klabel "portToOCMSwitch"
                }
@@ -21,14 +21,14 @@ knode forsyde {
          }
       }
       knode v_MPSoC_v_MPSoC_dot_PS_dot_OCM {
-         klabel "MPSoC.PS.OCM [GenericMemoryModule, DigitalModule, HardwareModule]"
+         klabel "MPSoC.PS.OCM [HardwareModule, DigitalModule, GenericMemoryModule]"
          kport portToOCMSwitch {
             klabel "portToOCMSwitch"
          }
          kedge ( :portToOCMSwitch -> v_MPSoC_v_MPSoC_dot_PS_dot_OCMSwitch:PortToOCM)
       }
       knode v_MPSoC_v_MPSoC_dot_PS_dot_OCMSwitch {
-         klabel "MPSoC.PS.OCMSwitch [TimeDivisionMultiplexingRuntime, AbstractRuntime, InstrumentedCommunicationModule, DigitalModule, GenericCommunicationModule, HardwareModule]"
+         klabel "MPSoC.PS.OCMSwitch [HardwareModule, DigitalModule, TimeDivisionMultiplexingRuntime, AbstractRuntime, InstrumentedCommunicationModule, GenericCommunicationModule]"
          kport OCMSwitchPort1 {
             klabel "OCMSwitchPort1"
          }

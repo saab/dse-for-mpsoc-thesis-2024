@@ -1,12 +1,15 @@
 systemgraph {
-
+  vertex "Application"
+  [forsyde::io::lib::hierarchy::platform::hardware::HardwareModule, forsyde::io::lib::hierarchy::platform::hardware::Structure, forsyde::io::lib::hierarchy::visualization::GreyBox, forsyde::io::lib::hierarchy::visualization::Visualizable]
+  (contained, containedModules)
+  {}
   vertex "Actor A"
   [forsyde::io::lib::hierarchy::behavior::BehaviourEntity, forsyde::io::lib::hierarchy::behavior::moc::MoCEntity, forsyde::io::lib::hierarchy::behavior::moc::sdf::SDFActor, forsyde::io::lib::hierarchy::implementation::functional::InstrumentedBehaviour, forsyde::io::lib::hierarchy::visualization::Visualizable]
   (combFunctions, s1, s_in)
   {
     "computationalRequirements": {
       "default": {
-        "integer add": 1000_l
+        "FloatOp": 1000_l
       }
     },
     "maxSizeInBits": {
@@ -25,7 +28,7 @@ systemgraph {
   {
     "computationalRequirements": {
       "default": {
-        "integer add": 100_l
+        "FloatOp": 100_l
       }
     },
     "maxSizeInBits": {
@@ -44,9 +47,14 @@ systemgraph {
   {
     "numInitialTokens": 0_i
   }
-
+  edge [forsyde::io::lib::hierarchy::platform::hardware::StructuralContainment] from "Application" to "Actor A" 
+  edge [forsyde::io::lib::hierarchy::visualization::VisualContainment] from "Application" port "contained" to "Actor A" 
+  edge [forsyde::io::lib::hierarchy::platform::hardware::StructuralContainment] from "Application" to "Actor_B" 
+  edge [forsyde::io::lib::hierarchy::visualization::VisualContainment] from "Application" port "contained" to "Actor_B" 
+  edge [forsyde::io::lib::hierarchy::platform::hardware::StructuralContainment] from "Application" to "Channel_A_B" 
+  edge [forsyde::io::lib::hierarchy::visualization::VisualContainment] from "Application" port "contained" to "Channel_A_B" 
   edge [forsyde::io::lib::hierarchy::behavior::moc::sdf::SDFNetworkEdge] from "Actor A" to "Channel_A_B" port "producer"
   edge [forsyde::io::lib::hierarchy::behavior::moc::sdf::SDFNetworkEdge] from "Channel_A_B" port "consumer" to "Actor_B" 
-  edge [forsyde::io::lib::hierarchy::behavior::moc::sdf::SDFNetworkEdge,forsyde::io::lib::hierarchy::visualization::VisualConnection] from "Actor A" port "s1" to "Channel_A_B" port "consumer" 
+  edge [forsyde::io::lib::hierarchy::behavior::moc::sdf::SDFNetworkEdge,forsyde::io::lib::hierarchy::visualization::VisualConnection] from "Actor A" to "Channel_A_B" 
   edge [forsyde::io::lib::hierarchy::behavior::moc::sdf::SDFNetworkEdge,forsyde::io::lib::hierarchy::visualization::VisualConnection] from "Channel_A_B" port "producer" to "Actor_B" port "s1"
 }

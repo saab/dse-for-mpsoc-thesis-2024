@@ -1,0 +1,24 @@
+knode forsyde {
+   klabel "ForSyDe Model"
+   knode v_micro_blaze_mem0 {
+      klabel "micro_blaze_mem0 [HardwareModule, DigitalModule, GenericMemoryModule]"
+      knode v_micro_blaze_mem0_v_Channel_A_B {
+         klabel "Channel_A_B [BoundedBufferLike, MemoryMapped, BufferLike]"
+      }
+      knode v_micro_blaze_mem0_v_Actor_B {
+         klabel "Actor_B [Scheduled, BehaviourEntity, AnalyzedBehavior, MemoryMapped]"
+      }
+      knode v_micro_blaze_mem0_v_Actor_space_A {
+         klabel "Actor A [Scheduled, BehaviourEntity, AnalyzedBehavior, MemoryMapped]"
+      }
+   }
+   knode v_micro_blaze_os0 {
+      klabel "micro_blaze_os0 [AbstractRuntime, SuperLoopRuntime]"
+      knode v_micro_blaze_os0_v_Actor_B {
+         klabel "Actor_B [Scheduled, BehaviourEntity, AnalyzedBehavior, MemoryMapped]"
+      }
+      knode v_micro_blaze_os0_v_Actor_space_A {
+         klabel "Actor A [Scheduled, BehaviourEntity, AnalyzedBehavior, MemoryMapped]"
+      }
+   }
+}

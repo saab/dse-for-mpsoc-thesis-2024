@@ -11,9 +11,8 @@ import models.utils.Paths;
 
 public class App {
 
-    private enum PrintType {
-        FIODL, KGT
-    }
+    private static final String FIODL_EXT = ".fiodl";
+    private static final String KGT_EXT = ".kgt";
 
     private enum ModelTargetType {
         Zynq, MPSoC, ToyPlatform, // platforms
@@ -26,32 +25,34 @@ public class App {
                 .registerTraitHierarchy(new ForSyDeHierarchy())
                 .registerDriver(new KGTDriver());
 
-        private static String ToExt(PrintType t) {
-            return switch (t) {
-                case FIODL -> ".fiodl";
-                case KGT -> ".kgt";
-            };
+        private static void Print(SystemGraph g, String outPath) throws Exception {
+            handler.writeModel(g, outPath);
+
+            // extract file name from outPath without extension
+            String description = outPath.substring(outPath.lastIndexOf('/') + 1, outPath.lastIndexOf('.'));
+
+            // extract extension from outPath
+            String extension = outPath.substring(outPath.lastIndexOf('.'));
+
+            if (extension.equals(FIODL_EXT)) {
+                System.out.println("Design model of '" + description + "' written to '" + outPath);
+            } else if (extension.equals(KGT_EXT)) {
+                System.out.println("Visualization of '" + description + "' model written to '" + outPath);
+            } else {
+                System.out.println("Unknown file extension: " + extension);
+            }
         }
 
-        private static void Print(SystemGraph g, PrintType type, ModelTargetType name) throws Exception {
-            String ext = ToExt(type);
-
-            String dest = Paths.ARTIFACTS_DIR + "/" + name + ext;
-            handler.writeModel(g, dest);
-
-            System.out.println("Model (" + type + ") written to '" + dest + "'");
-        }
-
-        private static SystemGraph Read(String name) throws Exception {
-            var model = handler.loadModel(Paths.ARTIFACTS_DIR + "/" + name);
+        private static SystemGraph Read(String path) throws Exception {
+            var model = handler.loadModel(path);
             return model;
         }
     }
 
-    private static String USAGE = "\nUsage: gradle run --args=\"[build|to_kgt <path>]";
+    private static String USAGE = "\nUsage: gradle run --args=\"[build|to_kgt <relativeMainPath/fullPath>]";
 
     public static void main(String[] args) throws Exception {
-        //TODO: set via CLI args
+        // ? set via CLI args?
         ModelTargetType Platform = ModelTargetType.MPSoC;
         ModelTargetType Application = ModelTargetType.ToySDF;
 
@@ -59,7 +60,7 @@ public class App {
             System.out.println();
             return;
         }
-        
+
         String action = args[0];
         if (action.equals("build")) {
             CreateBuildSpecification(Platform, Application);
@@ -75,27 +76,28 @@ public class App {
         }
     }
 
-    private static void ConvertFiodlToKGT(String path) throws Exception {
-        SystemGraph g = Printer.Read(path);
-        Printer.Print(g, PrintType.KGT, ModelTargetType.DseResult);
+    private static void ConvertFiodlToKGT(String fullPath) throws Exception {
+        SystemGraph g = Printer.Read(fullPath);
+        Printer.Print(g, Paths.ARTIFACTS_DIR + "/" + ModelTargetType.DseResult + KGT_EXT);
     }
 
-    private static void CreateBuildSpecification(ModelTargetType Platform, ModelTargetType Application) throws Exception {
+    private static void CreateBuildSpecification(ModelTargetType Platform, ModelTargetType Application)
+            throws Exception {
         // Platform
         SystemGraph gPlatform = switch (Platform) {
             case MPSoC -> PlatformHandler.MPSoCGraph();
             case Zynq -> PlatformHandler.ZynqGraph();
             default -> throw new IllegalStateException("Unknown platform: " + Platform);
         };
-        Printer.Print(gPlatform, PrintType.FIODL, Platform);
-        Printer.Print(gPlatform, PrintType.KGT, Platform);
+        Printer.Print(gPlatform, Paths.ARTIFACTS_DIR + "/" + Platform + KGT_EXT);
+        Printer.Print(gPlatform, Paths.ARTIFACTS_DIR + "/" + Platform + FIODL_EXT);
 
         // Application
         SystemGraph gApplication = switch (Application) {
             case ToySDF -> ApplicationHandler.ToySDFGraph();
             default -> throw new IllegalStateException("Unknown application: " + Application);
         };
-        Printer.Print(gApplication, PrintType.FIODL, Application);
-        Printer.Print(gApplication, PrintType.KGT, Application);
+        Printer.Print(gApplication, Paths.ARTIFACTS_DIR + "/" + Application + KGT_EXT);
+        Printer.Print(gApplication, Paths.ARTIFACTS_DIR + "/" + Application + FIODL_EXT);
     }
 }

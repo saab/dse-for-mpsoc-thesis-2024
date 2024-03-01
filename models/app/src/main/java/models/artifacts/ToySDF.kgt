@@ -1,22 +1,22 @@
 knode forsyde {
    klabel "ForSyDe Model"
    knode v_Application {
-      klabel "Application [Structure, HardwareModule]"
+      klabel "Application [HardwareModule, Structure]"
       knode v_Application_v_Channel_A_B {
-         klabel "Channel_A_B [MoCEntity, SDFChannel]"
+         klabel "Channel_A_B [SDFChannel, MoCEntity]"
          kport producer {
             klabel "producer"
          }
          kedge ( :producer -> v_Application_v_Actor_B:s1)
       }
       knode v_Application_v_Actor_B {
-         klabel "Actor_B [SDFActor, MoCEntity, InstrumentedBehaviour, BehaviourEntity]"
+         klabel "Actor_B [MoCEntity, BehaviourEntity, SDFActor, InstrumentedBehaviour]"
          kport s1 {
             klabel "s1"
          }
       }
       knode v_Application_v_Actor_space_A {
-         klabel "Actor A [SDFActor, MoCEntity, InstrumentedBehaviour, BehaviourEntity]"
+         klabel "Actor A [MoCEntity, BehaviourEntity, SDFActor, InstrumentedBehaviour]"
          kedge (  -> v_Application_v_Channel_A_B)
       }
    }

@@ -7,16 +7,14 @@ DSE_PATH=/home/beethoven/Documents/degree-project/dse-for-mpsoc-thesis-2024/expe
 DSE_EXECUTABLE=idesyde
 DSE_OUTPUT_PATH=$DSE_PATH/results
 
-# create the input fiodl files based on current configuration
+# create system specification files (fiodl), specificaiton in code
 cd $PROJECT_PATH
-
 gradle run --args="build"
 
 # clear the output directory
 rm -rf $DSE_OUTPUT_PATH/*
 
-# run the DSE tool with the input models from 
-
+# perform dse with constructed system models
 cd $DSE_PATH
 ./$DSE_EXECUTABLE -v DEBUG -p 4 -o $DSE_OUTPUT_PATH \
     --x-improvement-time-out 10 \
@@ -24,8 +22,6 @@ cd $DSE_PATH
     $ARTIFACTS_PATH/ToySDF.fiodl
     # $DSE_PATH/demo/toy_sdf_tiny.fiodl
     # $ARTIFACTS_PATH/MPSoC.fiodl \
-
-echo $?
 
 # inspect if there are any reverse identifications
 if [ "$(ls -A $DSE_OUTPUT_PATH/reversed)" ]; then
