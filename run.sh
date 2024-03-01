@@ -23,9 +23,10 @@ cd $DSE_PATH
     # $DSE_PATH/demo/toy_sdf_tiny.fiodl
     # $ARTIFACTS_PATH/MPSoC.fiodl \
 
-# inspect if there are any reverse identifications
-if [ "$(ls -A $DSE_OUTPUT_PATH/reversed)" ]; then
-    echo "Found at least one solution"
-else
+# quit if there are no reverse identifications
+if ! [ "$(ls -A $DSE_OUTPUT_PATH/reversed)" ]; then
     echo "No solution found"
+    exit 1
 fi
+
+# for each .fiodl file call gradle run --args="to_kgt $DSE_OUTPUT_PATH/reversed/$fiodl_file"

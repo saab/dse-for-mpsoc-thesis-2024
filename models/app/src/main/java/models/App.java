@@ -25,19 +25,26 @@ public class App {
                 .registerTraitHierarchy(new ForSyDeHierarchy())
                 .registerDriver(new KGTDriver());
 
+        private static String GetExtension(String path) {
+            return path.substring(path.lastIndexOf('.'));
+        }
+
+        private static String GetFileName(String path) {
+            return path.substring(path.lastIndexOf('/') + 1, path.lastIndexOf('.'));
+        }
+
         private static void Print(SystemGraph g, String outPath) throws Exception {
             handler.writeModel(g, outPath);
 
-            // extract file name from outPath without extension
-            String description = outPath.substring(outPath.lastIndexOf('/') + 1, outPath.lastIndexOf('.'));
+            String fileName = GetFileName(outPath);
 
             // extract extension from outPath
-            String extension = outPath.substring(outPath.lastIndexOf('.'));
+            String extension = GetExtension(outPath);
 
             if (extension.equals(FIODL_EXT)) {
-                System.out.println("Design model of '" + description + "' written to '" + outPath);
+                System.out.println("Design model of '" + fileName + "' written to '" + outPath);
             } else if (extension.equals(KGT_EXT)) {
-                System.out.println("Visualization of '" + description + "' model written to '" + outPath);
+                System.out.println("Visualization of '" + fileName + "' model written to '" + outPath);
             } else {
                 System.out.println("Unknown file extension: " + extension);
             }
@@ -78,7 +85,8 @@ public class App {
 
     private static void ConvertFiodlToKGT(String fullPath) throws Exception {
         SystemGraph g = Printer.Read(fullPath);
-        Printer.Print(g, Paths.ARTIFACTS_DIR + "/" + ModelTargetType.DseResult + KGT_EXT);
+        String fileName = Printer.GetFileName(fullPath);
+        Printer.Print(g, Paths.ARTIFACTS_DIR + "/" + fileName + KGT_EXT);
     }
 
     private static void CreateBuildSpecification(ModelTargetType Platform, ModelTargetType Application)
