@@ -22,8 +22,8 @@ systemgraph {
     "operatingFrequencyInHertz": 600000000_l,
     "modalInstructionsPerCycle": {
       "economy": {
-        "NonFloatOp":      3.12800000000_64,
-        "FloatOp":      0.73000000000_64
+        "FloatOp":      0.73000000000_64,
+        "NonFloatOp":      3.12800000000_64
       }
     }
   }
@@ -38,8 +38,8 @@ systemgraph {
     "operatingFrequencyInHertz": 600000000_l,
     "modalInstructionsPerCycle": {
       "economy": {
-        "NonFloatOp":      3.12800000000_64,
-        "FloatOp":      0.73000000000_64
+        "FloatOp":      0.73000000000_64,
+        "NonFloatOp":      3.12800000000_64
       }
     }
   }
