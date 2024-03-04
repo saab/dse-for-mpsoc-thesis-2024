@@ -5,6 +5,7 @@ PROJECT_PATH=/home/beethoven/Documents/degree-project/dse-for-mpsoc-thesis-2024/
 ARTIFACTS_PATH=$PROJECT_PATH/app/src/main/java/models/artifacts
 DSE_PATH=/home/beethoven/Documents/degree-project/dse-for-mpsoc-thesis-2024/experiments
 DSE_EXECUTABLE=idesyde
+DSE_OUTPUT_PARSER=parse_dse_results.py
 DSE_OUTPUT_PATH=$DSE_PATH/run
 
 # create system specification files (fiodl), specificaiton in code
@@ -34,3 +35,6 @@ cd $PROJECT_PATH
 for fiodl_file in $DSE_OUTPUT_PATH/reversed/*.fiodl; do
     gradle run --args="to_kgt $fiodl_file"
 done
+
+cd $DSE_PATH
+python3 $DSE_OUTPUT_PARSER $DSE_OUTPUT_PATH/explored
