@@ -27,6 +27,7 @@ def parse_dse_results(dirp: str) -> None:
     json_results = extract_json_results(dirp)
 
     for res in json_results:
+        print("-" * 80)
         print(f'Solution: {res["file"]}')
         dataflow: dict = res.get('aperiodic_asynchronous_dataflows', [])[0] # multiple dataflows (applications?)
         actors = dataflow.get('processes', [])

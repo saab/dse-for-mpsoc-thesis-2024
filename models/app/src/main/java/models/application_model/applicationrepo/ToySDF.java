@@ -31,7 +31,7 @@ public class ToySDF {
                 var instrumentedActorA = InstrumentedBehaviour.enforce(sGraph, V_actorA);
                 instrumentedActorA.computationalRequirements(Map.of(
                                 "default", Map.of(
-                                                "integer add", 1000L)));
+                                                "FloatOp", 1000L)));
                 instrumentedActorA.maxSizeInBits(Map.of("default", 32L));
                 // a.getViewedVertex().putProperty("LogicArea", 100); // "worth on FPGA"
 
@@ -45,7 +45,7 @@ public class ToySDF {
                 var instrumentedActorB = InstrumentedBehaviour.enforce(sGraph, V_actorB);
                 instrumentedActorB.computationalRequirements(Map.of(
                                 "default", Map.of(
-                                                "integer add", 100L)));
+                                                "FloatOp", 100L)));
                 instrumentedActorB.maxSizeInBits(Map.of("default", 32L));
                 // a.getViewedVertex().putProperty("LogicArea", 10000); // "not worth on FPGA"
 

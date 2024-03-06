@@ -8,21 +8,28 @@ DSE_EXECUTABLE=idesyde
 DSE_OUTPUT_PARSER=parse_dse_results.py
 DSE_OUTPUT_PATH=$DSE_PATH/run
 
+
 # create system specification files (fiodl), specificaiton in code
 cd $PROJECT_PATH
 gradle run --args="build"
+
+# check if build was successful
+if [ $? -ne 0 ]; then
+    echo "Build failed"
+    exit 1
+fi
 
 # clear the output directory
 rm -rf $DSE_OUTPUT_PATH/*
 
 # perform dse with constructed system models
 cd $DSE_PATH
-./$DSE_EXECUTABLE -v DEBUG -p 4 -o $DSE_OUTPUT_PATH \
-    --x-improvement-time-out 10 \
-    $DSE_PATH/demo/toy_tiled_2core.fiodl \
+./$DSE_EXECUTABLE -v DEBUG -p 10 -o $DSE_OUTPUT_PATH \
+    --x-improvement-time-out 5 \
+    $ARTIFACTS_PATH/MPSoC.fiodl \
     $ARTIFACTS_PATH/ToySDF.fiodl
+    # $DSE_PATH/demo/toy_tiled_2core.fiodl \
     # $DSE_PATH/demo/toy_sdf_tiny.fiodl
-    # $ARTIFACTS_PATH/MPSoC.fiodl \
 
 # quit if there are no reverse identifications
 if ! [ "$(ls -A $DSE_OUTPUT_PATH/reversed)" ]; then

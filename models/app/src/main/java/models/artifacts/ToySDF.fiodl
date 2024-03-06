@@ -9,7 +9,7 @@ systemgraph {
   {
     "computationalRequirements": {
       "default": {
-        "integer add": 1000_l
+        "FloatOp": 1000_l
       }
     },
     "maxSizeInBits": {
@@ -28,7 +28,7 @@ systemgraph {
   {
     "computationalRequirements": {
       "default": {
-        "integer add": 100_l
+        "FloatOp": 100_l
       }
     },
     "maxSizeInBits": {

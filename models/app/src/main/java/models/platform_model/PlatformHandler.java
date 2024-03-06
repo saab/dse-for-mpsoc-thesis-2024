@@ -11,31 +11,36 @@ import models.utils.Units;
 public class PlatformHandler {
 
     public static SystemGraph MPSoCGraph() throws Exception {
-        MPSoC platform = new MPSoC();
+        boolean allInOne = true;
+        MPSoC platform = new MPSoC(allInOne);
 
-        // platform.AddProcessingSystemModule(
-        //         "APU",
-        //         4,
-        //         (long) 1.5 * Units.GHZ, // 1.5GHz
-        //         Map.of(
-        //                 "economy", Map.of(
-        //                         "FloatOp", 0.43, // the applicaiton must provide a subset of these instructions
-        //                         "NonFloatOp", 2.325)));
+        if (!allInOne) {
+            platform.AddProcessingSystemModule(
+                    "APU",
+                    4,
+                    (long) 1.5 * Units.GHZ, // 1.5GHz
+                    Map.of(
+                            "economy", Map.of(
+                                    "FloatOp", 0.43)));
+    
+            // platform.AddProcessingSystemModule(
+            //         "RPU",
+            //         2,
+            //         (long) 600 * Units.MHZ, // 600MHz
+            //         Map.of(
+            //                 "default", Map.of( // the applicaiton must provide a subset of these instructions
+            //                         "integer add", 0.84
+            //                         // "FloatOp", 0.73, 
+            //                         // "NonFloatOp", 3.128
+            //                         )));
+    
+            platform.AddMemoryToPS(
+                    (long) 600 * Units.MHZ, // 600MHz
+                    (long) 4 * Units.GB * Units.BYTES_TO_BITS); // 4GB
+    
+            // platform.addFPGA();
 
-        platform.AddProcessingSystemModule(
-                "RPU",
-                2,
-                (long) 600 * Units.MHZ, // 600MHz
-                Map.of(
-                        "economy", Map.of(
-                                "FloatOp", 0.73, // the applicaiton must provide a subset of these instructions
-                                "NonFloatOp", 3.128)));
-        platform.AddOCMSwitch();
-        platform.AddOCM(
-                (long) 600 * Units.MHZ, // 600MHz
-                (long) 4 * Units.GB * Units.BYTES_TO_BITS); // 4GB/32Gb
-
-        // mpsoc.addFPGA();
+        }
 
         return platform.sGraph;
     }
