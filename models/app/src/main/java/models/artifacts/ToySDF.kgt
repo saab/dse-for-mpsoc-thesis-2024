@@ -13,13 +13,13 @@ knode forsyde {
          kedge ( :producer -> v_Application_v_Actor_B:s1)
       }
       knode v_Application_v_Actor_B {
-         klabel "Actor_B [InstrumentedBehaviour, SDFActor, BehaviourEntity, MoCEntity]"
+         klabel "Actor_B [BehaviourEntity, SDFActor, MoCEntity, InstrumentedBehaviour]"
          kport s1 {
             klabel "s1"
          }
       }
       knode v_Application_v_Actor_space_A {
-         klabel "Actor A [InstrumentedBehaviour, SDFActor, BehaviourEntity, MoCEntity]"
+         klabel "Actor A [BehaviourEntity, SDFActor, MoCEntity, InstrumentedBehaviour]"
          kport s1 {
             klabel "s1"
          }

@@ -1,11 +1,11 @@
 knode forsyde {
    klabel "ForSyDe Model"
-   knode v_MPSoC_PS_APU_Scheduler {
-      klabel "MPSoC_PS_APU_Scheduler [AbstractRuntime, SuperLoopRuntime]"
-      knode v_MPSoC_PS_APU_Scheduler_v_Actor_B {
+   knode v_MPSoC_PS_APU_C0_Scheduler {
+      klabel "MPSoC_PS_APU_C0_Scheduler [AbstractRuntime, SuperLoopRuntime]"
+      knode v_MPSoC_PS_APU_C0_Scheduler_v_Actor_B {
          klabel "Actor_B [Scheduled, MoCEntity, MemoryMapped, AnalyzedActor, SDFActor]"
       }
-      knode v_MPSoC_PS_APU_Scheduler_v_Actor_space_A {
+      knode v_MPSoC_PS_APU_C0_Scheduler_v_Actor_space_A {
          klabel "Actor A [Scheduled, MoCEntity, MemoryMapped, AnalyzedActor, SDFActor]"
       }
    }

@@ -11,36 +11,26 @@ import models.utils.Units;
 public class PlatformHandler {
 
     public static SystemGraph MPSoCGraph() throws Exception {
-        boolean allInOne = true;
-        MPSoC platform = new MPSoC(allInOne);
+        MPSoC platform = new MPSoC();
 
-        if (!allInOne) {
-            platform.AddProcessingSystemModule(
-                    "APU",
-                    4,
-                    (long) 1.5 * Units.GHZ, // 1.5GHz
-                    Map.of(
-                            "economy", Map.of(
-                                    "FloatOp", 0.43)));
-    
-            // platform.AddProcessingSystemModule(
-            //         "RPU",
-            //         2,
-            //         (long) 600 * Units.MHZ, // 600MHz
-            //         Map.of(
-            //                 "default", Map.of( // the applicaiton must provide a subset of these instructions
-            //                         "integer add", 0.84
-            //                         // "FloatOp", 0.73, 
-            //                         // "NonFloatOp", 3.128
-            //                         )));
-    
-            platform.AddMemoryToPS(
-                    (long) 600 * Units.MHZ, // 600MHz
-                    (long) 4 * Units.GB * Units.BYTES_TO_BITS); // 4GB
-    
-            // platform.addFPGA();
+        platform.AddProcessingSystemModule(
+                "APU",
+                4,
+                (long) 1.5 * Units.GHZ, // 1.5GHz
+                Map.of(
+                        "economy", Map.of(
+                                "FloatOp", 0.04)));
 
-        }
+        platform.AddProcessingSystemModule(
+                "RPU",
+                2,
+                (long) 600 * Units.MHZ, // 600MHz
+                Map.of(
+                        "economy", Map.of(
+                                "FloatOp", 0.43)));
+
+        platform.AddMemoryToPS(600 * Units.MHZ, 4 * Units.GB * Units.BYTES_TO_BITS);
+
 
         return platform.sGraph;
     }
