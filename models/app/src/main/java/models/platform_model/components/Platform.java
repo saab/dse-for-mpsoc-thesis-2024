@@ -6,7 +6,6 @@ import java.util.*;
 import forsyde.io.core.SystemGraph;
 import forsyde.io.core.VertexViewer;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy.*;
-import forsyde.io.lib.hierarchy.platform.hardware.StructureViewer;
 import forsyde.io.lib.hierarchy.platform.hardware.GenericMemoryModuleViewer;
 import forsyde.io.lib.hierarchy.platform.hardware.InstrumentedProcessingModuleViewer;
 // import forsyde.io.lib.hierarchy.platform.hardware.LogicProgrammableModuleViewer;
@@ -17,7 +16,6 @@ import models.utils.Units;
 public class Platform {
     private SystemGraph sGraph;
     private GreyBoxViewer platformGreyBox;
-    private String name;
     private Map<String, VertexViewer> viewers = new HashMap<>();
 
     public Platform(String name) {
@@ -30,7 +28,6 @@ public class Platform {
         this.platformGreyBox = GreyBox.enforce(Visualizable.enforce(platform));
         
         this.sGraph = sGraph;
-        this.name = name;
     }
 
     public SystemGraph GetGraph() {
