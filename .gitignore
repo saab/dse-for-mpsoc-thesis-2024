@@ -10,4 +10,5 @@ build
 experiments/idesyde
 experiments/run
 experiments/modules
-models/app/src/main/java/models/artifacts/body_*
+models/app/src/main/java/models/artifacts/*
+

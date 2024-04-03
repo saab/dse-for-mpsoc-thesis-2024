@@ -12,7 +12,6 @@ import forsyde.io.lib.hierarchy.platform.hardware.InstrumentedProcessingModuleVi
 // import forsyde.io.lib.hierarchy.platform.hardware.LogicProgrammableModuleViewer;
 import forsyde.io.lib.hierarchy.visualization.GreyBoxViewer;
 import models.utils.Units;
-import models.utils.Ports;
 
 
 public class Platform {
@@ -39,25 +38,13 @@ public class Platform {
     }
 
     /**
-     * Add a structure as child to the parent structure.
-     * @param parent Parent structure name.
-     * @param child Child structure name.
+     * Connect two components bidirectionally with explicit port names.
+     * @param a The first component.
+     * @param b The second component.
+     * @param portA The port of the first component.
+     * @param portB The port of the second component.
      */
-    // public void AddChildStructure(String parent, String child) {
-    //     StructureViewer structure = Structure.enforce(
-    //         sGraph, sGraph.newVertex(child)
-    //     );
-    //     viewers.put(parent + "_" + child, structure);
-    //     if (!viewers.containsKey(parent)) {
-    //         throw new IllegalArgumentException("Parent structure not found.");
-    //     } else {
-    //         this.platformGreyBox.addContained(
-    //             Visualizable.enforce(structure)
-    //         );
-    //     }
-    // }
-
-    private void BiDirectionalConnect(
+    private void CreateEdge(
         VertexViewer a, VertexViewer b, String portA, String portB
     ) {
         sGraph.connect(
@@ -70,7 +57,12 @@ public class Platform {
         );
     }
 
-    private void BiDirectionalConnect(VertexViewer a, VertexViewer b) {
+    /**
+     * Connect two components bidirectionally.
+     * @param a The first component.
+     * @param b The second component.
+     */
+    private void CreateEdge(VertexViewer a, VertexViewer b) {
         sGraph.connect(
             a, b, EdgeTraits.StructuralContainment, EdgeTraits.VisualConnection
         );
@@ -78,86 +70,90 @@ public class Platform {
             b, a, EdgeTraits.StructuralContainment, EdgeTraits.VisualConnection
         );
     }
-
-    public void AddMemory(String name, long frequency, long spaceInBits) {
-        // ACTUAL MEMORY
-        String memoryName = name;
-        GenericMemoryModuleViewer mem = GenericMemoryModule.enforce(
-            sGraph, sGraph.newVertex(memoryName)
-        );
-        this.platformGreyBox.addContained(Visualizable.enforce(mem));
-
-        mem.operatingFrequencyInHertz(600 * Units.MHz);
-        mem.spaceInBits(4 * Units.GB * Units.BYTES_TO_BITS);
-        mem.addPorts(Ports.MEM_TO_MEMSWITCH);
-
-        // MEMORY SWITCH
-        String switchName = memoryName + "_Switch";
-        var sw = InstrumentedCommunicationModule.enforce(
-            sGraph, sGraph.newVertex(switchName)
-        );
-        this.viewers.put(switchName, sw);
-        this.platformGreyBox.addContained(Visualizable.enforce(sw));
-        sw.operatingFrequencyInHertz(600 * Units.MHz);
-        sw.initialLatency(0L);
-        sw.flitSizeInBits(8L); // 1 byte
-        sw.maxCyclesPerFlit(1); // cycles to send 1 byte
-        sw.maxConcurrentFlits(1); // could match ports below with = 4
-        sw.addPorts(Ports.MEMSWITCH_TO_MEM);
-
-        // connect switch to memory
-        this.BiDirectionalConnect(
-            mem, sw, Ports.MEM_TO_MEMSWITCH, Ports.MEMSWITCH_TO_MEM
-        );
-    }
-
+    
     /**
      * Connect all processing units from the given namespace to a memory module.
      * In reality the processing units are connected to the memory's switch
      * which is necessary for analysis, 
-     * @param puNamespace The namespace of the processing units, e.g. "APU"
+     * @param srcNamespace The namespace or exact name of the source components.
      * (must exist).
-     * @param memory The memory module name (must exist).
+     * @param memory The exact name of the destination component (must exist).
      */
-    public void ConnectPUsToMemory(String puNamespace, String memoryName) {
-        String switchName = memoryName + "_Switch";
-        if (!this.viewers.keySet().contains(switchName)) {
+    public void Connect(String srcNamespace, String dstName) {
+        if (!this.viewers.keySet().contains(dstName)) {
             throw new IllegalArgumentException(
-                "No memory switch for memory " + memoryName + " found."
+                "No component named " + dstName + " found."
             );
         }
         
-        List<String> identified = this.viewers.keySet().stream()
-            .filter((key) -> key.contains(puNamespace))
-            .filter((key) -> this.viewers.get(key) 
-                instanceof InstrumentedProcessingModuleViewer
-            ).toList();
+        List<String> srcNames = this.viewers.keySet().stream()
+            .filter((key) -> key.contains(srcNamespace))
+            .toList();
 
-        System.out.println(puNamespace + "<->" + memoryName + ":" + identified);
-        
-        if (identified.isEmpty()) {
+        if (srcNames.isEmpty()) {
             throw new IllegalArgumentException(
-                "No processing units found for namespace" + puNamespace + "."
+                "No component(s) found for name(space)" + srcNamespace + "."
             );
         }
             
-        var sw = this.viewers.get(switchName);
-        sw.addPorts(Ports.MEMSWITCH_TO_PU);
-
-        identified.stream()
-            .map((key) -> this.viewers.get(key))
-            .forEach((core) -> {
-                core.addPorts(Ports.PU_TO_MEMSWITCH);
-                this.BiDirectionalConnect(
-                    core, sw, 
-                    Ports.PU_TO_MEMSWITCH, Ports.MEMSWITCH_TO_PU
+        var dst = this.viewers.get(dstName);
+        srcNames.stream()
+        .map((srcName) -> this.viewers.get(srcName))
+        .forEach((src) -> {
+            String dstPort = dstName + "_to_" + src.getIdentifier();
+            String srcPort = src.getIdentifier() + "_to_" + dstName;
+            if ((dst instanceof GenericMemoryModuleViewer && 
+                src instanceof InstrumentedProcessingModuleViewer) ||
+                (src instanceof GenericMemoryModuleViewer &&
+                dst instanceof InstrumentedProcessingModuleViewer)) {
+                throw new UnsupportedOperationException(
+                    "Cannot directly connect processing modules and memory."
                 );
             }
-        );
+            dst.addPorts(dstPort);
+            src.addPorts(srcPort);
+            this.CreateEdge(src, dst, srcPort, dstPort);
+        });
     }
 
     /**
-     * Add a CPU to the MPSoC as <cores> processing modules.
+     * Add a memory module to the platform.
+     * @param name The identifier for the memory module.
+     * @param frequency The operating frequency of the memory module.
+     * @param spaceInBits The space in bits of the memory module.
+     */
+    public void AddMemory(String name, long frequency, long spaceInBits) {
+        String memoryName = name;
+        GenericMemoryModuleViewer mem = GenericMemoryModule.enforce(
+            sGraph, sGraph.newVertex(memoryName)
+        );
+        this.viewers.put(memoryName, mem);
+        this.platformGreyBox.addContained(Visualizable.enforce(mem));
+
+        mem.operatingFrequencyInHertz(600 * Units.MHz);
+        mem.spaceInBits(4 * Units.GB * Units.BYTES_TO_BITS);
+    }
+
+    /**
+     * Adds a switch (communication element) to the platform
+     * @param name The identifier for the switch.
+     * @param frequency The operating frequency of the switch.
+     */
+    public void AddSwitch(String name, long frequency) {
+        var sw = InstrumentedCommunicationModule.enforce(
+            sGraph, sGraph.newVertex(name)
+        );
+        this.viewers.put(name, sw);
+        sw.operatingFrequencyInHertz(frequency);
+        sw.initialLatency(0L);
+        sw.flitSizeInBits((long)1 * Units.BYTES_TO_BITS);
+        sw.maxCyclesPerFlit(1);   // cycles to send 1 byte
+        sw.maxConcurrentFlits(1); // could match ports below with = 4
+    }
+
+    /**
+     * Add a CPU to the MPSoC as <cores> independent processing modules with 
+     * 1-1 mapped runtimes.
      * @param name The identifier for the CPU.
      * @param cores The number of CPU cores.
      * @param frequency The operating frequency of the CPU.
@@ -177,12 +173,12 @@ public class Platform {
             core.modalInstructionsPerCycle(modalInstructions);
 
             var tdmApu = TimeDivisionMultiplexingRuntime.enforce(sGraph,
-                    sGraph.newVertex(coreName + "_Scheduler"));
-            tdmApu.addManaged(core);
-
-            this.BiDirectionalConnect(core, tdmApu);
-
+                sGraph.newVertex(coreName + "_Scheduler")
+            );
             this.platformGreyBox.addContained(Visualizable.enforce(tdmApu));
+            tdmApu.addManaged(core);
+            this.CreateEdge(core, tdmApu);
+
         }
     }
 
