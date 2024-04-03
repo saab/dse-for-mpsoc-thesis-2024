@@ -141,6 +141,7 @@ public class Platform {
             sGraph, sGraph.newVertex(name)
         );
         this.viewers.put(name, sw);
+        this.platformGreyBox.addContained(Visualizable.enforce(sw));
         sw.operatingFrequencyInHertz(frequency);
         sw.initialLatency(0L);
         sw.flitSizeInBits((long)1 * Units.BYTES_TO_BITS);
