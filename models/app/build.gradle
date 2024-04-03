@@ -11,9 +11,13 @@ repositories {
 dependencies {
     implementation "com.github.forsyde.forsyde-io:forsyde-io-java-core:0.7.17"
     implementation "com.github.forsyde.forsyde-io:forsyde-io-java-libforsyde:0.7.17"
-    implementation "com.github.forsyde.forsyde-io:forsyde-io-java-graphviz:v0.7.18"
+    // implementation "com.github.forsyde.forsyde-io:forsyde-io-java-libforsyde:develop-SNAPSHOT"
+    implementation ("com.github.forsyde.forsyde-io:forsyde-io-java-graphviz:v0.7.17") {
+        exclude group: 'com.github.forsyde.forsyde-io', module: 'forsyde-io-java-libforsyde'
+    }
     implementation "org.jgrapht:jgrapht-core:1.5.2"
 }
+
 
 // Apply a specific Java toolchain to ease working on different environments.
 java {

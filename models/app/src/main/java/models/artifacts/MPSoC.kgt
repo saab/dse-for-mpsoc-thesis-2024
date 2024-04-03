@@ -2,106 +2,129 @@ knode forsyde {
    klabel "ForSyDe Model"
    knode v_MPSoC {
       klabel "MPSoC [Structure, HardwareModule]"
-      knode v_MPSoC_v_MPSoC_PS_APU_C2_Scheduler {
-         klabel "MPSoC_PS_APU_C2_Scheduler [TimeDivisionMultiplexingRuntime, AbstractRuntime]"
-         kedge (  -> v_MPSoC_v_MPSoC_PS_APU_C2)
+      knode v_MPSoC_v_RPU_C1_Scheduler {
+         klabel "RPU_C1_Scheduler [TimeDivisionMultiplexingRuntime, AbstractRuntime]"
+         kedge (  -> v_MPSoC_v_RPU_C1)
       }
-      knode v_MPSoC_v_MPSoC_PS_RPU_C1_Scheduler {
-         klabel "MPSoC_PS_RPU_C1_Scheduler [TimeDivisionMultiplexingRuntime, AbstractRuntime]"
-         kedge (  -> v_MPSoC_v_MPSoC_PS_RPU_C1)
+      knode v_MPSoC_v_APU_C1_Scheduler {
+         klabel "APU_C1_Scheduler [TimeDivisionMultiplexingRuntime, AbstractRuntime]"
+         kedge (  -> v_MPSoC_v_APU_C1)
       }
-      knode v_MPSoC_v_MPSoC_PS_APU_C1_Scheduler {
-         klabel "MPSoC_PS_APU_C1_Scheduler [TimeDivisionMultiplexingRuntime, AbstractRuntime]"
-         kedge (  -> v_MPSoC_v_MPSoC_PS_APU_C1)
-      }
-      knode v_MPSoC_v_MPSoC_PS_APU {
-         klabel "MPSoC_PS_APU [Structure, HardwareModule]"
-      }
-      knode v_MPSoC_v_MPSoC_PS_RPU_C0 {
-         klabel "MPSoC_PS_RPU_C0 [GenericProcessingModule, InstrumentedProcessingModule, DigitalModule, HardwareModule]"
-         kport toMemSwitch {
-            klabel "toMemSwitch"
+      knode v_MPSoC_v_PS_DDR4_Switch {
+         klabel "PS_DDR4_Switch [InstrumentedCommunicationModule, GenericCommunicationModule, HardwareModule, DigitalModule]"
+         kport MemorySwitch_to_PU {
+            klabel "MemorySwitch_to_PU"
          }
-         kedge (  -> v_MPSoC_v_MPSoC_PS_RPU_C0_Scheduler)
-         kedge ( :toMemSwitch -> v_MPSoC_v_MPSoC_PS_MemSwitch:toPU)
-      }
-      knode v_MPSoC_v_MPSoC_PS_MemSwitch {
-         klabel "MPSoC_PS_MemSwitch [DigitalModule, HardwareModule, InstrumentedCommunicationModule, GenericCommunicationModule]"
-         kport toPU {
-            klabel "toPU"
+         kport MemorySwitch_to_Memory {
+            klabel "MemorySwitch_to_Memory"
          }
-         kedge ( :toPU -> v_MPSoC_v_MPSoC_PS_RPU_C0:toMemSwitch)
-         kedge ( :toPU -> v_MPSoC_v_MPSoC_PS_RPU_C1:toMemSwitch)
-         kedge ( :toPU -> v_MPSoC_v_MPSoC_PS_Mem:toMemSwitch)
-         kedge ( :toPU -> v_MPSoC_v_MPSoC_PS_APU_C2:toMemSwitch)
-         kedge ( :toPU -> v_MPSoC_v_MPSoC_PS_APU_C3:toMemSwitch)
-         kedge ( :toPU -> v_MPSoC_v_MPSoC_PS_APU_C0:toMemSwitch)
-         kedge ( :toPU -> v_MPSoC_v_MPSoC_PS_APU_C1:toMemSwitch)
+         kedge ( :MemorySwitch_to_Memory -> v_MPSoC_v_PS_DDR4:Memory_to_MemorySwitch)
+         kedge ( :MemorySwitch_to_PU -> v_MPSoC_v_RPU_C0:PU_to_MemorySwitch)
+         kedge ( :MemorySwitch_to_PU -> v_MPSoC_v_RPU_C1:PU_to_MemorySwitch)
+         kedge ( :MemorySwitch_to_PU -> v_MPSoC_v_APU_C3:PU_to_MemorySwitch)
+         kedge ( :MemorySwitch_to_PU -> v_MPSoC_v_APU_C1:PU_to_MemorySwitch)
+         kedge ( :MemorySwitch_to_PU -> v_MPSoC_v_APU_C2:PU_to_MemorySwitch)
+         kedge ( :MemorySwitch_to_PU -> v_MPSoC_v_APU_C0:PU_to_MemorySwitch)
       }
-      knode v_MPSoC_v_MPSoC_PS_RPU_C1 {
-         klabel "MPSoC_PS_RPU_C1 [GenericProcessingModule, InstrumentedProcessingModule, DigitalModule, HardwareModule]"
-         kport toMemSwitch {
-            klabel "toMemSwitch"
+      knode v_MPSoC_v_APU_C2_Scheduler {
+         klabel "APU_C2_Scheduler [TimeDivisionMultiplexingRuntime, AbstractRuntime]"
+         kedge (  -> v_MPSoC_v_APU_C2)
+      }
+      knode v_MPSoC_v_OCM_Switch {
+         klabel "OCM_Switch [InstrumentedCommunicationModule, GenericCommunicationModule, HardwareModule, DigitalModule]"
+         kport MemorySwitch_to_PU {
+            klabel "MemorySwitch_to_PU"
          }
-         kedge ( :toMemSwitch -> v_MPSoC_v_MPSoC_PS_MemSwitch:toPU)
-         kedge (  -> v_MPSoC_v_MPSoC_PS_RPU_C1_Scheduler)
-      }
-      knode v_MPSoC_v_MPSoC_PS_APU_C3_Scheduler {
-         klabel "MPSoC_PS_APU_C3_Scheduler [TimeDivisionMultiplexingRuntime, AbstractRuntime]"
-         kedge (  -> v_MPSoC_v_MPSoC_PS_APU_C3)
-      }
-      knode v_MPSoC_v_MPSoC_PS_Mem {
-         klabel "MPSoC_PS_Mem [GenericMemoryModule, DigitalModule, HardwareModule]"
-         kport toMemSwitch {
-            klabel "toMemSwitch"
+         kport MemorySwitch_to_Memory {
+            klabel "MemorySwitch_to_Memory"
          }
-         kedge ( :toMemSwitch -> v_MPSoC_v_MPSoC_PS_MemSwitch:toPU)
+         kedge ( :MemorySwitch_to_PU -> v_MPSoC_v_RPU_C0:PU_to_MemorySwitch)
+         kedge ( :MemorySwitch_to_PU -> v_MPSoC_v_RPU_C1:PU_to_MemorySwitch)
+         kedge ( :MemorySwitch_to_Memory -> v_MPSoC_v_OCM:Memory_to_MemorySwitch)
+         kedge ( :MemorySwitch_to_PU -> v_MPSoC_v_APU_C3:PU_to_MemorySwitch)
+         kedge ( :MemorySwitch_to_PU -> v_MPSoC_v_APU_C1:PU_to_MemorySwitch)
+         kedge ( :MemorySwitch_to_PU -> v_MPSoC_v_APU_C2:PU_to_MemorySwitch)
+         kedge ( :MemorySwitch_to_PU -> v_MPSoC_v_APU_C0:PU_to_MemorySwitch)
       }
-      knode v_MPSoC_v_MPSoC_PS_APU_C2 {
-         klabel "MPSoC_PS_APU_C2 [GenericProcessingModule, InstrumentedProcessingModule, DigitalModule, HardwareModule]"
-         kport toMemSwitch {
-            klabel "toMemSwitch"
+      knode v_MPSoC_v_RPU_C0 {
+         klabel "RPU_C0 [GenericProcessingModule, HardwareModule, DigitalModule, InstrumentedProcessingModule]"
+         kport PU_to_MemorySwitch {
+            klabel "PU_to_MemorySwitch"
          }
-         kedge ( :toMemSwitch -> v_MPSoC_v_MPSoC_PS_MemSwitch:toPU)
-         kedge (  -> v_MPSoC_v_MPSoC_PS_APU_C2_Scheduler)
+         kedge (  -> v_MPSoC_v_RPU_C0_Scheduler)
+         kedge ( :PU_to_MemorySwitch -> v_MPSoC_v_OCM_Switch:MemorySwitch_to_PU)
+         kedge ( :PU_to_MemorySwitch -> v_MPSoC_v_PS_DDR4_Switch:MemorySwitch_to_PU)
       }
-      knode v_MPSoC_v_MPSoC_PS_APU_C3 {
-         klabel "MPSoC_PS_APU_C3 [GenericProcessingModule, InstrumentedProcessingModule, DigitalModule, HardwareModule]"
-         kport toMemSwitch {
-            klabel "toMemSwitch"
+      knode v_MPSoC_v_RPU_C1 {
+         klabel "RPU_C1 [GenericProcessingModule, HardwareModule, DigitalModule, InstrumentedProcessingModule]"
+         kport PU_to_MemorySwitch {
+            klabel "PU_to_MemorySwitch"
          }
-         kedge ( :toMemSwitch -> v_MPSoC_v_MPSoC_PS_MemSwitch:toPU)
-         kedge (  -> v_MPSoC_v_MPSoC_PS_APU_C3_Scheduler)
+         kedge ( :PU_to_MemorySwitch -> v_MPSoC_v_OCM_Switch:MemorySwitch_to_PU)
+         kedge (  -> v_MPSoC_v_RPU_C1_Scheduler)
+         kedge ( :PU_to_MemorySwitch -> v_MPSoC_v_PS_DDR4_Switch:MemorySwitch_to_PU)
       }
-      knode v_MPSoC_v_MPSoC_PS {
-         klabel "MPSoC_PS [Structure, HardwareModule]"
+      knode v_MPSoC_v_APU_C3_Scheduler {
+         klabel "APU_C3_Scheduler [TimeDivisionMultiplexingRuntime, AbstractRuntime]"
+         kedge (  -> v_MPSoC_v_APU_C3)
       }
-      knode v_MPSoC_v_MPSoC_PS_RPU {
-         klabel "MPSoC_PS_RPU [Structure, HardwareModule]"
-      }
-      knode v_MPSoC_v_MPSoC_PS_RPU_C0_Scheduler {
-         klabel "MPSoC_PS_RPU_C0_Scheduler [TimeDivisionMultiplexingRuntime, AbstractRuntime]"
-         kedge (  -> v_MPSoC_v_MPSoC_PS_RPU_C0)
-      }
-      knode v_MPSoC_v_MPSoC_PS_APU_C0 {
-         klabel "MPSoC_PS_APU_C0 [GenericProcessingModule, InstrumentedProcessingModule, DigitalModule, HardwareModule]"
-         kport toMemSwitch {
-            klabel "toMemSwitch"
+      knode v_MPSoC_v_PS_DDR4 {
+         klabel "PS_DDR4 [HardwareModule, GenericMemoryModule, DigitalModule]"
+         kport Memory_to_MemorySwitch {
+            klabel "Memory_to_MemorySwitch"
          }
-         kedge ( :toMemSwitch -> v_MPSoC_v_MPSoC_PS_MemSwitch:toPU)
-         kedge (  -> v_MPSoC_v_MPSoC_PS_APU_C0_Scheduler)
+         kedge ( :Memory_to_MemorySwitch -> v_MPSoC_v_PS_DDR4_Switch:MemorySwitch_to_Memory)
       }
-      knode v_MPSoC_v_MPSoC_PS_APU_C1 {
-         klabel "MPSoC_PS_APU_C1 [GenericProcessingModule, InstrumentedProcessingModule, DigitalModule, HardwareModule]"
-         kport toMemSwitch {
-            klabel "toMemSwitch"
+      knode v_MPSoC_v_APU_C3 {
+         klabel "APU_C3 [GenericProcessingModule, HardwareModule, DigitalModule, InstrumentedProcessingModule]"
+         kport PU_to_MemorySwitch {
+            klabel "PU_to_MemorySwitch"
          }
-         kedge (  -> v_MPSoC_v_MPSoC_PS_APU_C1_Scheduler)
-         kedge ( :toMemSwitch -> v_MPSoC_v_MPSoC_PS_MemSwitch:toPU)
+         kedge ( :PU_to_MemorySwitch -> v_MPSoC_v_OCM_Switch:MemorySwitch_to_PU)
+         kedge (  -> v_MPSoC_v_APU_C3_Scheduler)
+         kedge ( :PU_to_MemorySwitch -> v_MPSoC_v_PS_DDR4_Switch:MemorySwitch_to_PU)
       }
-      knode v_MPSoC_v_MPSoC_PS_APU_C0_Scheduler {
-         klabel "MPSoC_PS_APU_C0_Scheduler [TimeDivisionMultiplexingRuntime, AbstractRuntime]"
-         kedge (  -> v_MPSoC_v_MPSoC_PS_APU_C0)
+      knode v_MPSoC_v_OCM {
+         klabel "OCM [HardwareModule, GenericMemoryModule, DigitalModule]"
+         kport Memory_to_MemorySwitch {
+            klabel "Memory_to_MemorySwitch"
+         }
+         kedge ( :Memory_to_MemorySwitch -> v_MPSoC_v_OCM_Switch:MemorySwitch_to_Memory)
+      }
+      knode v_MPSoC_v_APU_C1 {
+         klabel "APU_C1 [GenericProcessingModule, HardwareModule, DigitalModule, InstrumentedProcessingModule]"
+         kport PU_to_MemorySwitch {
+            klabel "PU_to_MemorySwitch"
+         }
+         kedge (  -> v_MPSoC_v_APU_C1_Scheduler)
+         kedge ( :PU_to_MemorySwitch -> v_MPSoC_v_OCM_Switch:MemorySwitch_to_PU)
+         kedge ( :PU_to_MemorySwitch -> v_MPSoC_v_PS_DDR4_Switch:MemorySwitch_to_PU)
+      }
+      knode v_MPSoC_v_RPU_C0_Scheduler {
+         klabel "RPU_C0_Scheduler [TimeDivisionMultiplexingRuntime, AbstractRuntime]"
+         kedge (  -> v_MPSoC_v_RPU_C0)
+      }
+      knode v_MPSoC_v_APU_C0_Scheduler {
+         klabel "APU_C0_Scheduler [TimeDivisionMultiplexingRuntime, AbstractRuntime]"
+         kedge (  -> v_MPSoC_v_APU_C0)
+      }
+      knode v_MPSoC_v_APU_C2 {
+         klabel "APU_C2 [GenericProcessingModule, HardwareModule, DigitalModule, InstrumentedProcessingModule]"
+         kport PU_to_MemorySwitch {
+            klabel "PU_to_MemorySwitch"
+         }
+         kedge (  -> v_MPSoC_v_APU_C2_Scheduler)
+         kedge ( :PU_to_MemorySwitch -> v_MPSoC_v_OCM_Switch:MemorySwitch_to_PU)
+         kedge ( :PU_to_MemorySwitch -> v_MPSoC_v_PS_DDR4_Switch:MemorySwitch_to_PU)
+      }
+      knode v_MPSoC_v_APU_C0 {
+         klabel "APU_C0 [GenericProcessingModule, HardwareModule, DigitalModule, InstrumentedProcessingModule]"
+         kport PU_to_MemorySwitch {
+            klabel "PU_to_MemorySwitch"
+         }
+         kedge ( :PU_to_MemorySwitch -> v_MPSoC_v_OCM_Switch:MemorySwitch_to_PU)
+         kedge ( :PU_to_MemorySwitch -> v_MPSoC_v_PS_DDR4_Switch:MemorySwitch_to_PU)
+         kedge (  -> v_MPSoC_v_APU_C0_Scheduler)
       }
    }
 }

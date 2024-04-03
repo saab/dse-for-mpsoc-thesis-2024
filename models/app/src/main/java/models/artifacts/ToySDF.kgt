@@ -3,7 +3,7 @@ knode forsyde {
    knode v_Application {
       klabel "Application [Structure, HardwareModule]"
       knode v_Application_v_Channel_A_B {
-         klabel "Channel_A_B [SDFChannel, MoCEntity]"
+         klabel "Channel_A_B [MoCEntity, SDFChannel]"
          kport producer {
             klabel "producer"
          }
@@ -13,13 +13,13 @@ knode forsyde {
          kedge ( :producer -> v_Application_v_Actor_B:s1)
       }
       knode v_Application_v_Actor_B {
-         klabel "Actor_B [BehaviourEntity, SDFActor, MoCEntity, InstrumentedBehaviour]"
+         klabel "Actor_B [MoCEntity, InstrumentedBehaviour, SDFActor, BehaviourEntity]"
          kport s1 {
             klabel "s1"
          }
       }
-      knode v_Application_v_Actor_space_A {
-         klabel "Actor A [BehaviourEntity, SDFActor, MoCEntity, InstrumentedBehaviour]"
+      knode v_Application_v_Actor_A {
+         klabel "Actor_A [MoCEntity, InstrumentedBehaviour, SDFActor, BehaviourEntity]"
          kport s1 {
             klabel "s1"
          }

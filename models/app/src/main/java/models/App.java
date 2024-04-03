@@ -64,7 +64,7 @@ public class App {
         ModelTargetType Application = ModelTargetType.ToySDF;
 
         if (args.length < 1) {
-            System.out.println();
+            System.out.println("No action specified. " + USAGE);
             return;
         }
 
