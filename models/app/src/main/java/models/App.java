@@ -86,15 +86,14 @@ public class App {
         var graphs = FPGATransformer.Transform(gPlatform, gApplication);
         String fileDir = Printer.GetFileDir(platformPath); // same for app
         String platformFileName = Printer.GetFileName(platformPath);
+        platformPath = fileDir + "/" + platformFileName + 
+                        "_Transformed" + Printer.FIODL_EXT;
+        Printer.Print(graphs.get("platform"), platformPath);
+        
         String applicationFileName = Printer.GetFileName(applicationPath);
-        Printer.Print(
-            graphs.get("platform"), 
-            fileDir + "/" + platformFileName + "_Transformed" + Printer.FIODL_EXT
-        );
-        Printer.Print(
-            graphs.get("application"),
-            fileDir + "/" + applicationFileName + "_Transformed" + Printer.FIODL_EXT
-        );
+        applicationPath = fileDir + "/" + applicationFileName + 
+                            "_Transformed" + Printer.FIODL_EXT;
+        Printer.Print(graphs.get("application"), applicationPath);
     }
 
     private static void ConvertFiodlToKGT(String path) throws Exception {
