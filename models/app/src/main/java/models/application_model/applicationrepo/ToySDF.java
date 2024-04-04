@@ -11,6 +11,8 @@ import models.utils.Instructions;
 
 import java.util.Map;
 
+import org.stringtemplate.v4.compiler.Bytecode.Instruction;
+
 
 public class ToySDF {
 
@@ -33,6 +35,9 @@ public class ToySDF {
 		instrumentedActorA.computationalRequirements(Map.of(
 			Instructions.SW_INSTRUCTIONS, Map.of(
 				Instructions.FLOP, 1000L
+			),
+			Instructions.HW_INSTRUCTIONS, Map.of(
+				Instructions.INT_ADD, 1000L
 			)
 		));
 		instrumentedActorA.maxSizeInBits(Map.of("default", 32L));

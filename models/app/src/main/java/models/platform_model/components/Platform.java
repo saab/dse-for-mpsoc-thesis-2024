@@ -2,14 +2,17 @@
 package models.platform_model.components;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import forsyde.io.core.SystemGraph;
 import forsyde.io.core.VertexViewer;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy.*;
+import forsyde.io.lib.hierarchy.platform.hardware.StructureViewer;
 import forsyde.io.lib.hierarchy.platform.hardware.GenericMemoryModuleViewer;
-import forsyde.io.lib.hierarchy.platform.hardware.InstrumentedProcessingModuleViewer;
 // import forsyde.io.lib.hierarchy.platform.hardware.LogicProgrammableModuleViewer;
+import forsyde.io.lib.hierarchy.platform.hardware.InstrumentedProcessingModuleViewer;
 import forsyde.io.lib.hierarchy.visualization.GreyBoxViewer;
+
 import models.utils.Units;
 
 
@@ -30,9 +33,54 @@ public class Platform {
         this.sGraph = sGraph;
     }
 
+    /**
+     * Create a platform from an existing graph.
+     * @param g The graph to use as the platform.
+     */
+    public Platform(String name, SystemGraph g) {
+        this.sGraph = g;
+        this.platformGreyBox = g.vertexSet()
+            .stream()
+            .flatMap(v -> GreyBoxViewer.tryView(g, v).stream())
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException(
+                "No GreyBox found in the given graph."
+            ));
+        this.viewers.putAll(g.vertexSet()
+            .stream()
+            .flatMap(v -> InstrumentedProcessingModule.tryView(g, v).stream())
+            .collect(
+                Collectors.toMap(v -> v.getIdentifier(), v -> v)
+            )
+        );
+        this.viewers.putAll(g.vertexSet()
+            .stream()
+            .flatMap(v -> GenericMemoryModule.tryView(g, v).stream())
+            .collect(
+                Collectors.toMap(v -> v.getIdentifier(), v -> v)
+            )
+        );
+        this.viewers.putAll(g.vertexSet()
+            .stream()
+            .flatMap(v -> InstrumentedCommunicationModule.tryView(g, v).stream())
+            .collect(
+                Collectors.toMap(v -> v.getIdentifier(), v -> v)
+            )
+        );
+        this.viewers.putAll(g.vertexSet()
+            .stream()
+            .flatMap(v -> Structure.tryView(g, v).stream())
+            .collect(
+                Collectors.toMap(v -> v.getIdentifier(), v -> v)
+            )
+        );
+    }
+
+
     public SystemGraph GetGraph() {
         return this.sGraph;
     }
+
 
     /**
      * Connect two components bidirectionally with explicit port names.
@@ -157,10 +205,12 @@ public class Platform {
      * @param frequency The operating frequency of the CPU.
      * @param modalInstructions Available CPU instructions and their costs.
      */
-    public void AddCPU(String cpuName, int cores, long frequency,
+    public void AddCPU(String name, int cores, long frequency,
                         Map<String, Map<String, Double>> modalInstructions) {
         for (int i = 0; i < cores; i++) {
-            String coreName = cpuName + "_C" + i;
+            String coreName;
+            if (cores > 1) coreName = name + "_C" + i;
+            else coreName = name;
             var core = InstrumentedProcessingModule.enforce(
                 sGraph, sGraph.newVertex(coreName)
             );
@@ -176,12 +226,15 @@ public class Platform {
             this.platformGreyBox.addContained(Visualizable.enforce(tdmApu));
             tdmApu.addManaged(core);
             this.CreateEdge(core, tdmApu);
-
         }
     }
 
-    public void AddFPGA() {
+    public void AddFPGA(String name, int availableLogicBlocks) {
         // LogicProgrammableModuleViewer fpga = LogicProgrammableModule.enforce(
-        //         sGraph, sGraph.newVertex("MPSoC_PS_FPGA"));
+        //         sGraph, sGraph.newVertex(name));
+        // this.platformGreyBox.addContained(Visualizable.enforce(fpga));
+        // fpga.availableLogicArea(availableLogicArea);
+        StructureViewer s = Structure.enforce(sGraph, sGraph.newVertex(name));
+        this.platformGreyBox.addContained(Visualizable.enforce(s));
     }
 }

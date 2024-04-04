@@ -11,27 +11,31 @@ import models.utils.Instructions;
 
 
 public class PlatformHandler {
+    final static String PLATFORM_NAME = "MPSoC";
 
-    public static SystemGraph MPSoCGraph() throws Exception {
-        final String PLATFORM_NAME = "MPSoC";
-        final String RPU_NAME = "RPU";
-        final String RPU_SWITCH_NAME = "RPU_SWITCH";
-        final int RPU_CORES = 2;
-        final String CCI_SWITCH_NAME = "CCI_SWITCH";
-        final String FPD_SWITCH_NAME = "FPD_SWITCH";
-        final String LPD_SWITCH_NAME = "LPD_SWITCH";
-        final String PL_DDR4_NAME = "PL_DDR4";
-        final String PL_SWITCH_NAME = "PL_SWITCH";
-        final String APU_NAME = "APU";
-        final int APU_CORES = 4;
-        final String OCM_NAME = "OCM";
-        final String OCM_SWITCH_NAME = "OCM_SWITCH";
-        final String PS_DDR4_NAME = "PS_DDR4";
-        final String PS_DDR4_SWITCH_NAME = "PS_DDR4_SWITCH";
-        final String TCM_NAME = "TCM_RPU";
+    final static String RPU_NAME = "RPU";
+    final static String RPU_SWITCH_NAME = "RPU_SWITCH";
+    final static int RPU_CORES = 2;
+    final static String APU_NAME = "APU";
+    final static int APU_CORES = 4;
+    final static String FPGA_NAME = "FPGA";
+    final static String FPGA_SWITCH_NAME = "FPGA_SWITCH";
+    
+    final static String CCI_SWITCH_NAME = "CCI_SWITCH";
+    final static String FPD_SWITCH_NAME = "FPD_SWITCH";
+    final static String LPD_SWITCH_NAME = "LPD_SWITCH";
+    
+    final static String PL_DDR4_NAME = "PL_DDR4";
+    final static String PL_SWITCH_NAME = "PL_SWITCH";
+    final static String PS_DDR4_NAME = "PS_DDR4";
+    final static String PS_DDR4_SWITCH_NAME = "PS_DDR4_SWITCH";
+    final static String OCM_NAME = "OCM";
+    final static String OCM_SWITCH_NAME = "OCM_SWITCH";
+    final static String TCM_NAME = "TCM_RPU";
 
+    public static SystemGraph MPSoCGraph() {
         Platform platform = new Platform(PLATFORM_NAME);
-        
+
         // On-chip Memory
         platform.AddMemory(
             OCM_NAME,
@@ -96,11 +100,13 @@ public class PlatformHandler {
         //     platform.Connect(rpuName, tcmSwitchName);
         // }
 
+        platform.AddFPGA(FPGA_NAME, 600000);
+
         // Cache Coherent Interconnect (Switch)
         platform.AddSwitch(CCI_SWITCH_NAME, 600 * Units.MHz);
         platform.Connect(APU_NAME, CCI_SWITCH_NAME);
         platform.Connect(PS_DDR4_SWITCH_NAME, CCI_SWITCH_NAME);
-        // platform.Connect(FPGA_NAME, CCI_SWITCH_NAME);
+        // platform.Connect(FPGA_SWITCH_NAME, CCI_SWITCH_NAME);
 
         // Full Power Domain Switch
         platform.AddSwitch(FPD_SWITCH_NAME, 600 * Units.MHz);
@@ -123,7 +129,7 @@ public class PlatformHandler {
         platform.AddSwitch(PL_SWITCH_NAME, 600 * Units.MHz);
         platform.Connect(PL_DDR4_NAME, PL_SWITCH_NAME);
         platform.Connect(FPD_SWITCH_NAME, PL_SWITCH_NAME);
-        // platform.Connect(FPGA_NAME, PL_SWITCH_NAME);
+        // platform.Connect(FPGA_SWITCH_NAME, PL_SWITCH_NAME);
 
         return platform.GetGraph();
     }
