@@ -3,11 +3,6 @@ package models;
 
 import forsyde.io.core.SystemGraph;
 
-import org.antlr.v4.runtime.misc.Pair;
-
-import forsyde.io.core.ModelHandler;
-import forsyde.io.lib.hierarchy.ForSyDeHierarchy;
-import forsyde.io.visual.kgt.drivers.KGTDriver;
 import models.application_model.*;
 import models.platform_model.*;
 import models.utils.FPGATransformer;
