@@ -28,13 +28,43 @@ public class FPGATransformer {
         return fpgaCount > 0;
     }
 
+    /**
+     * Transforms the application and platform graphs to accomodate for actors
+     * (InstrumentedBehavior view) that can be implemented in hardware. If an
+     * actor has defined hardware computational requirements, a new CPU is added:
+     * <pre>{@code
+     * "computationalRequirements": { // "Actor_A"
+     *     "HW_Instr": {
+     *         "Add": 1000_l
+     *     },
+     *     ...
+     * }
+     * }</pre>
+     * The actor's hardware requirements are derived and a new Processing Module
+     * is added to the platform. The actor's hardware requirements are then 
+     * updated to reflect the new Processing Module's instructions which results
+     * in an exclusively available Processing Module for the actor.  
+     * for the actor.
+     * <pre>{@code
+     * "modalInstructions": { // "HW_Impl_Actor_A" (Processing Module)
+     *     "HW_Instr_Actor_A": {
+     *         "Add": 1.0
+     *     }
+     * }
+     * "computationalRequirements": { // "Actor_A"
+     *     "HW_Instr_Actor_A": {
+     *         "Add": 1000_l
+     *     },
+     *     ...
+     * }
+     * }</pre>
+     * @param platformGraph The platform graph to transform.
+     * @param applicationGraph The application graph to transform.
+     * @return A map containing transformed input graphs.
+     */
     public static Map<String, SystemGraph> Transform(
         SystemGraph platformGraph, SystemGraph applicationGraph
     ) {
-        // List<SDFActorViewer> actors = g.vertexSet()
-        //     .stream()
-        //     .flatMap(v -> SDFActorViewer.tryView(g, v).stream())
-        //     .collect(Collectors.toList());
         var actorRequirements = applicationGraph.vertexSet()
             .stream()
             .flatMap(v -> 
@@ -52,7 +82,7 @@ public class FPGATransformer {
             String actorName = r.getViewedVertex().getIdentifier();
             var instrs = r.computationalRequirements();
             var hwInstrsName = Instructions.HW_INSTRUCTIONS + "_" + actorName;
-            
+            System.out.println(instrs);
             // extract actor's HW requirements and create instructions for them
             var hwPuInstrs = instrs
                 .get(Instructions.HW_INSTRUCTIONS)
@@ -61,7 +91,9 @@ public class FPGATransformer {
                 .collect(Collectors.toMap(
                     instr -> instr, instr -> 1.0 // default cycle req. of 1
                 ));
-
+            System.out.println(Map.of(
+                hwInstrsName, hwPuInstrs
+            ));
             // update key for actor's hw requirements
             instrs.put(
                 hwInstrsName,

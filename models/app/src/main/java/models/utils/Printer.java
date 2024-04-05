@@ -35,7 +35,7 @@ public class Printer {
 
         if (extension.equals(FIODL_EXT)) {
             System.out.println(
-                "Design model of '" + fileName + "' written to '" + outPath
+                "Design model '" + fileName + "' written to '" + outPath
             );
         } else if (extension.equals(KGT_EXT)) {
             System.out.println(

@@ -81,8 +81,8 @@ public class PlatformHandler {
         );
         platform.AddSwitch(RPU_SWITCH_NAME, 600 * Units.MHz);
         platform.Connect(RPU_NAME, RPU_SWITCH_NAME);
-        platform.Connect(RPU_SWITCH_NAME, OCM_SWITCH_NAME);
-        platform.Connect(RPU_SWITCH_NAME, PS_DDR4_SWITCH_NAME);
+        platform.Connect(OCM_SWITCH_NAME, RPU_SWITCH_NAME);
+        platform.Connect(PS_DDR4_SWITCH_NAME, RPU_SWITCH_NAME);
 
         // Real-time Processor Unit Tightly Coupled Memory
         //! UNSURE WHY THIS WON'T WORK
@@ -100,7 +100,7 @@ public class PlatformHandler {
         //     platform.Connect(rpuName, tcmSwitchName);
         // }
 
-        platform.AddFPGA(FPGA_NAME, 600000);
+        // platform.AddFPGA(FPGA_NAME, 600000);
 
         // Cache Coherent Interconnect (Switch)
         platform.AddSwitch(CCI_SWITCH_NAME, 600 * Units.MHz);

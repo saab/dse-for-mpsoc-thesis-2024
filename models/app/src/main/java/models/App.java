@@ -9,6 +9,9 @@ import models.utils.FPGATransformer;
 import models.utils.Paths;
 import models.utils.Printer;
 
+import java.util.Map;
+import java.util.HashMap;
+
 public class App {
 
     private enum ModelTargetType {
@@ -20,11 +23,14 @@ public class App {
     //TODO: extend to N platforms and applications (fpga_transform)
     private static String USAGE = """
         Usage: gradle run --args=\"[
-            build |
+            build <platformType> <applicationType> |
             to_kgt <path> |
             fpga_transform <pathPlatform> <pathApplication> |
-            parse_results <relativeMainPath/fullPath>
-        ]\"""";
+            parse_dse_results <path>
+        ]\"
+        \t<platformType>: 'MPSoC', 
+        \t<applicationType>: 'ToySDF'
+    """;
 
     public static void main(String[] args) throws Exception {
         if (args.length < 1) {
@@ -34,9 +40,33 @@ public class App {
 
         String action = args[0];
         if (action.equals("build")) {
-            //? set via CLI args?
-            ModelTargetType Platform = ModelTargetType.MPSoC;
-            ModelTargetType Application = ModelTargetType.ToySDF;
+            if (args.length < 3) {
+                System.out.println(USAGE);
+                System.exit(1);
+            }
+            ModelTargetType Platform;
+            switch(args[1]) {
+                case "MPSoC":
+                    Platform = ModelTargetType.MPSoC;
+                    break;
+                case "Zynq":
+                    Platform = ModelTargetType.Zynq;
+                    break;
+                default:
+                    throw new IllegalArgumentException(
+                        "Unknown platform: " + args[1]
+                    );
+            }
+            ModelTargetType Application;
+            switch(args[2]) {
+                case "ToySDF":
+                    Application = ModelTargetType.ToySDF;
+                    break;
+                default:
+                    throw new IllegalArgumentException(
+                        "Unknown application: " + args[2]
+                    );
+            };
             CreateBuildSpecification(Platform, Application);
         } else {
             if (args.length < 2) {
@@ -71,23 +101,28 @@ public class App {
         SystemGraph gPlatform = Printer.Read(platformPath);
         SystemGraph gApplication = Printer.Read(applicationPath);
         boolean can_transform = FPGATransformer.ShouldTransform(gPlatform);
-        if (!can_transform) {
+        
+        Map<String, SystemGraph> graphs = Map.of(
+            "platform", gPlatform, 
+            "application", gApplication
+        );
+        if (can_transform) {
+            graphs = FPGATransformer.Transform(gPlatform, gApplication);
+        } else {
             System.out.println(
                 "No FPGA found, no platform transformation needed."
             );
-            System.exit(0);
         }
 
-        var graphs = FPGATransformer.Transform(gPlatform, gApplication);
         String fileDir = Printer.GetFileDir(platformPath); // same for app
         String platformFileName = Printer.GetFileName(platformPath);
         platformPath = fileDir + "/" + platformFileName + 
-                        "_Transformed" + Printer.FIODL_EXT;
+                        "_Intermediate" + Printer.FIODL_EXT;
         Printer.Print(graphs.get("platform"), platformPath);
         
         String applicationFileName = Printer.GetFileName(applicationPath);
         applicationPath = fileDir + "/" + applicationFileName + 
-                            "_Transformed" + Printer.FIODL_EXT;
+                            "_Intermediate" + Printer.FIODL_EXT;
         Printer.Print(graphs.get("application"), applicationPath);
     }
 
