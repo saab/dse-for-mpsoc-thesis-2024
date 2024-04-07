@@ -199,7 +199,8 @@ public class Platform {
                         Map<String, Map<String, Double>> modalInstructions) {
         for (int i = 0; i < cores; i++) {
             String coreName;
-            if (cores > 1) coreName = name + "_C" + i;
+            if (cores > 1) 
+                coreName = name + "_C" + i;
             else coreName = name;
             var core = InstrumentedProcessingModule.enforce(
                 sGraph, sGraph.newVertex(coreName)
@@ -219,13 +220,12 @@ public class Platform {
         }
     }
 
-    public void AddFPGA(String name, int availableLogicBlocks) {
-        // LogicProgrammableModuleViewer fpga = LogicProgrammableModule.enforce(
-        //         sGraph, sGraph.newVertex(name));
-        // this.platformGreyBox.addContained(Visualizable.enforce(fpga));
-        // fpga.availableLogicArea(availableLogicArea);
-        StructureViewer s = Structure.enforce(sGraph, sGraph.newVertex(name));
-        this.platformGreyBox.addContained(Visualizable.enforce(s));
-        this.viewers.put(name, s);
+    public void AddFPGA(String name, int availableLogicArea) {
+        var fpga = LogicProgrammableModule.enforce(
+            sGraph, sGraph.newVertex(name)
+        );
+        this.platformGreyBox.addContained(Visualizable.enforce(fpga));
+        this.viewers.put(name, fpga);
+        fpga.availableLogicArea(availableLogicArea);
     }
 }

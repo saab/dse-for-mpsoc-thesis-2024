@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 public class FPGATransformer {
     /**
      * Check if the graph contains FPGAs, i.e. instances of 
-     * `ProgrammableLogicStructure`.
+     * `LogicProgrammableModule`.
      * @param g The graph to check.
      * @return True if the graph contains an FPGA, false otherwise.
      */
@@ -20,7 +20,7 @@ public class FPGATransformer {
         long fpgaCount = g.vertexSet()
             .stream()
             .flatMap(v -> 
-                Structure.tryView(g, v).stream()
+                LogicProgrammableModule.tryView(g, v).stream()
             ).filter(v -> 
                 v.getIdentifier().equals("FPGA")
             ).count();
@@ -94,7 +94,8 @@ public class FPGATransformer {
             System.out.println(Map.of(
                 hwInstrsName, hwPuInstrs
             ));
-            // update key for actor's hw requirements
+
+            // update key name for actor's hw requirements
             instrs.put(
                 hwInstrsName,
                 instrs.get(Instructions.HW_INSTRUCTIONS)
@@ -104,6 +105,7 @@ public class FPGATransformer {
             
             String hwImplName = "HW_Impl_" + actorName;
             int cores = 1;
+            // TODO: add as many cores as available FPGAs, currently only 1
             platform.AddCPU(
                 hwImplName, 
                 cores, 

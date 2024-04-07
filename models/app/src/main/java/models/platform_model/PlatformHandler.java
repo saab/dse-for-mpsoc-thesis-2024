@@ -100,7 +100,7 @@ public class PlatformHandler {
         //     platform.Connect(rpuName, tcmSwitchName);
         // }
 
-        // platform.AddFPGA(FPGA_NAME, 600000);
+        platform.AddFPGA(FPGA_NAME, 600000);
 
         // Cache Coherent Interconnect (Switch)
         platform.AddSwitch(CCI_SWITCH_NAME, 600 * Units.MHz);
@@ -131,6 +131,7 @@ public class PlatformHandler {
         platform.Connect(FPD_SWITCH_NAME, PL_SWITCH_NAME);
         // platform.Connect(FPGA_SWITCH_NAME, PL_SWITCH_NAME);
 
+        System.out.println(platform.viewers.size() + " components added to platform");
         return platform.GetGraph();
     }
 
