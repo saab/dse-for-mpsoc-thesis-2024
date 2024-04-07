@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import forsyde.io.core.SystemGraph;
 import forsyde.io.core.VertexViewer;
+import forsyde.io.lib.hierarchy.ForSyDeHierarchy;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy.*;
 import forsyde.io.lib.hierarchy.platform.hardware.StructureViewer;
 import forsyde.io.lib.hierarchy.platform.hardware.GenericMemoryModuleViewer;
@@ -19,7 +20,7 @@ import models.utils.Units;
 public class Platform {
     private SystemGraph sGraph;
     private GreyBoxViewer platformGreyBox;
-    private Map<String, VertexViewer> viewers = new HashMap<>();
+    public Map<String, VertexViewer> viewers = new HashMap<>();
 
     public Platform(String name) {
         SystemGraph sGraph = new SystemGraph();
@@ -34,8 +35,8 @@ public class Platform {
     }
 
     /**
-     * Create a platform from an existing graph.
-     * @param g The graph to use as the platform.
+     * Create a platform from an existing graph, by extraction of the viewers.
+     * @param g The graph to use as platform.
      */
     public Platform(String name, SystemGraph g) {
         this.sGraph = g;
@@ -46,34 +47,23 @@ public class Platform {
             .orElseThrow(() -> new IllegalArgumentException(
                 "No GreyBox found in the given graph."
             ));
-        this.viewers.putAll(g.vertexSet()
-            .stream()
-            .flatMap(v -> InstrumentedProcessingModule.tryView(g, v).stream())
-            .collect(
-                Collectors.toMap(v -> v.getIdentifier(), v -> v)
-            )
-        );
-        this.viewers.putAll(g.vertexSet()
-            .stream()
-            .flatMap(v -> GenericMemoryModule.tryView(g, v).stream())
-            .collect(
-                Collectors.toMap(v -> v.getIdentifier(), v -> v)
-            )
-        );
-        this.viewers.putAll(g.vertexSet()
-            .stream()
-            .flatMap(v -> InstrumentedCommunicationModule.tryView(g, v).stream())
-            .collect(
-                Collectors.toMap(v -> v.getIdentifier(), v -> v)
-            )
-        );
-        this.viewers.putAll(g.vertexSet()
-            .stream()
-            .flatMap(v -> Structure.tryView(g, v).stream())
-            .collect(
-                Collectors.toMap(v -> v.getIdentifier(), v -> v)
-            )
-        );
+            
+        for (var v : g.vertexSet()) {
+            InstrumentedProcessingModule.tryView(g, v).ifPresent(view -> 
+                viewers.put(v.getIdentifier(), view)
+            );
+            GenericMemoryModule.tryView(g, v).ifPresent(view -> 
+                viewers.put(v.getIdentifier(), view)
+            );
+            InstrumentedCommunicationModule.tryView(g, v).ifPresent(view -> 
+                viewers.put(v.getIdentifier(), view)
+            );
+            Structure.tryView(g, v).ifPresent(view -> 
+                viewers.put(v.getIdentifier(), view)
+            );
+        }
+
+        // System.out.println(viewers.size() + " viewers found.");
     }
 
 
@@ -236,5 +226,6 @@ public class Platform {
         // fpga.availableLogicArea(availableLogicArea);
         StructureViewer s = Structure.enforce(sGraph, sGraph.newVertex(name));
         this.platformGreyBox.addContained(Visualizable.enforce(s));
+        this.viewers.put(name, s);
     }
 }
