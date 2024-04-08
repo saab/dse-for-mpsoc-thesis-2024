@@ -127,7 +127,8 @@ public class Platform {
 
         if (srcNames.isEmpty()) {
             throw new IllegalArgumentException(
-                "No component(s) found for name(space)" + srcNamespace + "."
+                "No component(s) found for name(space) " + srcNamespace +
+                " when trying to add connections to " + dstName + "."
             );
         }
             

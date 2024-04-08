@@ -20,6 +20,7 @@ public class PlatformHandler {
     final static int APU_CORES = 4;
     final static String FPGA_NAME = "FPGA";
     final static String FPGA_SWITCH_NAME = "FPGA_SWITCH";
+    final static String FPGA_BRAM_NAME = "FPGA_BRAM";
     
     final static String CCI_SWITCH_NAME = "CCI_SWITCH";
     final static String FPD_SWITCH_NAME = "FPD_SWITCH";
@@ -99,21 +100,19 @@ public class PlatformHandler {
         //     platform.Connect(tcmName, tcmSwitchName);
         //     platform.Connect(rpuName, tcmSwitchName);
         // }
-
-        platform.AddFPGA(FPGA_NAME, 600000);
-
+        
         // Cache Coherent Interconnect (Switch)
         platform.AddSwitch(CCI_SWITCH_NAME, 600 * Units.MHz);
         platform.Connect(APU_NAME, CCI_SWITCH_NAME);
         platform.Connect(PS_DDR4_SWITCH_NAME, CCI_SWITCH_NAME);
-        // platform.Connect(FPGA_SWITCH_NAME, CCI_SWITCH_NAME);
-
+        
+        
         // Full Power Domain Switch
         platform.AddSwitch(FPD_SWITCH_NAME, 600 * Units.MHz);
         platform.Connect(CCI_SWITCH_NAME, FPD_SWITCH_NAME);
         platform.Connect(OCM_SWITCH_NAME, FPD_SWITCH_NAME);
-
-        // Low Power Domain Switch
+        
+        // Low Power Domain Switch  
         platform.AddSwitch(LPD_SWITCH_NAME, 600 * Units.MHz);
         platform.Connect(FPD_SWITCH_NAME, LPD_SWITCH_NAME);
         platform.Connect(RPU_SWITCH_NAME, LPD_SWITCH_NAME);
@@ -129,9 +128,23 @@ public class PlatformHandler {
         platform.AddSwitch(PL_SWITCH_NAME, 600 * Units.MHz);
         platform.Connect(PL_DDR4_NAME, PL_SWITCH_NAME);
         platform.Connect(FPD_SWITCH_NAME, PL_SWITCH_NAME);
-        // platform.Connect(FPGA_SWITCH_NAME, PL_SWITCH_NAME);
+        platform.Connect(CCI_SWITCH_NAME, PL_SWITCH_NAME);
+        platform.Connect(LPD_SWITCH_NAME, PL_SWITCH_NAME);
+        
+        // FPGA, FPGA Switch and BRAM memory 
+        //! (PL switch connects the FPGA to the rest)
+        platform.AddFPGA(FPGA_NAME, 600000 * Units.CLB);
+        platform.AddSwitch(FPGA_SWITCH_NAME, 600 * Units.MHz);
+        platform.AddMemory(
+            FPGA_BRAM_NAME, 600 * Units.MHz, 4 * Units.MB * Units.BYTES_TO_BITS
+        );
+        platform.Connect(FPGA_NAME, FPGA_SWITCH_NAME);
+        platform.Connect(FPGA_BRAM_NAME, FPGA_SWITCH_NAME);
+        platform.Connect(PL_SWITCH_NAME, FPGA_SWITCH_NAME);
 
-        System.out.println(platform.viewers.size() + " components added to platform");
+
+        int numComponents = platform.viewers.size();
+        System.out.println(numComponents + " components added to platform");
         return platform.GetGraph();
     }
 
