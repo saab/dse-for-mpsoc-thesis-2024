@@ -2,15 +2,11 @@
 package models.platform_model.components;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import forsyde.io.core.SystemGraph;
 import forsyde.io.core.VertexViewer;
-import forsyde.io.lib.hierarchy.ForSyDeHierarchy;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy.*;
-import forsyde.io.lib.hierarchy.platform.hardware.StructureViewer;
 import forsyde.io.lib.hierarchy.platform.hardware.GenericMemoryModuleViewer;
-// import forsyde.io.lib.hierarchy.platform.hardware.LogicProgrammableModuleViewer;
 import forsyde.io.lib.hierarchy.platform.hardware.InstrumentedProcessingModuleViewer;
 import forsyde.io.lib.hierarchy.visualization.GreyBoxViewer;
 
@@ -21,6 +17,9 @@ public class Platform {
     private SystemGraph sGraph;
     private GreyBoxViewer platformGreyBox;
     public Map<String, VertexViewer> viewers = new HashMap<>();
+    public static enum SwitchType {
+        ROUTER, MEM_INTERFACE
+    }
 
     public Platform(String name) {
         SystemGraph sGraph = new SystemGraph();
@@ -45,7 +44,7 @@ public class Platform {
             .flatMap(v -> GreyBoxViewer.tryView(g, v).stream())
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException(
-                "No GreyBox found in the given graph."
+                "No GreyBox, required for visualization, found in the given graph."
             ));
             
         for (var v : g.vertexSet()) {
@@ -107,49 +106,104 @@ public class Platform {
     }
     
     /**
-     * Connect all processing units from the given namespace to a memory module.
-     * In reality the processing units are connected to the memory's switch
-     * which is necessary for analysis, 
-     * @param srcNamespace The namespace or exact name of the source components.
+     * Connect all components from the given namespace to another component.
+     * @param srcCompNamespace The namespace or exact name of the source components.
      * (must exist).
-     * @param memory The exact name of the destination component (must exist).
+     * @param dstCompName The exact name of the destination component (must exist).
      */
-    public void Connect(String srcNamespace, String dstName) {
-        if (!this.viewers.keySet().contains(dstName)) {
+    public void Connect(String srcCompNamespace, String dstCompName) {
+        if (!this.viewers.keySet().contains(dstCompName)) {
             throw new IllegalArgumentException(
-                "No component named " + dstName + " found."
+                "No component named " + dstCompName + " found."
             );
         }
         
-        List<String> srcNames = this.viewers.keySet().stream()
-            .filter((key) -> key.contains(srcNamespace))
+        List<String> srcCompNames = this.viewers.keySet().stream()
+            .filter((key) -> key.contains(srcCompNamespace))
             .toList();
 
-        if (srcNames.isEmpty()) {
+        if (srcCompNames.isEmpty()) {
             throw new IllegalArgumentException(
-                "No component(s) found for name(space) " + srcNamespace +
-                " when trying to add connections to " + dstName + "."
+                "No component(s) found for name(space) " + srcCompNamespace +
+                " when trying to add connections to " + dstCompName + "."
             );
         }
             
-        var dst = this.viewers.get(dstName);
-        srcNames.stream()
-        .map((srcName) -> this.viewers.get(srcName))
-        .forEach((src) -> {
-            String dstPort = dstName + "_to_" + src.getIdentifier();
-            String srcPort = src.getIdentifier() + "_to_" + dstName;
+        var dst = this.viewers.get(dstCompName);
+        srcCompNames.stream()
+        .map((srcCompName) -> this.viewers.get(srcCompName))
+        .forEach((srcComp) -> {
+            String dstPort = dstCompName + "_to_" + srcComp.getIdentifier();
+            String srcPort = srcComp.getIdentifier() + "_to_" + dstCompName;
             if ((dst instanceof GenericMemoryModuleViewer && 
-                src instanceof InstrumentedProcessingModuleViewer) ||
-                (src instanceof GenericMemoryModuleViewer &&
+                srcComp instanceof InstrumentedProcessingModuleViewer) ||
+                (srcComp instanceof GenericMemoryModuleViewer &&
                 dst instanceof InstrumentedProcessingModuleViewer)) {
                 throw new UnsupportedOperationException(
                     "Cannot directly connect processing modules and memory."
                 );
             }
             dst.addPorts(dstPort);
-            src.addPorts(srcPort);
-            this.CreateEdge(src, dst, srcPort, dstPort);
+            srcComp.addPorts(srcPort);
+            this.CreateEdge(srcComp, dst, srcPort, dstPort);
         });
+    }
+
+    /**
+     * Connect all components from the given namespace to another component with
+     * a switch in between. One switch is created for each source component to
+     * overcome the IDeSyDe assumption that it can route traffic between its
+     * components when, in reality, just being.
+     * @param srcCompNamespace
+     * @param dstCompName
+     * @param frequency
+     */
+    public void ConnectToMemory(
+        String srcCompNamespace, String memName, long frequency
+    ) {
+        if (!this.viewers.keySet().contains(memName)) {
+            throw new IllegalArgumentException(
+                "No memory named " + memName + " found."
+            );
+        }
+        
+        List<String> srcCompNames = this.viewers.keySet().stream()
+            .filter((key) -> key.contains(srcCompNamespace))
+            .toList();
+
+        if (srcCompNames.isEmpty()) {
+            throw new IllegalArgumentException(
+                "No component(s) found for name(space) " + srcCompNamespace +
+                " when trying to add connections to " + memName + "."
+            );
+        }
+
+        // add switch between each source component and the destination component
+        // to avoid the switch becoming a "router"
+        for (var srcCompName : srcCompNames) {
+            String switchName = memName + "_" + srcCompName + "_SWITCH";
+            if (this.viewers.keySet().contains(switchName)) {
+                throw new IllegalArgumentException(
+                    "Switch " + switchName + " already exists."
+                );
+            }
+            this.AddRouter(switchName, frequency);
+            var sw = this.viewers.get(switchName);
+            String swToSrc = switchName + "_to_" + srcCompName;
+            sw.addPorts(swToSrc);
+            String swToDst = switchName + "_to_" + memName;
+            sw.addPorts(swToDst);
+
+            var srcComp = this.viewers.get(srcCompName);
+            String srcToSw = srcCompName + "_to_" + switchName;
+            srcComp.addPorts(srcToSw);
+            var dstComp = this.viewers.get(memName);
+            String dstToSw = memName + "_to_" + switchName;
+            dstComp.addPorts(dstToSw);
+        
+            this.CreateEdge(sw, srcComp, swToSrc, srcToSw);
+            this.CreateEdge(sw, dstComp, swToDst, dstToSw);
+        }
     }
 
     /**
@@ -160,7 +214,7 @@ public class Platform {
      */
     public void AddMemory(String name, long frequency, long spaceInBits) {
         String memoryName = name;
-        GenericMemoryModuleViewer mem = GenericMemoryModule.enforce(
+        var mem = GenericMemoryModule.enforce(
             sGraph, sGraph.newVertex(memoryName)
         );
         this.viewers.put(memoryName, mem);
@@ -175,7 +229,7 @@ public class Platform {
      * @param name The identifier for the switch.
      * @param frequency The operating frequency of the switch.
      */
-    public void AddSwitch(String name, long frequency) {
+    public void AddRouter(String name, long frequency) {
         var sw = InstrumentedCommunicationModule.enforce(
             sGraph, sGraph.newVertex(name)
         );
@@ -185,22 +239,22 @@ public class Platform {
         sw.initialLatency(0L);
         sw.flitSizeInBits((long)1 * Units.BYTES_TO_BITS);
         sw.maxCyclesPerFlit(1);   // cycles to send 1 byte
-        sw.maxConcurrentFlits(1); // could match ports below with = 4
+        sw.maxConcurrentFlits(1); //! exactly match the number of connections?
     }
 
     /**
      * Add a CPU to the MPSoC as <cores> independent processing modules with 
      * 1-1 mapped runtimes.
      * @param name The identifier for the CPU.
-     * @param cores The number of CPU cores.
+     * @param numCores The number of CPU cores.
      * @param frequency The operating frequency of the CPU.
      * @param modalInstructions Available CPU instructions and their costs.
      */
-    public void AddCPU(String name, int cores, long frequency,
+    public void AddCPU(String name, int numCores, long frequency,
                         Map<String, Map<String, Double>> modalInstructions) {
-        for (int i = 0; i < cores; i++) {
+        for (int i = 0; i < numCores; i++) {
             String coreName;
-            if (cores > 1) 
+            if (numCores > 1) 
                 coreName = name + "_C" + i;
             else coreName = name;
             var core = InstrumentedProcessingModule.enforce(
