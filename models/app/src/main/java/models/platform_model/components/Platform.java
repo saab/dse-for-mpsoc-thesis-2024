@@ -15,18 +15,15 @@ import models.utils.Units;
 
 public class Platform {
     private SystemGraph sGraph;
-    private GreyBoxViewer platformGreyBox;
+    private GreyBoxViewer greyBox;
     public Map<String, VertexViewer> viewers = new HashMap<>();
 
     public Platform(String name) {
         SystemGraph sGraph = new SystemGraph();
 
-        var platform = Structure.enforce(
-            sGraph, sGraph.newVertex(name)
-        );
-        viewers.put(name, platform);
-        this.platformGreyBox = GreyBox.enforce(Visualizable.enforce(platform));
-        
+        var platform = Structure.enforce(sGraph, sGraph.newVertex(name));
+        this.viewers.put(name, platform);
+        this.greyBox = GreyBox.enforce(Visualizable.enforce(platform));
         this.sGraph = sGraph;
     }
 
@@ -36,7 +33,7 @@ public class Platform {
      */
     public Platform(String name, SystemGraph g) {
         this.sGraph = g;
-        this.platformGreyBox = g.vertexSet()
+        this.greyBox = g.vertexSet()
             .stream()
             .flatMap(v -> GreyBoxViewer.tryView(g, v).stream())
             .findFirst()
@@ -215,7 +212,7 @@ public class Platform {
             sGraph, sGraph.newVertex(memoryName)
         );
         this.viewers.put(memoryName, mem);
-        this.platformGreyBox.addContained(Visualizable.enforce(mem));
+        this.greyBox.addContained(Visualizable.enforce(mem));
 
         mem.operatingFrequencyInHertz(600 * Units.MHz);
         mem.spaceInBits(4 * Units.GB * Units.BYTES_TO_BITS);
@@ -231,7 +228,7 @@ public class Platform {
             sGraph, sGraph.newVertex(name)
         );
         this.viewers.put(name, sw);
-        this.platformGreyBox.addContained(Visualizable.enforce(sw));
+        this.greyBox.addContained(Visualizable.enforce(sw));
         sw.operatingFrequencyInHertz(frequency);
         sw.initialLatency(0L);
         sw.flitSizeInBits((long)1 * Units.BYTES_TO_BITS);
@@ -258,7 +255,7 @@ public class Platform {
                 sGraph, sGraph.newVertex(coreName)
             );
             this.viewers.put(coreName, core);
-            this.platformGreyBox.addContained(Visualizable.enforce(core));
+            this.greyBox.addContained(Visualizable.enforce(core));
             core.maximumComputationParallelism(1);
             core.operatingFrequencyInHertz(frequency);
             core.modalInstructionsPerCycle(modalInstructions);
@@ -266,7 +263,7 @@ public class Platform {
             var tdmApu = TimeDivisionMultiplexingRuntime.enforce(sGraph,
                 sGraph.newVertex(coreName + "_Scheduler")
             );
-            this.platformGreyBox.addContained(Visualizable.enforce(tdmApu));
+            this.greyBox.addContained(Visualizable.enforce(tdmApu));
             tdmApu.addManaged(core);
             this.CreateEdge(core, tdmApu);
         }
@@ -276,7 +273,7 @@ public class Platform {
         var fpga = LogicProgrammableModule.enforce(
             sGraph, sGraph.newVertex(name)
         );
-        this.platformGreyBox.addContained(Visualizable.enforce(fpga));
+        this.greyBox.addContained(Visualizable.enforce(fpga));
         this.viewers.put(name, fpga);
         fpga.availableLogicArea(availableLogicArea);
     }
