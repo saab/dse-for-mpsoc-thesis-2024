@@ -17,9 +17,6 @@ public class Platform {
     private SystemGraph sGraph;
     private GreyBoxViewer platformGreyBox;
     public Map<String, VertexViewer> viewers = new HashMap<>();
-    public static enum SwitchType {
-        ROUTER, MEM_INTERFACE
-    }
 
     public Platform(String name) {
         SystemGraph sGraph = new SystemGraph();

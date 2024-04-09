@@ -43,8 +43,6 @@ public class PlatformHandler {
             600 * Units.MHz,
             256 * Units.kB * Units.BYTES_TO_BITS
         );
-        // platform.AddSwitch(OCM_SWITCH_NAME, 600 * Units.MHz); //! OLD
-        // platform.Connect(OCM_NAME, OCM_SWITCH_NAME); //! OLD
 
         // Processing System DDR4 Memory
         platform.AddMemory(
@@ -52,8 +50,6 @@ public class PlatformHandler {
             600 * Units.MHz,
             4 * Units.GB * Units.BYTES_TO_BITS
         );
-        // platform.AddSwitch(PS_DDR4_SWITCH_NAME, 600 * Units.MHz); //! OLD
-        // platform.Connect(PS_DDR4_NAME, PS_DDR4_SWITCH_NAME); //! OLD
 
         // Programmable Logic DDR4 Memory
         platform.AddMemory(
@@ -61,8 +57,6 @@ public class PlatformHandler {
             600 * Units.MHz,
             4 * Units.GB * Units.BYTES_TO_BITS
         );
-        // platform.AddSwitch(PL_DDR4_SWITCH_NAME, 600 * Units.MHz); //! OLD
-        // platform.Connect(PL_DDR4_NAME, PL_DDR4_SWITCH_NAME); //! OLD
 
         // Processing System Application Processor Unit
         platform.AddCPU(
@@ -94,11 +88,9 @@ public class PlatformHandler {
         platform.ConnectToMemory(
             RPU_SWITCH_NAME, OCM_NAME, 600 * Units.MHz
         );
-        // platform.Connect(RPU_SWITCH_NAME, OCM_SWITCH_NAME); //! OLD
         platform.ConnectToMemory(
             RPU_SWITCH_NAME, PS_DDR4_NAME, 600 * Units.MHz
         );
-        // platform.Connect(RPU_SWITCH_NAME, PS_DDR4_SWITCH_NAME); //! OLD
 
         // Real-time Processor Unit Tightly Coupled Memory
         // ! UNSURE WHY THIS WON'T WORK
@@ -122,7 +114,6 @@ public class PlatformHandler {
         platform.ConnectToMemory(
             CCI_SWITCH_NAME, PS_DDR4_NAME, 600 * Units.MHz
         );
-        // platform.Connect(CCI_SWITCH_NAME, PS_DDR4_SWITCH_NAME); //! OLD
 
         // Full Power Domain Switch
         platform.AddRouter(FPD_SWITCH_NAME, 600 * Units.MHz);
@@ -130,7 +121,6 @@ public class PlatformHandler {
         platform.ConnectToMemory(
             FPD_SWITCH_NAME, OCM_NAME, 600 * Units.MHz
         );
-        // platform.Connect(FPD_SWITCH_NAME, OCM_SWITCH_NAME); //! OLD
 
         // Low Power Domain Switch
         platform.AddRouter(LPD_SWITCH_NAME, 600 * Units.MHz);
@@ -142,7 +132,6 @@ public class PlatformHandler {
         platform.ConnectToMemory(
             PL_SWITCH_NAME, PL_DDR4_NAME, 600 * Units.MHz
         );
-        // platform.Connect(PL_SWITCH_NAME, PL_DDR4_NAME); //! OLD
         platform.Connect(PL_SWITCH_NAME, FPD_SWITCH_NAME);
         platform.Connect(PL_SWITCH_NAME, LPD_SWITCH_NAME);
         platform.Connect(PL_SWITCH_NAME, CCI_SWITCH_NAME);
