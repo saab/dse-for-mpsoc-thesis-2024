@@ -71,7 +71,7 @@ public class FPGATransformer {
                 InstrumentedBehaviour.tryView(applicationGraph, v).stream()
             )
             .filter(v -> v.computationalRequirements().containsKey(
-                Instructions.HW_INSTRUCTIONS
+                Requirements.HW_INSTRUCTIONS
             ))
             .collect(Collectors.toList());
 
@@ -81,11 +81,11 @@ public class FPGATransformer {
         actorRequirements.forEach(r -> {
             String actorName = r.getViewedVertex().getIdentifier();
             var instrs = r.computationalRequirements();
-            var hwInstrsName = Instructions.HW_INSTRUCTIONS + "_" + actorName;
+            var hwInstrsName = Requirements.HW_INSTRUCTIONS + "_" + actorName;
             System.out.println(instrs);
             // extract actor's HW requirements and create instructions for them
             var hwPuInstrs = instrs
-                .get(Instructions.HW_INSTRUCTIONS)
+                .get(Requirements.HW_INSTRUCTIONS)
                 .keySet()
                 .stream()
                 .collect(Collectors.toMap(
@@ -98,9 +98,9 @@ public class FPGATransformer {
             // update key name for actor's hw requirements
             instrs.put(
                 hwInstrsName,
-                instrs.get(Instructions.HW_INSTRUCTIONS)
+                instrs.get(Requirements.HW_INSTRUCTIONS)
             );
-            instrs.remove(Instructions.HW_INSTRUCTIONS);
+            instrs.remove(Requirements.HW_INSTRUCTIONS);
             r.computationalRequirements(instrs);
             
             String hwImplName = "HW_Impl_" + actorName;

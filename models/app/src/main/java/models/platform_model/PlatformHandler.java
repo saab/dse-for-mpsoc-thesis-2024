@@ -7,7 +7,7 @@ import forsyde.io.core.SystemGraph;
 import models.platform_model.components.Platform;
 import models.platform_model.components.Zynq;
 import models.utils.Units;
-import models.utils.Instructions;
+import models.utils.Requirements;
 
 public class PlatformHandler {
     final static String PLATFORM_NAME = "MPSoC";
@@ -64,8 +64,8 @@ public class PlatformHandler {
             APU_CORES,
             (long) 1.5 * Units.GHz,
             Map.of(
-                Instructions.SW_INSTRUCTIONS, Map.of(
-                    Instructions.FLOP, 0.04
+                Requirements.SW_INSTRUCTIONS, Map.of(
+                    Requirements.FLOP, 0.04
                 )
             )
         );
@@ -76,8 +76,8 @@ public class PlatformHandler {
             RPU_CORES,
             (long) 6 * Units.MHz,
             Map.of(
-                Instructions.SW_INSTRUCTIONS, Map.of(
-                    Instructions.FLOP, 0.4
+                Requirements.SW_INSTRUCTIONS, Map.of(
+                    Requirements.FLOP, 0.4
                 )
             )
         );
