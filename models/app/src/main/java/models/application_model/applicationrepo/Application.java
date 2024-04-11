@@ -107,7 +107,7 @@ public class Application {
 	 */
 	public void InstrumentSoftware(
 		String actorName, Map<String, Long> instrs, long sizeInBits
-	) {
+	) { //TODO update the instrumentation
 		var actor = GetActor(actorName);
 		var sw = InstrumentedBehaviour.enforce(
 			sGraph, actor.getViewedVertex()
@@ -122,13 +122,13 @@ public class Application {
 	 * Add hardware instrumentation to the given actor.
 	 * @param actorName Name of the actor (must exist)
 	 * @param instrs Hardware instructions.
-	 * @param miscDeps Miscellaneous dependencies (area, etc.)
+	 * @param extraReqs Extra requirements, i.e. area etc.
 	 * @throws RuntimeException if the logic area is not specified
 	 */
 	public void InstrumentHardware(
-		String actorName, Map<String, Long> instrs, Map<String, Long> miscDeps
+		String actorName, Map<String, Long> instrs, Map<String, Long> extraReqs
 	) {
-		if (!miscDeps.containsKey(Requirements.LOGIC_AREA)) {
+		if (!extraReqs.containsKey(Requirements.LOGIC_AREA)) {
 			throw new RuntimeException("Logic area must be specified.");
 		}
 
@@ -139,32 +139,13 @@ public class Application {
 		hw.resourceRequirements(
 			Map.of(
 				Requirements.HW_INSTRUCTIONS, instrs,
-				Requirements.LOGIC_AREA, miscDeps
+				Requirements.EXTRA_REQUREMENTS, extraReqs
 			)
 		);
 	}
 
-	private void old(SDFActorViewer actorA, SDFActorViewer actorB, SDFChannelViewer ab_chan) {
-		var currCons = new LinkedHashMap<String, Integer>(actorA.consumption());
-		currCons.put("s_in", 2);
-		actorA.consumption(currCons);
-		actorA.addPorts("s_in");
-
-		// var currProd = new LinkedHashMap<String, Integer>(actorA.production());
-		// currProd.put("s1", 2);
-		// actorA.production(currProd);
-		// actorA.addPorts("s1");
-
-		actorB.consumption(Map.of("s1", 3));
-		actorB.production(Map.of("s_out", 1));
-		actorB.addPorts("s1", "s_out");
-
-		this.Connect(actorA, ab_chan, "s1", "consumer");
-		this.Connect(ab_chan, actorB, "producer", "s1");	
-	}
-
 	/**
-	 * Create an SDF channel between two actors.
+	 * Create a channel between two actors.
 	 * @param srcActorName Name of the first actor (must exist)
 	 * @param dstActorName Name of the second actor (must exist)
 	 * @param numProd Number of tokens produced by the source actor
@@ -185,7 +166,6 @@ public class Application {
 		chan.producer(srcActor);
 		chan.consumer(dstActor);
 		
-		
 		String prodPortName = "to_" + dstActorName;
 		var newProd = this.GetUpdatedProdOrCons(
 			srcActor.production(), prodPortName, numProd
@@ -205,21 +185,35 @@ public class Application {
 		this.Connect(chan, dstActor, "to_" + dstActorName, consPortName);
 	}
 
-	public void SetInput(String actorName, int numCons) {
+	/**
+	 * Assign a new input channel with static consumption to the given actor.
+	 * @param actorName Name of the actor 
+	 * @param numCons Number of tokens that the actor consumes from the input
+	 * channel.
+	 */
+	public void SetInputChannel(String actorName, int numCons) {
 		SDFActorViewer actor = GetActor(actorName);
-		String inName = "in_" + actorName;
+		String inName = "in_" + actorName; //? need numbering if more than 1?
 		actor.addPorts(inName);
 		var currCons = new LinkedHashMap<String, Integer>(actor.consumption());
 		currCons.put(inName, numCons);
 		actor.consumption(currCons);
 	}
 
-	public void SetOutput(String actorName, int numProd) {
+
+	/**
+	 * Assign a new out channel with static production to the given actor.
+	 * @param actorName Name of the actor 
+	 * @param numCons Number of tokens that the actor produces for the output
+	 * channel.
+	 */
+	public void SetOutputChannel(String actorName, int numProd) {
 		SDFActorViewer actor = GetActor(actorName);
-		String outName = "out_" + actorName;
+		String outName = "out_" + actorName;  //? need numbering if more than 1?
 		actor.addPorts(outName);
 		var currProd = new LinkedHashMap<String, Integer>(actor.production());
 		currProd.put(outName, numProd);
 		actor.production(currProd);
 	}
 }
+
