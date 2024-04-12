@@ -133,10 +133,12 @@ public class Application {
 		}
 
 		var actor = GetActor(actorName);
-		var hw = InstrumentedHardwareBehaviour.enforce(
+		var hw = InstrumentedBehaviour.enforce(
+		// var hw = InstrumentedHardwareBehaviour.enforce(
 			sGraph, actor.getViewedVertex()
 		);
-		hw.resourceRequirements(
+		hw.computationalRequirements(
+		// hw.resourceRequirements(
 			Map.of(
 				Requirements.HW_INSTRUCTIONS, instrs,
 				Requirements.EXTRA_REQUREMENTS, extraReqs

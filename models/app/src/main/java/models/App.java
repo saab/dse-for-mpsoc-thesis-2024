@@ -100,12 +100,12 @@ public class App {
         }
         SystemGraph gPlatform = Printer.Read(platformPath);
         SystemGraph gApplication = Printer.Read(applicationPath);
-        boolean can_transform = FPGATransformer.ShouldTransform(gPlatform);
         
         Map<String, SystemGraph> graphs = Map.of(
             "platform", gPlatform, 
             "application", gApplication
         );
+        boolean can_transform = FPGATransformer.ShouldTransform(gPlatform);
         if (can_transform) {
             graphs = FPGATransformer.Transform(gPlatform, gApplication);
         } else {

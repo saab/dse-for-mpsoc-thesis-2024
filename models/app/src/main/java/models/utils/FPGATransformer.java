@@ -6,7 +6,10 @@ import forsyde.io.lib.hierarchy.ForSyDeHierarchy.*;
 import models.platform_model.components.Platform;
 
 import java.util.Map;
+import java.util.List;
 import java.util.stream.Collectors;
+
+import org.jgrapht.graph.AsSubgraph;
 
 
 public class FPGATransformer {
@@ -21,8 +24,6 @@ public class FPGATransformer {
             .stream()
             .flatMap(v -> 
                 LogicProgrammableModule.tryView(g, v).stream()
-            ).filter(v -> 
-                v.getIdentifier().equals("FPGA")
             ).count();
         
         return fpgaCount > 0;
@@ -30,8 +31,12 @@ public class FPGATransformer {
 
     /**
      * Transforms the application and platform graphs to accomodate for actors
-     * (InstrumentedBehavior view) that can be implemented in hardware. If an
-     * actor has defined hardware computational requirements, a new CPU is added:
+     * (InstrumentedHardwareBehavior view) that can be implemented in hardware. 
+     * It is necessary that the ProgrammableLogicModule connects to a switch that
+     * new processing modules can use as adapter to the rest of the platform.
+     * 
+     * If an actor has defined hardware computational requirements, a new 
+     * CPU is added:
      * <pre>{@code
      * "computationalRequirements": { // "Actor_A"
      *     "HW_Instr": {
@@ -65,6 +70,49 @@ public class FPGATransformer {
     public static Map<String, SystemGraph> Transform(
         SystemGraph platformGraph, SystemGraph applicationGraph
     ) {
+        var lpms = platformGraph.vertexSet()
+            .stream()
+            .flatMap(v -> 
+                LogicProgrammableModule.tryView(platformGraph, v).stream()
+            )
+            .collect(Collectors.toList());
+
+        var switches = platformGraph.vertexSet()
+            .stream()
+            .flatMap(v -> 
+                InstrumentedCommunicationModule.tryView(platformGraph, v).stream()
+            )
+            .collect(Collectors.toList());
+
+        var lpmSwitchConnections = lpms.stream().collect(
+            Collectors.toMap(
+                lpm -> lpm.getIdentifier(), 
+                lpm -> switches.stream().filter(sw -> 
+                    platformGraph.hasConnection(lpm, sw)
+            ).collect(Collectors.toList()))
+        );
+
+        System.out.println(
+            "Found " + lpms.size() + " logic programmable modules: " + 
+            lpms.stream()
+                .map(lpm -> lpm.getIdentifier())
+                .collect(Collectors.toList()));
+        System.out.println(
+            "Found " + switches.size() + " switches: " + 
+            switches.stream()
+                .map(sw -> sw.getIdentifier())
+                .collect(Collectors.toList()));
+        System.out.println(
+            "Connects to switch: " + lpmSwitchConnections);
+
+        if (lpmSwitchConnections.values().stream().anyMatch(
+            c -> c.size() == 0
+        )) {
+            throw new IllegalArgumentException(
+                "All Logic Programmable Modules must connect to a switch."
+            );
+        }
+
         var actorRequirements = applicationGraph.vertexSet()
             .stream()
             .flatMap(v -> 
@@ -114,6 +162,10 @@ public class FPGATransformer {
                     hwInstrsName, hwPuInstrs
                 )
             );
+            var sw = lpmSwitchConnections.get(
+                lpmSwitchConnections.keySet().stream().findFirst().get()
+            ).stream().findFirst().get();
+            platform.Connect(hwImplName, sw.getIdentifier());
         });
 
         System.out.println(

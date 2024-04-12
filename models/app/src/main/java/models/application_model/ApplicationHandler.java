@@ -28,15 +28,15 @@ public class ApplicationHandler {
             ), 
             40000
         );
-        // app.InstrumentHardware(
-        //     ACTOR_A_NAME,
-        //     Map.of(
-        //         Requirements.FLOP, 100L
-        //     ), 
-        //     Map.of(
-        //         Requirements.LOGIC_AREA, 3200L
-        //     )
-        // );
+        app.InstrumentHardware(
+            ACTOR_A_NAME,
+            Map.of(
+                Requirements.FLOP, 100L
+            ), 
+            Map.of(
+                Requirements.LOGIC_AREA, 3200L
+            )
+        );
 
         // ACTOR B
         app.AddActor(ACTOR_B_NAME);
@@ -69,9 +69,9 @@ public class ApplicationHandler {
         );
 
         app.SetInputChannel(ACTOR_A_NAME, 1);
-        app.CreateChannel(ACTOR_A_NAME, ACTOR_B_NAME, 3, 3);
-        app.CreateChannel(ACTOR_B_NAME, ACTOR_C_NAME, 3, 6);
-        app.CreateChannel(ACTOR_C_NAME, ACTOR_D_NAME, 3, 2);
+        app.CreateChannel(ACTOR_A_NAME, ACTOR_B_NAME, 1, 1);
+        app.CreateChannel(ACTOR_B_NAME, ACTOR_C_NAME, 1, 1);
+        app.CreateChannel(ACTOR_C_NAME, ACTOR_D_NAME, 1, 1);
         app.SetOutputChannel(ACTOR_C_NAME, 1);
 
         return app.GetGraph();

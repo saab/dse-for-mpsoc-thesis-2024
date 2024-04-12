@@ -138,14 +138,15 @@ public class PlatformHandler {
 
         // FPGA, FPGA Switch and BRAM memory
         // ! (PL switch connects the FPGA to the rest)
-        // platform.AddFPGA(FPGA_NAME, 600000 * Units.CLB);
-        // platform.AddRouter(FPGA_SWITCH_NAME, 600 * Units.MHz);
+        platform.AddFPGA(FPGA_NAME, 600000 * Units.CLB);
+        platform.AddRouter(FPGA_SWITCH_NAME, 600 * Units.MHz);
+        platform.Connect(FPGA_NAME, PL_SWITCH_NAME);
+        platform.Connect(FPGA_SWITCH_NAME, PL_SWITCH_NAME);
         // platform.AddMemory(
         //     FPGA_BRAM_NAME, 600 * Units.MHz, 4 * Units.MB * Units.BYTES_TO_BITS
         // );
         // platform.Connect(FPGA_SWITCH_NAME, FPGA_NAME);
         // platform.Connect(FPGA_SWITCH_NAME, FPGA_BRAM_NAME);
-        // platform.Connect(FPGA_SWITCH_NAME, PL_SWITCH_NAME);
 
         // Information about the platform
         int numComponents = platform.viewers.size();

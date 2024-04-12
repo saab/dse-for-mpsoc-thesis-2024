@@ -54,6 +54,9 @@ public class Platform {
             Structure.tryView(g, v).ifPresent(view -> 
                 viewers.put(v.getIdentifier(), view)
             );
+            LogicProgrammableModule.tryView(g, v).ifPresent(view -> 
+                viewers.put(v.getIdentifier(), view)
+            );
         }
 
         // System.out.println(viewers.size() + " viewers found.");
