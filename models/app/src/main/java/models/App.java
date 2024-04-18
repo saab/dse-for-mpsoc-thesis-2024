@@ -10,12 +10,12 @@ import models.utils.Paths;
 import models.utils.Printer;
 
 import java.util.Map;
-import java.util.HashMap;
+
 
 public class App {
 
     private enum ModelTargetType {
-        Zynq, MPSoC, ToyPlatform, // platforms
+        Zynq, MPSoC, ToyPlatform, MM, // platforms
         ToySDF, // applications
         DseResult // "UNKNOWN"
     }
@@ -51,6 +51,9 @@ public class App {
                     break;
                 case "Zynq":
                     Platform = ModelTargetType.Zynq;
+                    break;
+                case "MM":
+                    Platform = ModelTargetType.MM;
                     break;
                 default:
                     throw new IllegalArgumentException(
@@ -141,6 +144,7 @@ public class App {
         SystemGraph gPlatform = switch (Platform) {
             case MPSoC -> PlatformHandler.MPSoCGraph();
             case Zynq -> PlatformHandler.ZynqGraph();
+            case MM -> PlatformHandler.MMGraph();
             default -> throw new IllegalStateException(
                 "Unknown platform: " + Platform
             );

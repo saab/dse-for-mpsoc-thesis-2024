@@ -109,7 +109,7 @@ public class Application {
 		String actorName, Map<String, Long> instrs, long sizeInBits
 	) { //TODO update the instrumentation
 		var actor = GetActor(actorName);
-		var sw = InstrumentedBehaviour.enforce(
+		var sw = InstrumentedSoftwareBehaviour.enforce(
 			sGraph, actor.getViewedVertex()
 		);
 		sw.computationalRequirements(
@@ -133,12 +133,10 @@ public class Application {
 		}
 
 		var actor = GetActor(actorName);
-		var hw = InstrumentedBehaviour.enforce(
-		// var hw = InstrumentedHardwareBehaviour.enforce(
+		var hw = InstrumentedHardwareBehaviour.enforce(
 			sGraph, actor.getViewedVertex()
 		);
-		hw.computationalRequirements(
-		// hw.resourceRequirements(
+		hw.resourceRequirements(
 			Map.of(
 				Requirements.HW_INSTRUCTIONS, instrs,
 				Requirements.EXTRA_REQUREMENTS, extraReqs

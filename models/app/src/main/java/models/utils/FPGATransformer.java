@@ -6,17 +6,13 @@ import forsyde.io.lib.hierarchy.ForSyDeHierarchy.*;
 import models.platform_model.components.Platform;
 
 import java.util.Map;
-import java.util.List;
 import java.util.stream.Collectors;
-
-import org.jgrapht.graph.AsSubgraph;
 
 
 public class FPGATransformer {
     /**
-     * Check if the graph contains FPGAs, i.e. instances of 
-     * `LogicProgrammableModule`.
-     * @param g The graph to check.
+     * Check if the graph contains FPGAs, i.e. instances of `LogicProgrammableModule`.
+     * @param g The graph to inspect.
      * @return True if the graph contains an FPGA, false otherwise.
      */
     public static boolean ShouldTransform(SystemGraph g) {
@@ -153,7 +149,7 @@ public class FPGATransformer {
             
             String hwImplName = "HW_Impl_" + actorName;
             int cores = 1;
-            // TODO: add as many cores as available FPGAs, currently only 1
+            // TODO: add as many "CPUs" as available FPGAs, currently only 1
             platform.AddCPU(
                 hwImplName, 
                 cores, 

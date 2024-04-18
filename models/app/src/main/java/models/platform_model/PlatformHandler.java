@@ -155,6 +155,48 @@ public class PlatformHandler {
         return platform.GetGraph();
     }
 
+    // minimal platform for the MemoryMappableMultiCore decision model
+    public static SystemGraph MMGraph() {
+        var platform = new Platform("Minimal_MM");
+
+        platform.AddCPU(
+            "CPU1", 
+            1, 
+            1 * Units.GHz, 
+            Map.of(
+                Requirements.SW_INSTRUCTIONS, Map.of(
+                    Requirements.FLOP, 0.04
+                )
+            )
+        );
+
+        platform.AddCPU(
+            "CPU2", 
+            1, 
+            1 * Units.GHz, 
+            Map.of(
+                Requirements.SW_INSTRUCTIONS, Map.of(
+                    Requirements.FLOP, 0.04
+                )
+            )
+        );
+
+        platform.AddMemory(
+            "Memory",
+            600 * Units.MHz,
+            4 * Units.GB * Units.BYTES_TO_BITS
+        );
+        
+        
+        platform.ConnectToMemory("CPU1", "Memory", 600 * Units.MHz);
+        platform.ConnectToMemory("CPU2", "Memory", 600 * Units.MHz);
+        
+        platform.AddMemory("TCM", 600 * Units.MHz, 1 * Units.GB * Units.BYTES_TO_BITS);
+        platform.ConnectToMemory("CPU1", "TCM", 600 * Units.MHz);
+
+        return platform.GetGraph();
+    }
+
     public static SystemGraph ZynqGraph() throws Exception {
         Zynq zynq = new Zynq();
         return zynq.sGraph;

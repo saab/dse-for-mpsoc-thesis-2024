@@ -35,11 +35,11 @@ public class Printer {
 
         if (extension.equals(FIODL_EXT)) {
             System.out.println(
-                "Design model '" + fileName + "' written to '" + outPath
+                "Design model '" + fileName + "' written to '" + outPath + "'"
             );
         } else if (extension.equals(KGT_EXT)) {
             System.out.println(
-                "Visualization of '" + fileName + "' model written to '" + outPath
+                "Visualization of '" + fileName + "' model written to '" + outPath + "'"
             );
         } else {
             System.out.println("Unknown file extension: " + extension);
