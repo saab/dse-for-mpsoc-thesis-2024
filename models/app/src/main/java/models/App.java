@@ -108,12 +108,14 @@ public class App {
             "platform", gPlatform, 
             "application", gApplication
         );
-        boolean can_transform = FPGATransformer.ShouldTransform(gPlatform);
+        boolean can_transform = FPGATransformer.ShouldTransform(
+            gPlatform, gApplication
+        );
         if (can_transform) {
             graphs = FPGATransformer.Transform(gPlatform, gApplication);
         } else {
             System.out.println(
-                "No FPGA found, no platform transformation needed."
+                "Either no FPGAs or HW actors found, no transformation needed."
             );
         }
 

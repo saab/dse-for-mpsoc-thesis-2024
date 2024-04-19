@@ -3,26 +3,69 @@ package models.utils;
 
 import forsyde.io.core.SystemGraph;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy.*;
+import forsyde.io.lib.hierarchy.platform.hardware.InstrumentedCommunicationModuleViewer;
+import forsyde.io.lib.hierarchy.platform.hardware.LogicProgrammableModuleViewer;
+import forsyde.io.lib.hierarchy.ForSyDeHierarchy.InstrumentedHardwareBehaviour;
+import forsyde.io.lib.hierarchy.implementation.functional.InstrumentedHardwareBehaviourViewer;
+import forsyde.io.lib.hierarchy.implementation.functional.InstrumentedSoftwareBehaviourViewer;
 import models.platform_model.components.Platform;
 
 import java.util.Map;
+import java.util.List;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 
 public class FPGATransformer {
+
     /**
-     * Check if the graph contains FPGAs, i.e. instances of `LogicProgrammableModule`.
-     * @param g The graph to inspect.
-     * @return True if the graph contains an FPGA, false otherwise.
+     * Get all instances of `LogicProgrammableModule` in the graph.
+     * @param g The graph to search for `LogicProgrammableModule` instances.
+     * @return A list of `LogicProgrammableModule` instances.
      */
-    public static boolean ShouldTransform(SystemGraph g) {
-        long fpgaCount = g.vertexSet()
-            .stream()
-            .flatMap(v -> 
-                LogicProgrammableModule.tryView(g, v).stream()
-            ).count();
+    private static List<LogicProgrammableModuleViewer> GetLPViewers(SystemGraph g) {
+        return g.vertexSet().stream()
+            .flatMap(v -> LogicProgrammableModule.tryView(g, v).stream())
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Get all actors which have defined hardware instructions and hardware area.
+     * @param g The applicaton graph to search for hardware actors.
+     * @return A list of hardware actor instances.
+     */
+    private static List<InstrumentedHardwareBehaviourViewer> GetHWActors(SystemGraph g) {
+        return g.vertexSet().stream()
+            .flatMap(v -> InstrumentedHardwareBehaviour.tryView(g, v).stream())
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Get all actors who have defined software instructions.
+     * @param g The graph to search for the actor.
+     * @param actorName The name of the actor to search for.
+     * @return A list of software actor instances.
+     */
+    private static List<InstrumentedSoftwareBehaviourViewer> GetSWActors (SystemGraph g) {
+        return g.vertexSet().stream()
+            .flatMap(v -> InstrumentedSoftwareBehaviourViewer.tryView(g, v).stream())
+            .collect(Collectors.toList());        
+    }
+
+    /**
+     * Check if the graph contains FPGAs and hardware actors, i.e. instances 
+     * of `LogicProgrammableModule` and `InstrumentedHardwareBehavior`.
+     * @param gPlatform The platform graph which may include `LogicProgrammableModule`
+     * @param gApplication The application graph which may include `InstrumentedHardwareBehavior`
+     * @return True if the graph contains both viewers, false otherwise.
+     */
+    public static boolean ShouldTransform(
+        SystemGraph gPlatform, SystemGraph gApplication
+    ) {
+        long fpgaCount = GetLPViewers(gPlatform).size();
+        long hwActorCount = GetHWActors(gApplication).size();
         
-        return fpgaCount > 0;
+        return fpgaCount > 0 && hwActorCount > 0;
     }
 
     /**
@@ -66,18 +109,11 @@ public class FPGATransformer {
     public static Map<String, SystemGraph> Transform(
         SystemGraph platformGraph, SystemGraph applicationGraph
     ) {
-        var lpms = platformGraph.vertexSet()
-            .stream()
-            .flatMap(v -> 
-                LogicProgrammableModule.tryView(platformGraph, v).stream()
-            )
-            .collect(Collectors.toList());
+        var lpms = GetLPViewers(platformGraph);
 
         var switches = platformGraph.vertexSet()
             .stream()
-            .flatMap(v -> 
-                InstrumentedCommunicationModule.tryView(platformGraph, v).stream()
-            )
+            .flatMap(v -> InstrumentedCommunicationModule.tryView(platformGraph, v).stream())
             .collect(Collectors.toList());
 
         var lpmSwitchConnections = lpms.stream().collect(
@@ -85,90 +121,85 @@ public class FPGATransformer {
                 lpm -> lpm.getIdentifier(), 
                 lpm -> switches.stream().filter(sw -> 
                     platformGraph.hasConnection(lpm, sw)
-            ).collect(Collectors.toList()))
+                ).collect(Collectors.toList())
+            )
         );
 
-        System.out.println(
-            "Found " + lpms.size() + " logic programmable modules: " + 
-            lpms.stream()
-                .map(lpm -> lpm.getIdentifier())
-                .collect(Collectors.toList()));
-        System.out.println(
-            "Found " + switches.size() + " switches: " + 
-            switches.stream()
-                .map(sw -> sw.getIdentifier())
-                .collect(Collectors.toList()));
-        System.out.println(
-            "Connects to switch: " + lpmSwitchConnections);
-
-        if (lpmSwitchConnections.values().stream().anyMatch(
-            c -> c.size() == 0
-        )) {
+        if (lpmSwitchConnections.values().stream().anyMatch(c -> c.size() == 0)) {
             throw new IllegalArgumentException(
                 "All Logic Programmable Modules must connect to a switch."
             );
         }
 
-        var actorRequirements = applicationGraph.vertexSet()
-            .stream()
-            .flatMap(v -> 
-                InstrumentedBehaviour.tryView(applicationGraph, v).stream()
-            )
-            .filter(v -> v.computationalRequirements().containsKey(
-                Requirements.HW_INSTRUCTIONS
-            ))
-            .collect(Collectors.toList());
+        var hwActors = GetHWActors(applicationGraph);
+        var swActors = GetSWActors(applicationGraph);
 
         Platform platform = new Platform(
             "TransformedPlatform", platformGraph
         );
-        actorRequirements.forEach(r -> {
-            String actorName = r.getViewedVertex().getIdentifier();
-            var instrs = r.computationalRequirements();
-            var hwInstrsName = Requirements.HW_INSTRUCTIONS + "_" + actorName;
-            System.out.println(instrs);
-            // extract actor's HW requirements and create instructions for them
-            var hwPuInstrs = instrs
-                .get(Requirements.HW_INSTRUCTIONS)
-                .keySet()
-                .stream()
-                .collect(Collectors.toMap(
-                    instr -> instr, instr -> 1.0 // default cycle req. of 1
-                ));
-            System.out.println(Map.of(
-                hwInstrsName, hwPuInstrs
-            ));
+        hwActors.forEach(a -> {
+            String actorName = a.getViewedVertex().getIdentifier();
+            var hwReqs = a.resourceRequirements()
+                .get(Requirements.HW_INSTRUCTIONS);
 
-            // update key name for actor's hw requirements
-            instrs.put(
-                hwInstrsName,
-                instrs.get(Requirements.HW_INSTRUCTIONS)
-            );
-            instrs.remove(Requirements.HW_INSTRUCTIONS);
-            r.computationalRequirements(instrs);
-            
-            String hwImplName = "HW_Impl_" + actorName;
-            int cores = 1;
-            // TODO: add as many "CPUs" as available FPGAs, currently only 1
-            platform.AddCPU(
-                hwImplName, 
-                cores, 
-                600 * Units.MHz, 
-                Map.of(
-                    hwInstrsName, hwPuInstrs
-                )
-            );
-            var sw = lpmSwitchConnections.get(
-                lpmSwitchConnections.keySet().stream().findFirst().get()
-            ).stream().findFirst().get();
-            platform.Connect(hwImplName, sw.getIdentifier());
+            var correspondingSWActor = swActors.stream()
+                .filter(swA -> swA.getIdentifier().equals(actorName))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                    "No corresponding software implementation found for " + 
+                        actorName
+                ));
+            var swReqs = correspondingSWActor.computationalRequirements();
+
+            for (var lpm : lpms) {
+                var hwInstrsName = lpm.getIdentifier() + "_" +
+                    Requirements.HW_INSTRUCTIONS + "_" + actorName;
+                
+                // extract actor's HW requirements and convert into pu instructions
+                var hwInstrsPu = hwReqs
+                    .keySet()
+                    .stream()
+                    .collect(Collectors.toMap(
+                        // could influence instr cycle req by some "speed grade" (xilinx)
+                        instr -> lpm.getIdentifier() + "_" + instr, instr -> 1.0 
+                    ));
+
+                // match instruction names for tailored processing module
+                var updatedHwReqs = hwReqs.entrySet().stream()
+                    .collect(Collectors.toMap(
+                        e -> lpm.getIdentifier() + "_" + e.getKey(), 
+                        e -> e.getValue()
+                    ));
+
+                // update software instructions with hardware instructions
+                swReqs.put(hwInstrsName, updatedHwReqs);
+                correspondingSWActor.computationalRequirements(swReqs);
+                
+                // add tailored processing module for actor <actorName>
+                String hwImplName = lpm.getIdentifier() + 
+                    "_" + "HW_Impl_" + actorName;
+                int cores = 1;
+                platform.AddCPU(
+                    hwImplName, 
+                    cores, 
+                    100 * Units.MHz, 
+                    Map.of(hwInstrsName, hwInstrsPu)
+                );
+
+                // connect tailored processing module to switch
+                var sw = lpmSwitchConnections.get(lpm.getIdentifier()).get(0);
+                platform.Connect(hwImplName, sw.getIdentifier());
+                // System.out.println(
+                //     "Connected: " + lpm.getIdentifier() + ":" + sw.getIdentifier()
+                // );
+            }
         });
 
         System.out.println(
-            "Transformed " + actorRequirements.size() + " actors: " + 
-            actorRequirements.stream()
-                    .map(a -> a.getIdentifier())
-                    .collect(Collectors.toList())
+            "Transformed " + hwActors.size() + " actors: " + 
+            hwActors.stream()
+                .map(a -> a.getIdentifier())
+                .collect(Collectors.toList())
         );
         
         return Map.of(

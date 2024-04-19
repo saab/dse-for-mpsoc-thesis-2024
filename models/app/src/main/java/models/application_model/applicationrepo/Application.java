@@ -7,7 +7,6 @@ import forsyde.io.core.SystemGraph;
 import forsyde.io.core.VertexViewer;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy.*;
 import forsyde.io.lib.hierarchy.behavior.moc.sdf.SDFActorViewer;
-import forsyde.io.lib.hierarchy.behavior.moc.sdf.SDFChannelViewer;
 import forsyde.io.lib.hierarchy.platform.hardware.StructureViewer;
 import forsyde.io.lib.hierarchy.visualization.GreyBoxViewer;
 import models.utils.Requirements;
@@ -122,26 +121,18 @@ public class Application {
 	 * Add hardware instrumentation to the given actor.
 	 * @param actorName Name of the actor (must exist)
 	 * @param instrs Hardware instructions.
-	 * @param extraReqs Extra requirements, i.e. area etc.
+	 * @param requiredArea Required area for this hardware implementation.
 	 * @throws RuntimeException if the logic area is not specified
 	 */
 	public void InstrumentHardware(
-		String actorName, Map<String, Long> instrs, Map<String, Long> extraReqs
+		String actorName, Map<String, Long> instrs, int requiredArea
 	) {
-		if (!extraReqs.containsKey(Requirements.LOGIC_AREA)) {
-			throw new RuntimeException("Logic area must be specified.");
-		}
-
 		var actor = GetActor(actorName);
 		var hw = InstrumentedHardwareBehaviour.enforce(
 			sGraph, actor.getViewedVertex()
 		);
-		hw.resourceRequirements(
-			Map.of(
-				Requirements.HW_INSTRUCTIONS, instrs,
-				Requirements.EXTRA_REQUREMENTS, extraReqs
-			)
-		);
+		hw.resourceRequirements(Map.of(Requirements.HW_INSTRUCTIONS, instrs));
+		hw.requiredHardwareImplementationArea(requiredArea);
 	}
 
 	/**

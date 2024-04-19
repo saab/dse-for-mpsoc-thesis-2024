@@ -63,11 +63,10 @@ public class PlatformHandler {
             APU_NAME,
             APU_CORES,
             (long) 1.5 * Units.GHz,
-            Map.of(
-                Requirements.SW_INSTRUCTIONS, Map.of(
-                    Requirements.FLOP, 0.04
-                )
-            )
+            // Map.of(Requirements.SW_INSTRUCTIONS, Map.of(
+            Map.of(Requirements.SW_INSTRUCTIONS, Map.of(
+                Requirements.FLOP, 0.04
+            ))
         );
 
         // Processing System Real-time Processor Unit
@@ -75,11 +74,9 @@ public class PlatformHandler {
             RPU_NAME,
             RPU_CORES,
             (long) 6 * Units.MHz,
-            Map.of(
-                Requirements.SW_INSTRUCTIONS, Map.of(
-                    Requirements.FLOP, 0.4
-                )
-            )
+            Map.of(Requirements.SW_INSTRUCTIONS, Map.of(
+                Requirements.FLOP, 0.04
+            ))
         );
 
         // Processing System Real-time Processor Unit Switch
@@ -94,19 +91,16 @@ public class PlatformHandler {
 
         // Real-time Processor Unit Tightly Coupled Memory
         // ! UNSURE WHY THIS WON'T WORK
-        // for (int i = 0; i < RPU_CORES; i++) {
-        // String rpuName = RPU_NAME + "_C" + i;
-        // String tcmName = TCM_NAME + "_C" + i;
-        // String tcmSwitchName = TCM_NAME + "_C" + i + "_SWITCH";
-        // platform.AddMemory(
-        // tcmName,
-        // 600 * Units.MHz,
-        // 128 * Units.kB * Units.BYTES_TO_BITS
-        // );
-        // platform.AddSwitch(tcmSwitchName, 600 * Units.MHz);
-        // platform.Connect(tcmName, tcmSwitchName);
-        // platform.Connect(rpuName, tcmSwitchName);
-        // }
+        for (int i = 0; i < RPU_CORES; i++) {
+            String rpuName = RPU_NAME + "_C" + i;
+            String tcmName = TCM_NAME + "_C" + i;
+            platform.AddMemory(
+                tcmName,
+                600 * Units.MHz,
+                128 * Units.kB * Units.BYTES_TO_BITS
+            );
+            platform.ConnectToMemory(rpuName, tcmName, 600 * Units.MHz);
+        }
 
         // Cache Coherent Interconnect (Switch)
         platform.AddRouter(CCI_SWITCH_NAME, 600 * Units.MHz);
@@ -138,15 +132,18 @@ public class PlatformHandler {
 
         // FPGA, FPGA Switch and BRAM memory
         // ! (PL switch connects the FPGA to the rest)
-        platform.AddFPGA(FPGA_NAME, 600000 * Units.CLB);
+        platform.AddFPGA( //! memory parameter unused
+            FPGA_NAME, 600000 * Units.CLB, 4 * Units.MB * Units.BYTES_TO_BITS
+        );
+        // platform.AddFPGA(FPGA_NAME + "_2", 40000 * Units.CLB);
+        platform.AddMemory(
+            FPGA_BRAM_NAME, 600 * Units.MHz, 4 * Units.MB * Units.BYTES_TO_BITS
+        );
         platform.AddRouter(FPGA_SWITCH_NAME, 600 * Units.MHz);
-        platform.Connect(FPGA_NAME, PL_SWITCH_NAME);
+        platform.Connect(FPGA_SWITCH_NAME, FPGA_NAME);
         platform.Connect(FPGA_SWITCH_NAME, PL_SWITCH_NAME);
-        // platform.AddMemory(
-        //     FPGA_BRAM_NAME, 600 * Units.MHz, 4 * Units.MB * Units.BYTES_TO_BITS
-        // );
-        // platform.Connect(FPGA_SWITCH_NAME, FPGA_NAME);
-        // platform.Connect(FPGA_SWITCH_NAME, FPGA_BRAM_NAME);
+        platform.Connect(FPGA_SWITCH_NAME, FPGA_BRAM_NAME);
+        // platform.Connect(FPGA_NAME + "_2", FPGA_SWITCH_NAME);
 
         // Information about the platform
         int numComponents = platform.viewers.size();
@@ -163,22 +160,18 @@ public class PlatformHandler {
             "CPU1", 
             1, 
             1 * Units.GHz, 
-            Map.of(
-                Requirements.SW_INSTRUCTIONS, Map.of(
-                    Requirements.FLOP, 0.04
-                )
-            )
+            Map.of(Requirements.SW_INSTRUCTIONS, Map.of(
+                Requirements.FLOP, 0.04
+            ))
         );
 
         platform.AddCPU(
             "CPU2", 
             1, 
             1 * Units.GHz, 
-            Map.of(
-                Requirements.SW_INSTRUCTIONS, Map.of(
-                    Requirements.FLOP, 0.04
-                )
-            )
+            Map.of(Requirements.SW_INSTRUCTIONS, Map.of(
+                Requirements.FLOP, 0.04
+            ))
         );
 
         platform.AddMemory(
@@ -191,8 +184,8 @@ public class PlatformHandler {
         platform.ConnectToMemory("CPU1", "Memory", 600 * Units.MHz);
         platform.ConnectToMemory("CPU2", "Memory", 600 * Units.MHz);
         
-        platform.AddMemory("TCM", 600 * Units.MHz, 1 * Units.GB * Units.BYTES_TO_BITS);
-        platform.ConnectToMemory("CPU1", "TCM", 600 * Units.MHz);
+        // platform.AddMemory("TCM", 600 * Units.MHz, 1 * Units.GB * Units.BYTES_TO_BITS);
+        // platform.ConnectToMemory("CPU1", "TCM", 600 * Units.MHz);
 
         return platform.GetGraph();
     }

@@ -179,6 +179,8 @@ public class Platform {
         // to avoid the switch becoming a "router"
         for (var srcCompName : srcCompNames) {
             String switchName = memName + "_" + srcCompName + "_SWITCH";
+            // System.out.println("Adding switch " + switchName + " between " + 
+            //     srcCompName + " and " + memName + ".");
             if (this.viewers.keySet().contains(switchName)) {
                 throw new IllegalArgumentException(
                     "Switch " + switchName + " already exists."
@@ -240,7 +242,7 @@ public class Platform {
     }
 
     /**
-     * Add a CPU to the MPSoC as <cores> independent processing modules with 
+     * Add a CPU to the platform as <numCores> independent processing modules with 
      * 1-1 mapped runtimes.
      * @param name The identifier for the CPU.
      * @param numCores The number of CPU cores.
@@ -272,7 +274,7 @@ public class Platform {
         }
     }
 
-    public void AddFPGA(String name, int availableLogicArea) {
+    public void AddFPGA(String name, int availableLogicArea, long bramCapacity) {
         var fpga = LogicProgrammableModule.enforce(
             sGraph, sGraph.newVertex(name)
         );

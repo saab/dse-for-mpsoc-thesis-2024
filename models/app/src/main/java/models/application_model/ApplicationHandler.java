@@ -4,6 +4,7 @@ import forsyde.io.core.SystemGraph;
 import models.application_model.applicationrepo.Application;
 
 import models.utils.Requirements;
+import models.utils.Units;
 
 import java.util.*;
 
@@ -33,9 +34,7 @@ public class ApplicationHandler {
             Map.of(
                 Requirements.FLOP, 100L
             ), 
-            Map.of(
-                Requirements.LOGIC_AREA, 3200L
-            )
+            6000 * Units.CLB
         );
 
         // ACTOR B
