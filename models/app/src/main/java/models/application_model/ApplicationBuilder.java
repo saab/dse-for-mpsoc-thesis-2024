@@ -1,5 +1,5 @@
 
-package models.application_model.applicationrepo;
+package models.application_model;
 
 import java.util.*;
 
@@ -12,13 +12,13 @@ import forsyde.io.lib.hierarchy.visualization.GreyBoxViewer;
 import models.utils.Requirements;
 
 
-public class Application {
+public class ApplicationBuilder {
 	private SystemGraph sGraph;
     private GreyBoxViewer greyBox;
 	private StructureViewer application;
     private Map<String, VertexViewer> viewers = new HashMap<>();
 
-	public Application(String name) {
+	public ApplicationBuilder(String name) {
 		SystemGraph sGraph = new SystemGraph();
 
 		this.application = Structure.enforce(sGraph, sGraph.newVertex(name));

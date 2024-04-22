@@ -1,5 +1,5 @@
 
-package models.platform_model.components;
+package models.platform_model;
 
 import forsyde.io.core.SystemGraph;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy.*;

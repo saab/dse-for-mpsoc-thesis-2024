@@ -4,8 +4,6 @@ package models.platform_model;
 import java.util.Map;
 
 import forsyde.io.core.SystemGraph;
-import models.platform_model.components.Platform;
-import models.platform_model.components.Zynq;
 import models.utils.Units;
 import models.utils.Requirements;
 
@@ -35,7 +33,7 @@ public class PlatformHandler {
     final static String TCM_NAME = "TCM_RPU";
 
     public static SystemGraph MPSoCGraph() {
-        Platform platform = new Platform(PLATFORM_NAME);
+        PlatformBuilder platform = new PlatformBuilder(PLATFORM_NAME);
 
         // On-chip Memory
         platform.AddMemory(
@@ -154,7 +152,7 @@ public class PlatformHandler {
 
     // minimal platform for the MemoryMappableMultiCore decision model
     public static SystemGraph MMGraph() {
-        var platform = new Platform("Minimal_MM");
+        var platform = new PlatformBuilder("Minimal_MM");
 
         platform.AddCPU(
             "CPU1", 

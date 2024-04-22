@@ -1,8 +1,6 @@
 package models.application_model;
 
 import forsyde.io.core.SystemGraph;
-import models.application_model.applicationrepo.Application;
-
 import models.utils.Requirements;
 import models.utils.Units;
 
@@ -18,7 +16,7 @@ public class ApplicationHandler {
     final static String ACTOR_D_NAME = "Actor_D";
 
     public static SystemGraph ToySDFGraph() {
-        Application app = new Application(APP_NAME);
+        ApplicationBuilder app = new ApplicationBuilder(APP_NAME);
 
         // ACTOR A
         app.AddActor(ACTOR_A_NAME);

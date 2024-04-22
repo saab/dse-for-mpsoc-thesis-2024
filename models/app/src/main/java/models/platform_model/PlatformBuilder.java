@@ -13,12 +13,12 @@ import forsyde.io.lib.hierarchy.visualization.GreyBoxViewer;
 import models.utils.Units;
 
 
-public class Platform {
+public class PlatformBuilder {
     private SystemGraph sGraph;
     private GreyBoxViewer greyBox;
     public Map<String, VertexViewer> viewers = new HashMap<>();
 
-    public Platform(String name) {
+    public PlatformBuilder(String name) {
         SystemGraph sGraph = new SystemGraph();
 
         var platform = Structure.enforce(sGraph, sGraph.newVertex(name));
@@ -29,9 +29,9 @@ public class Platform {
 
     /**
      * Create a platform from an existing graph, by extraction of the viewers.
-     * @param g The graph to use as platform.
+     * @param g The existing system graph to use as platform base.
      */
-    public Platform(String name, SystemGraph g) {
+    public PlatformBuilder(String name, SystemGraph g) {
         this.sGraph = g;
         this.greyBox = g.vertexSet()
             .stream()
