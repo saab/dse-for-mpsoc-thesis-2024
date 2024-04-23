@@ -1,5 +1,7 @@
 package models.utils;
 
+import org.antlr.v4.parse.ANTLRParser.optionsSpec_return;
+
 import forsyde.io.core.ModelHandler;
 import forsyde.io.core.SystemGraph;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy;
@@ -9,45 +11,62 @@ public class Printer {
     public static final String FIODL_EXT = ".fiodl";
     public static final String KGT_EXT = ".kgt";
 
+    private String filePath;
+    private String fileName;
+    private String fileDir;
+    private String extension;
+
+    public Printer(String filePath) {
+        this.filePath = filePath;
+        SetFileName();
+        SetFileDir();
+        SetFileExtension();
+    }
+
     private static ModelHandler handler = new ModelHandler()
             .registerTraitHierarchy(new ForSyDeHierarchy())
             .registerDriver(new KGTDriver());
 
-    private static String GetExtension(String path) {
-        return path.substring(path.lastIndexOf('.'));
+    private void SetFileExtension() {
+        this.extension = filePath.substring(filePath.lastIndexOf('.'));
     }
 
-    public static String GetFileDir(String path) {
-        return path.substring(0, path.lastIndexOf('/'));
+    private void SetFileDir() {
+        this.fileDir = filePath.substring(0, filePath.lastIndexOf('/'));
     }
 
-    public static String GetFileName(String path) {
-        return path.substring(path.lastIndexOf('/') + 1, path.lastIndexOf('.'));
+    private void SetFileName() {
+        this.fileName = filePath.substring(
+            filePath.lastIndexOf('/') + 1, filePath.lastIndexOf('.')
+        );
     }
 
-    public static void Print(SystemGraph g, String outPath) throws Exception {
+    public void SetOutDir(String outDir) {
+        this.fileDir = outDir;
+    }
+
+    public void AppendToFileName(String append) {
+        this.fileName += append;
+    }
+
+    public void PrintFIODL(SystemGraph g) throws Exception {
+        String outPath = fileDir + "/" + fileName + FIODL_EXT;
         handler.writeModel(g, outPath);
-
-        String fileName = GetFileName(outPath);
-
-        // extract extension from outPath
-        String extension = GetExtension(outPath);
-
-        if (extension.equals(FIODL_EXT)) {
-            System.out.println(
-                "Design model '" + fileName + "' written to '" + outPath + "'"
-            );
-        } else if (extension.equals(KGT_EXT)) {
-            System.out.println(
-                "Visualization of '" + fileName + "' model written to '" + outPath + "'"
-            );
-        } else {
-            System.out.println("Unknown file extension: " + extension);
-        }
+        System.out.println(
+            "Design model '" + fileName + "' written to '" + outPath + "'"
+        );
     }
 
-    public static SystemGraph Read(String path) throws Exception {
-        var model = handler.loadModel(path);
-        return model;
+    public void PrintKGT(SystemGraph g) throws Exception {
+        String outPath = fileDir + "/" + fileName + KGT_EXT;
+        handler.writeModel(g, outPath);
+        System.out.println(
+            "Visualization of '" + fileName + "' model written to '" + outPath + "'"
+        );
+    }
+
+    public SystemGraph Read() throws Exception {
+        System.out.println(System.getProperty("user.dir"));
+        return handler.loadModel(filePath);
     }
 }

@@ -1,12 +1,25 @@
 #!/bin/bash
 
 ROOT_PATH=/home/beethoven/Documents/degree-project/dse-for-mpsoc-thesis-2024
-PROJECT_PATH=$ROOT_PATH/models
-ARTIFACTS_PATH=$PROJECT_PATH/app/src/main/java/models/artifacts
-DSE_PATH=$ROOT_PATH/experiments
+CUSTOM_PROJECT_PATH=$ROOT_PATH/models
+ARTIFACTS_PATH=$CUSTOM_PROJECT_PATH/app/src/main/java/models/artifacts
+DSE_PATH=$ROOT_PATH/IDeSyDe
 DSE_EXECUTABLE=idesyde
-DSE_OUTPUT_PARSER=parse_dse_results.py
-DSE_OUTPUT_PATH=$DSE_PATH/run
+DSE_OUTPUT_PARSER=$ROOT_PATH/parse_dse_results.py
+DSE_OUTPUT_PATH=$DSE_PATH/STOPPA_PRESSARNA
+
+visualize() {
+    if [ $# -ne 1 ]; then
+	echo "Must provide filepath as argument"
+	exit 1
+    fi	
+    local file="$1"
+    gradle run --args="to_kgt $file"
+    if [ $? -ne 0 ]; then
+        echo "Visualization failed"
+        exit 1
+    fi
+}
 
 if [ $# -lt 2 ]; then
     echo "USAGE: ./run.sh <platform_name> <application_name>";
@@ -14,8 +27,8 @@ if [ $# -lt 2 ]; then
 fi
 
 
-# create system specification files (fiodl), specificaiton in code
-cd $PROJECT_PATH
+# create system specification files
+cd $CUSTOM_PROJECT_PATH
 gradle run --args="build $1 $2"
 
 # check if build was successful
@@ -27,6 +40,11 @@ fi
 plat=$1.fiodl
 appl=$2.fiodl
 
+# visualize initial specifications
+visualize $ARTIFACTS_PATH/$plat
+visualize $ARTIFACTS_PATH/$appl
+
+# transform the specifications, if needed
 gradle run --args="fpga_transform $ARTIFACTS_PATH/$plat $ARTIFACTS_PATH/$appl"
 
 # check if transformation was successful
@@ -36,6 +54,10 @@ if [ $? -eq 1 ]; then
 else
     plat=$1_Intermediate.fiodl
     appl=$2_Intermediate.fiodl
+
+    # visualizations of transformations
+    visualize $ARTIFACTS_PATH/$plat
+    visualize $ARTIFACTS_PATH/$appl
 fi
 
 # clear the output directory
@@ -43,7 +65,8 @@ rm -rf $DSE_OUTPUT_PATH/*
 
 # perform dse with constructed system models
 cd $DSE_PATH
-./$DSE_EXECUTABLE -v DEBUG -p 10 -o $DSE_OUTPUT_PATH \
+./$DSE_EXECUTABLE -v DEBUG -p 5 \
+    -o $DSE_OUTPUT_PATH \
     --x-total-time-out 5 \
     $ARTIFACTS_PATH/$plat \
     $ARTIFACTS_PATH/$appl
@@ -55,11 +78,13 @@ if ! [ "$(ls -A $DSE_OUTPUT_PATH/reversed)" ]; then
 fi
 
 # for each fiodl solution in reversed, create kgt file
-cd $PROJECT_PATH
+cd $CUSTOM_PROJECT_PATH
 for fiodl_file in $DSE_OUTPUT_PATH/reversed/*.fiodl; do
-    gradle run --args="to_kgt $fiodl_file"
+    visualize $fiodl_file
+    gradle run --args="parse_solution $fiodl_file"
 done
 
-# DEPRECATE IN FAVOR OF `gradle run --args="parse_dse_results <path>"`
-cd $DSE_PATH
-python3 $DSE_OUTPUT_PARSER $DSE_OUTPUT_PATH/explored
+#!! DEPRECATED!! #
+# python3 $DSE_OUTPUT_PARSER $DSE_OUTPUT_PATH/explored
+
+

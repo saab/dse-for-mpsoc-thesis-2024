@@ -99,39 +99,51 @@ public class ApplicationBuilder {
 	}
 
 	/**
-	 * Add software instrumentation to the given actor.
-	 * @param actorName Name of the actor (must exist)
+	 * Add software implementation alternative to an actor.
+	 * @param actorName Name of the actor (must exist).
 	 * @param instrs Software instructions.
-	 * @param sizeInBits Implementation size in bits.
+	 * @param codeSize Implementation size in bits.
 	 */
-	public void InstrumentSoftware(
-		String actorName, Map<String, Long> instrs, long sizeInBits
-	) { //TODO update the instrumentation
+	public void AddSWImplementation(
+		String actorName, Map<String, Long> instrs, long codeSize
+	) {
 		var actor = GetActor(actorName);
 		var sw = InstrumentedSoftwareBehaviour.enforce(
 			sGraph, actor.getViewedVertex()
 		);
+
+		assert instrs.size() > 0 : "Must require at least one instruction type";
+		assert codeSize > 0 : "Must specify a code size in bits";
+
 		sw.computationalRequirements(
 			Map.of(Requirements.SW_INSTRUCTIONS, instrs)
 		);
-		sw.maxSizeInBits(Map.of("codeSize", sizeInBits));
+		sw.maxSizeInBits(Map.of("impl", codeSize));
 	}
 
 	/**
-	 * Add hardware instrumentation to the given actor.
-	 * @param actorName Name of the actor (must exist)
-	 * @param instrs Hardware instructions.
-	 * @param requiredArea Required area for this hardware implementation.
-	 * @throws RuntimeException if the logic area is not specified
+	 * Add hardware implementation alternative to an actor.
+	 * @param actorName Name of the actor (must exist).
+	 * @param clockCycles Clock cycles to run the hardware implementation.
+	 * @param requiredArea Required area for hardware implementation.
+	 * @throws RuntimeException if the logic area is not specified.
 	 */
-	public void InstrumentHardware(
-		String actorName, Map<String, Long> instrs, int requiredArea
+	public void AddHWImplementation(
+		String actorName, long clockCycles, int requiredArea
 	) {
 		var actor = GetActor(actorName);
 		var hw = InstrumentedHardwareBehaviour.enforce(
 			sGraph, actor.getViewedVertex()
 		);
-		hw.resourceRequirements(Map.of(Requirements.HW_INSTRUCTIONS, instrs));
+
+		assert requiredArea > 0 : "Logic area must be >= 1";
+		assert clockCycles > 0 : "Clock cycles must be >= 1";
+
+		hw.resourceRequirements(
+			Map.of(Requirements.HW_INSTRUCTIONS, Map.of(
+				Requirements.CLOCK_CYCLES, (long) clockCycles
+			))
+		);
 		hw.requiredHardwareImplementationArea(requiredArea);
 	}
 

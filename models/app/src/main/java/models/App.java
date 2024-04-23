@@ -8,164 +8,139 @@ import models.platform_model.*;
 import models.utils.FPGATransformer;
 import models.utils.Paths;
 import models.utils.Printer;
+import models.utils.SolutionParser;
 
 import java.util.Map;
 
 
 public class App {
 
-    private enum ModelTargetType {
-        Zynq, MPSoC, ToyPlatform, MM, // platforms
-        ToySDF, // applications
-        DseResult // "UNKNOWN"
+    private static void SystemExit() {
+        final String USAGE = """
+            Usage: gradle run --args=\"[
+                build <platformType> <applicationType> |
+                to_kgt <path> |
+                fpga_transform <pathPlatform> <pathApplication> |
+                parse_dse_results <path>
+            ]\"
+            \t<platformType>: 'MPSoC', 
+            \t<applicationType>: 'ToySDF'
+        """;
+        System.out.println(USAGE);
+        System.exit(1);
     }
 
-    //TODO: extend to N platforms and applications (fpga_transform)
-    private static String USAGE = """
-        Usage: gradle run --args=\"[
-            build <platformType> <applicationType> |
-            to_kgt <path> |
-            fpga_transform <pathPlatform> <pathApplication> |
-            parse_dse_results <path>
-        ]\"
-        \t<platformType>: 'MPSoC', 
-        \t<applicationType>: 'ToySDF'
-    """;
-
+    //TODO: extend to multiple platforms and applications (fpga_transform)
     public static void main(String[] args) throws Exception {
-        if (args.length < 1) {
-            System.out.println(USAGE);
-            System.exit(1);
-        }
+        if (args.length < 1)
+            SystemExit();
 
         String action = args[0];
         if (action.equals("build")) {
-            if (args.length < 3) {
-                System.out.println(USAGE);
-                System.exit(1);
-            }
-            ModelTargetType Platform;
-            switch(args[1]) {
-                case "MPSoC":
-                    Platform = ModelTargetType.MPSoC;
-                    break;
-                case "Zynq":
-                    Platform = ModelTargetType.Zynq;
-                    break;
-                case "MM":
-                    Platform = ModelTargetType.MM;
-                    break;
-                default:
-                    throw new IllegalArgumentException(
-                        "Unknown platform: " + args[1]
-                    );
-            }
-            ModelTargetType Application;
-            switch(args[2]) {
-                case "ToySDF":
-                    Application = ModelTargetType.ToySDF;
-                    break;
-                default:
-                    throw new IllegalArgumentException(
-                        "Unknown application: " + args[2]
-                    );
-            };
-            CreateBuildSpecification(Platform, Application);
+            CreateBuildSpecification(args);
+        } else if (action.equals("to_kgt")) {
+            ConvertFiodlToKGT(args);
+        } else if (action.equals("fpga_transform")) {
+            FpgaTranform(args);
+        } else if (action.equals("parse_solution")) {
+            ParseDseSolution(args);
         } else {
-            if (args.length < 2) {
-                System.out.println(USAGE);
-                System.exit(1);
-            }
-            String path1 = args[1];
-
-            if (action.equals("to_kgt")) {
-                ConvertFiodlToKGT(path1);
-            } else if (action.equals("fpga_transform")) {
-                if (args.length < 3) {
-                    System.out.println(USAGE);
-                    System.exit(1);
-                }
-                String path2 = args[2];
-                FpgaTranform(path1, path2);
-            } else {
-                System.out.println(USAGE);
-                System.exit(1);
-            }
+            SystemExit();
         }
     }
 
-    private static void FpgaTranform(
-        String platformPath, String applicationPath
-    ) throws Exception {
-        if (!platformPath.endsWith(Printer.FIODL_EXT) || 
-                !applicationPath.endsWith(Printer.FIODL_EXT)) {
-            throw new Exception("Must provide .fiodl files.");
-        }
-        SystemGraph gPlatform = Printer.Read(platformPath);
-        SystemGraph gApplication = Printer.Read(applicationPath);
+    private static void FpgaTranform(String[] args) throws Exception {
+        if (args.length < 3) 
+            SystemExit();
         
-        Map<String, SystemGraph> graphs = Map.of(
+        String platformPath = args[1];
+        String applicationPath = args[2];
+        assert platformPath.endsWith(Printer.FIODL_EXT): "Must provide a .fiodl file.";
+        assert applicationPath.endsWith(Printer.FIODL_EXT): "Must provide a .fiodl file.";
+
+        SystemGraph gPlatform = new Printer(platformPath).Read();
+        SystemGraph gApplication = new Printer(applicationPath).Read();
+        
+        Map<String, SystemGraph> transformedGraphs = Map.of(
             "platform", gPlatform, 
             "application", gApplication
         );
-        boolean can_transform = FPGATransformer.ShouldTransform(
-            gPlatform, gApplication
-        );
-        if (can_transform) {
-            graphs = FPGATransformer.Transform(gPlatform, gApplication);
+
+        var transformer = new FPGATransformer(gPlatform, gApplication);
+        if (transformer.ShouldTransform()) {
+            transformedGraphs = transformer.Transform();
         } else {
             System.out.println(
-                "Either no FPGAs or HW actors found, no transformation needed."
+                "Both FPGAs and HW actors must exist, no transformation needed."
             );
         }
 
-        String fileDir = Printer.GetFileDir(platformPath); // same for app
-        String platformFileName = Printer.GetFileName(platformPath);
-        platformPath = fileDir + "/" + platformFileName + 
-                        "_Intermediate" + Printer.FIODL_EXT;
-        Printer.Print(graphs.get("platform"), platformPath);
+        var printer = new Printer(platformPath);
+        printer.AppendToFileName("_Intermediate");
+        printer.PrintFIODL(transformedGraphs.get("platform"));
         
-        String applicationFileName = Printer.GetFileName(applicationPath);
-        applicationPath = fileDir + "/" + applicationFileName + 
-                            "_Intermediate" + Printer.FIODL_EXT;
-        Printer.Print(graphs.get("application"), applicationPath);
+        printer = new Printer(applicationPath);
+        printer.AppendToFileName("_Intermediate");
+        printer.PrintFIODL(transformedGraphs.get("application"));
     }
 
-    private static void ConvertFiodlToKGT(String path) throws Exception {
-        if (!path.endsWith(Printer.FIODL_EXT)) {
-            throw new Exception("Must provide a .fiodl file.");
-        }
-        SystemGraph g = Printer.Read(path);
-        String fileName = Printer.GetFileName(path);
-        Printer.Print(g, Paths.ARTIFACTS_DIR + "/" + fileName + Printer.KGT_EXT);
+    private static void ConvertFiodlToKGT(String[] args) throws Exception {
+        if (args.length < 2)
+            SystemExit();
+
+        String path = args[1];
+        assert path.endsWith(Printer.FIODL_EXT): "Must provide a .fiodl file.";
+        System.out.println("Converting " + path + " to KGT format.");
+
+        Printer printer = new Printer(path);
+        SystemGraph g = printer.Read();
+        printer.SetOutDir(Paths.ARTIFACTS_DIR);
+        printer.PrintKGT(g);
     }
-
-    private static void CreateBuildSpecification(
-        ModelTargetType Platform, ModelTargetType Application
-    ) throws Exception {
-        SystemGraph gPlatform = switch (Platform) {
-            case MPSoC -> PlatformHandler.MPSoCGraph();
-            case Zynq -> PlatformHandler.ZynqGraph();
-            case MM -> PlatformHandler.MMGraph();
+    
+    private static void CreateBuildSpecification(String[] args) throws Exception {
+        if (args.length < 3)
+            SystemExit();
+        
+        String platformType = args[1];
+        SystemGraph gPlatform = switch (platformType.toLowerCase()) {
+            case "mpsoc" -> PlatformHandler.MPSoCGraph();
+            case "zynq" -> PlatformHandler.ZynqGraph();
+            case "mm" -> PlatformHandler.MMGraph();
             default -> throw new IllegalStateException(
-                "Unknown platform: " + Platform
+                "Unknown platform: " + platformType + " (mpsoc, zynq, mm)"
             );
         };
-
-        //? deprecate KGT print in favor of 'to_kgt'?
-        String platformPath = Paths.ARTIFACTS_DIR + "/" + Platform;
-        Printer.Print(gPlatform, platformPath + Printer.KGT_EXT); 
-        Printer.Print(gPlatform, platformPath + Printer.FIODL_EXT);
-
-        SystemGraph gApplication = switch (Application) {
-            case ToySDF -> ApplicationHandler.ToySDFGraph();
+            
+        String platformPath = 
+            Paths.ARTIFACTS_DIR + "/" + platformType + Printer.FIODL_EXT;
+        Printer platformPrinter = new Printer(platformPath);
+        platformPrinter.PrintFIODL(gPlatform);
+        
+        String applicationType = args[2];
+        SystemGraph gApplication = switch (applicationType.toLowerCase()) {
+            case "toysdf" -> ApplicationHandler.ToySDFGraph();
             default -> throw new IllegalStateException(
-                "Unknown application: " + Application
+                "Unknown application: " + applicationType + " (toysdf)"
             );
         };
-        //? deprecate KGT print in favor of 'to_kgt'?
-        String applicationPath = Paths.ARTIFACTS_DIR + "/" + Application;
-        Printer.Print(gApplication, applicationPath + Printer.KGT_EXT);
-        Printer.Print(gApplication, applicationPath + Printer.FIODL_EXT);
+            
+        String applicationPath = 
+            Paths.ARTIFACTS_DIR + "/" + applicationType + Printer.FIODL_EXT;
+        Printer applicationPrinter = new Printer(applicationPath);
+        applicationPrinter.PrintFIODL(gApplication);
+    }
+        
+    private static void ParseDseSolution(String[] args) throws Exception {
+        if (args.length < 2)
+            SystemExit();
+        
+        String path = args[1];
+        assert path.endsWith(Printer.FIODL_EXT): "Must provide a .fiodl file.";
+
+        SystemGraph g = new Printer(path).Read();
+        SolutionParser parser = new SolutionParser(g);
+        parser.ParseSolution();
     }
 }
+    

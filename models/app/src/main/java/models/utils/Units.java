@@ -11,4 +11,5 @@ public class Units {
     public static final int BYTES_TO_BITS = 8;
 
     public static final int CLB = 1;
+    public static final long CLOCK_CYCLE = 1L;
 }

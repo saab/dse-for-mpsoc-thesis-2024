@@ -20,24 +20,22 @@ public class ApplicationHandler {
 
         // ACTOR A
         app.AddActor(ACTOR_A_NAME);
-        app.InstrumentSoftware(
+        app.AddSWImplementation(
             ACTOR_A_NAME, 
             Map.of(
-                Requirements.FLOP, 1000L
+                Requirements.INT_ADD, 1000L
             ), 
             40000
         );
-        app.InstrumentHardware(
-            ACTOR_A_NAME,
-            Map.of(
-                Requirements.FLOP, 100L
-            ), 
+        app.AddHWImplementation(
+            ACTOR_A_NAME, 
+            100 * Units.CLOCK_CYCLE, 
             6000 * Units.CLB
         );
 
         // ACTOR B
         app.AddActor(ACTOR_B_NAME);
-        app.InstrumentSoftware(
+        app.AddSWImplementation(
             ACTOR_B_NAME, 
             Map.of(
                 Requirements.FLOP, 1000L
@@ -47,7 +45,7 @@ public class ApplicationHandler {
 
         // ACTOR C
         app.AddActor(ACTOR_C_NAME);
-        app.InstrumentSoftware(
+        app.AddSWImplementation(
             ACTOR_C_NAME, 
             Map.of(
                 Requirements.FLOP, 150L
@@ -57,7 +55,7 @@ public class ApplicationHandler {
           
         // ACTOR D
         app.AddActor(ACTOR_D_NAME);
-        app.InstrumentSoftware(
+        app.AddSWImplementation(
             ACTOR_D_NAME, 
             Map.of(
                 Requirements.FLOP, 130L

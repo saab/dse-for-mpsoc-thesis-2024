@@ -1,5 +1,5 @@
 
-package models.platform_model.components;
+package models.platform_model;
 
 import java.util.*;
 
@@ -274,12 +274,22 @@ public class PlatformBuilder {
         }
     }
 
-    public void AddFPGA(String name, int availableLogicArea, long bramCapacity) {
+    /**
+     * Add an FPGA to the platform.
+     * @param name The identifier for the FPGA.
+     * @param availableLogicArea The available logic area of the FPGA.
+     * @param bramCapacity The capacity of the FPGA's BRAM.
+     * @param frequency The operating frequency of the FPGA.
+     */
+    public void AddFPGA(
+        String name, int availableLogicArea, long bramCapacity, long frequency
+    ) {
         var fpga = LogicProgrammableModule.enforce(
             sGraph, sGraph.newVertex(name)
         );
         this.greyBox.addContained(Visualizable.enforce(fpga));
         this.viewers.put(name, fpga);
         fpga.availableLogicArea(availableLogicArea);
+        fpga.operatingFrequencyInHertz(frequency);
     }
 }
