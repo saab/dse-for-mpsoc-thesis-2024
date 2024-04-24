@@ -10,6 +10,9 @@ import forsyde.io.lib.hierarchy.ForSyDeHierarchy.SuperLoopRuntime;
 
 public class SolutionParser {
 
+    private final String BOLD = "\033[1m";
+    private final String STOPBOLD = "\033[0m";
+
     private SystemGraph graph;
 
     public SolutionParser(SystemGraph g) {
@@ -19,9 +22,9 @@ public class SolutionParser {
     /**
      * Parse the solution of the DSE. Included data:
      * <p>
-     * - Memory mappings 
+     * - Memory mappings - Where actors and data buffers are placed in memory
      * <p>
-     * - Schedules
+     * - Schedules - Where an actor should be executed (processing unit)
      * <p>
      * - Analyzed actors
      * <p>
@@ -33,43 +36,60 @@ public class SolutionParser {
      * @return A string representation of the solution.
      */
     public String ParseSolution() {
-        StringBuilder memoryMappings = new StringBuilder("\nMappings:\n");
-        StringBuilder schedules = new StringBuilder("\nSchedules:\n");
+        StringBuilder memoryMappings = new StringBuilder(
+            "\n" + BOLD + "Mappings:" + STOPBOLD + "\n" 
+        );
+        StringBuilder schedules = new StringBuilder(
+            "\n" + BOLD + "Schedules:" + STOPBOLD + "\n"
+        );
+        StringBuilder superLoops = new StringBuilder(
+            "\n" + BOLD + "Superloops:" + STOPBOLD + "\n"
+        );
+        StringBuilder analyzedBehavior = new StringBuilder(
+            "\n" + BOLD + "Analyzed Behavior:" + STOPBOLD + "\n"
+        );
+        StringBuilder boundedBuffer = new StringBuilder(
+            "\n" + BOLD + "Buffers:" + STOPBOLD + "\n"
+        );
 
         graph.vertexSet().forEach(v -> {
             MemoryMapped.tryView(graph, v).ifPresent(mm -> {
-                var memModule = mm.mappingHost();
+                var mappedTo = mm.mappingHost();
                 memoryMappings.append(
-                    v.getIdentifier() + " --> " + memModule.getIdentifier() + "\n"
-                );
+                    v.getIdentifier() + " --> " + mappedTo.getIdentifier()
+                + "\n");
             });
             Scheduled.tryView(graph, v).ifPresent(s -> {
                 schedules.append(
-                    v.getIdentifier() + " --> " + s.getIdentifier() + "\n"
-                );
-            });
-            AnalyzedActor.tryView(graph, v).ifPresent(aa -> {
-                // var actor = aa.;
-                System.out.println("Analyzed actor " + aa.getIdentifier());
-            });
-            AnalyzedBehavior.tryView(graph, v).ifPresent(ab -> {
-                // var behavior = ab.;
-                System.out.println("Analyzed behavior " + ab.getIdentifier());
-            });
-            BoundedBufferLike.tryView(graph, v).ifPresent(bb -> {
-                // var buffer = bb.;
-                System.out.println("Bounded buffer " + bb.getIdentifier());
+                    v.getIdentifier() + " --> " + s.runtimeHost().getIdentifier() + "\n");
             });
             SuperLoopRuntime.tryView(graph, v).ifPresent(sl -> {
-                // var runtime = sl.;
                 var entries = sl.superLoopEntries();
                 if (entries.size() > 0) {
-                    System.out.println(sl.getIdentifier() + " SUPERLOOP: " + entries);
+                    superLoops.append(
+                        sl.getIdentifier() + ": \n\t" + entries + "\n"
+                    );
                 }
+            });
+            AnalyzedBehavior.tryView(graph, v).ifPresent(ab -> {
+                analyzedBehavior.append(
+                    "Analyzed behavior " + ab.getIdentifier()  + ": " + 
+                    ab.throughputInSecsNumerator() + "/" + ab.throughputInSecsDenominator()
+                    + " (" + ab.throughputInSecsNumerator() / ab.throughputInSecsDenominator() + ")"
+                + "\n");
+            });
+            BoundedBufferLike.tryView(graph, v).ifPresent(bb -> {
+                boundedBuffer.append(BOLD + 
+                    "Bounded buffer " + bb.getIdentifier() 
+                + STOPBOLD);
             });
         });
         
-        var combined = memoryMappings.append("\n\n").append(schedules);
+        var combined = memoryMappings
+            .append("\n")
+            .append(schedules)
+            .append(superLoops)
+            .append(analyzedBehavior);
         System.out.println(combined);
 
         return combined.toString();
