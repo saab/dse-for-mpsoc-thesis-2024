@@ -20,16 +20,11 @@ public class Printer {
         this.filePath = filePath;
         SetFileName();
         SetFileDir();
-        SetFileExtension();
     }
 
     private static ModelHandler handler = new ModelHandler()
             .registerTraitHierarchy(new ForSyDeHierarchy())
             .registerDriver(new KGTDriver());
-
-    private void SetFileExtension() {
-        this.extension = filePath.substring(filePath.lastIndexOf('.'));
-    }
 
     private void SetFileDir() {
         this.fileDir = filePath.substring(0, filePath.lastIndexOf('/'));
@@ -66,7 +61,6 @@ public class Printer {
     }
 
     public SystemGraph Read() throws Exception {
-        System.out.println(System.getProperty("user.dir"));
         return handler.loadModel(filePath);
     }
 }

@@ -141,6 +141,10 @@ public class App {
         SystemGraph g = new Printer(path).Read();
         SolutionParser parser = new SolutionParser(g);
         parser.ParseSolution();
+        // parser.PrintSolution();
+        parser.WriteSolution(
+            path.replace(Printer.FIODL_EXT, ".txt")
+        );
     }
 }
     

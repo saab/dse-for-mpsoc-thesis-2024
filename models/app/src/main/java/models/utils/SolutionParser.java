@@ -3,55 +3,58 @@ package models.utils;
 import forsyde.io.core.SystemGraph;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy.MemoryMapped;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy.Scheduled;
-import forsyde.io.lib.hierarchy.ForSyDeHierarchy.AnalyzedActor;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy.AnalyzedBehavior;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy.BoundedBufferLike;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy.SuperLoopRuntime;
 
-public class SolutionParser {
+import java.io.IOException;
+import java.io.FileWriter;
 
+
+public class SolutionParser {
     private final String BOLD = "\033[1m";
     private final String STOPBOLD = "\033[0m";
-
     private SystemGraph graph;
+    private StringBuilder memoryMappings;
+    private StringBuilder schedules;
+    private StringBuilder superLoops;
+    private StringBuilder actorThroughputs;
+    private StringBuilder boundedBuffers;
+    private String solution;
 
     public SolutionParser(SystemGraph g) {
         this.graph = g;
+        this.memoryMappings = new StringBuilder(
+            "\n" + BOLD + "Mappings: Actor/Buffer <--> Memory" + STOPBOLD + "\n" 
+        );
+        this.schedules = new StringBuilder(
+            "\n" + BOLD + "Schedules:" + STOPBOLD + "\n"
+        );
+        this.superLoops = new StringBuilder(
+            "\n" + BOLD + "Superloops:" + STOPBOLD + "\n"
+        );
+        this.actorThroughputs = new StringBuilder(
+            "\n" + BOLD + "Actor throughput:" + STOPBOLD + "\n"
+        );
+        this.boundedBuffers = new StringBuilder(
+            "\n" + BOLD + "Buffers:" + STOPBOLD + "\n"
+        );
     }
     
     /**
-     * Parse the solution of the DSE. Included data:
+     * Parses the DSE solution given in <graph>, including:
      * <p>
      * - Memory mappings - Where actors and data buffers are placed in memory
      * <p>
      * - Schedules - Where an actor should be executed (processing unit)
-     * <p>
-     * - Analyzed actors
      * <p>
      * - Analyzed behaviors
      * <p>
      * - Bounded buffers
      * <p>
      * - Super loop runtimes
-     * @return A string representation of the solution.
      */
-    public String ParseSolution() {
-        StringBuilder memoryMappings = new StringBuilder(
-            "\n" + BOLD + "Mappings:" + STOPBOLD + "\n" 
-        );
-        StringBuilder schedules = new StringBuilder(
-            "\n" + BOLD + "Schedules:" + STOPBOLD + "\n"
-        );
-        StringBuilder superLoops = new StringBuilder(
-            "\n" + BOLD + "Superloops:" + STOPBOLD + "\n"
-        );
-        StringBuilder analyzedBehavior = new StringBuilder(
-            "\n" + BOLD + "Analyzed Behavior:" + STOPBOLD + "\n"
-        );
-        StringBuilder boundedBuffer = new StringBuilder(
-            "\n" + BOLD + "Buffers:" + STOPBOLD + "\n"
-        );
-
+    public void ParseSolution() {
         graph.vertexSet().forEach(v -> {
             MemoryMapped.tryView(graph, v).ifPresent(mm -> {
                 var mappedTo = mm.mappingHost();
@@ -61,7 +64,8 @@ public class SolutionParser {
             });
             Scheduled.tryView(graph, v).ifPresent(s -> {
                 schedules.append(
-                    v.getIdentifier() + " --> " + s.runtimeHost().getIdentifier() + "\n");
+                    v.getIdentifier() + " --> " + s.runtimeHost().getIdentifier()
+                + "\n");
             });
             SuperLoopRuntime.tryView(graph, v).ifPresent(sl -> {
                 var entries = sl.superLoopEntries();
@@ -72,27 +76,46 @@ public class SolutionParser {
                 }
             });
             AnalyzedBehavior.tryView(graph, v).ifPresent(ab -> {
-                analyzedBehavior.append(
-                    "Analyzed behavior " + ab.getIdentifier()  + ": " + 
-                    ab.throughputInSecsNumerator() + "/" + ab.throughputInSecsDenominator()
-                    + " (" + ab.throughputInSecsNumerator() / ab.throughputInSecsDenominator() + ")"
+                var num = ab.throughputInSecsNumerator();
+                var den = ab.throughputInSecsDenominator();
+                actorThroughputs.append(
+                    ab.getIdentifier()  + ": " + 
+                    num + "/" + den + " (" + num / den + ")"
                 + "\n");
             });
             BoundedBufferLike.tryView(graph, v).ifPresent(bb -> {
-                boundedBuffer.append(BOLD + 
-                    "Bounded buffer " + bb.getIdentifier() 
-                + STOPBOLD);
+                boundedBuffers.append(
+                    bb.getIdentifier() + " --> " + bb.maxElements() + 
+                    " elements * " + bb.elementSizeInBits() + " bits\n"
+                );
             });
         });
         
-        var combined = memoryMappings
-            .append("\n")
+        this.solution = memoryMappings
             .append(schedules)
             .append(superLoops)
-            .append(analyzedBehavior);
-        System.out.println(combined);
+            .append(actorThroughputs)
+            .append(boundedBuffers).toString();
+    }
 
-        return combined.toString();
+    public void PrintSolution() {
+        assert solution != null : "Solution must be parsed first.";
+        System.out.println(solution);
+    }
+
+    public void WriteSolution(String outPath) {
+        assert solution != null : "Solution must be parsed first.";
+        var stripped = solution
+            .replace(BOLD, "**")
+            .replace(STOPBOLD, "**");
+        try {
+            var writer = new java.io.FileWriter(outPath);
+            writer.write(stripped);
+            writer.close();
+            System.out.println("Solution written to " + outPath);
+        } catch (IOException e) {
+            System.err.println("Failed to write solution to " + outPath);
+        }
     }
 
 }
