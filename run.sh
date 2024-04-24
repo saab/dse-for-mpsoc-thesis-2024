@@ -82,6 +82,10 @@ cd $CUSTOM_PROJECT_PATH
 for fiodl_file in $DSE_OUTPUT_PATH/reversed/*.fiodl; do
     visualize $fiodl_file
     gradle run --args="parse_solution $fiodl_file"
+    if [ $? -ne 0 ]; then
+	echo "Solution parsing failed"
+	exit 1
+    fi
 done
 
 #!! DEPRECATED!! #

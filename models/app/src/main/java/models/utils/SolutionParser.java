@@ -109,7 +109,7 @@ public class SolutionParser {
             .replace(BOLD, "**")
             .replace(STOPBOLD, "**");
         try {
-            var writer = new java.io.FileWriter(outPath);
+            var writer = new FileWriter(outPath);
             writer.write(stripped);
             writer.close();
             System.out.println("Solution written to " + outPath);
