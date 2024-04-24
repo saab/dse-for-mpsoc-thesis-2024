@@ -126,7 +126,7 @@ public class ApplicationBuilder {
 	 * @param actorName Name of the actor (must exist).
 	 * @param clockCycles Clock cycles to run the hardware implementation.
 	 * @param requiredArea Required area for hardware implementation.
-	 * @throws RuntimeException if the logic area is not specified.
+	 * @throws AssertionError if the logic area is not specified.
 	 */
 	public void AddHWImplementation(
 		String actorName, long clockCycles, int requiredArea

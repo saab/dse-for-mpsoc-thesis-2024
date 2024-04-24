@@ -1,0 +1,25 @@
+
+**Mappings: Actor/Buffer <--> Memory**
+VC1_STENCIL --> FPGA_BRAM
+VC1_PIXEL1 --> PS_DDR4
+VC1_PIXEL2 --> TCM_RPU_C0
+CH_VC1_PIXEL2_VC1_STENCIL --> TCM_RPU_C1
+CH_VC1_PIXEL1_VC1_PIXEL2 --> TCM_RPU_C0
+
+**Schedules:**
+VC1_STENCIL --> APU_C1_Scheduler
+VC1_PIXEL1 --> APU_C1_Scheduler
+VC1_PIXEL2 --> APU_C1_Scheduler
+
+**Superloops:**
+APU_C1_Scheduler: 
+	[VC1_PIXEL1, VC1_PIXEL1, VC1_PIXEL1, VC1_PIXEL1, VC1_PIXEL1, VC1_PIXEL2, VC1_STENCIL, VC1_STENCIL, VC1_STENCIL, VC1_STENCIL, VC1_STENCIL]
+
+**Actor throughput:**
+VC1_STENCIL: -1/1 (-1)
+VC1_PIXEL1: -1/1 (-1)
+VC1_PIXEL2: -1/1 (-1)
+
+**Buffers:**
+CH_VC1_PIXEL2_VC1_STENCIL --> 1 elements * 0 bits
+CH_VC1_PIXEL1_VC1_PIXEL2 --> 1 elements * 0 bits

@@ -162,7 +162,7 @@ public class FPGATransformer {
                 // match instruction names for tailored processing module
                 var updatedHwReqs = hwReqs.entrySet().stream()
                     .collect(Collectors.toMap(
-                        e -> lpm.getIdentifier() + "_" + e.getKey(), 
+                        e -> lpm.getIdentifier() + "_" + actorName + "_" + e.getKey(), 
                         e -> e.getValue()
                     ));
 

@@ -120,6 +120,7 @@ public class App {
         String applicationType = args[2];
         SystemGraph gApplication = switch (applicationType.toLowerCase()) {
             case "toysdf" -> ApplicationHandler.ToySDFGraph();
+            case "vc1" -> ApplicationHandler.VC1Graph();
             default -> throw new IllegalStateException(
                 "Unknown application: " + applicationType + " (toysdf)"
             );
@@ -138,12 +139,12 @@ public class App {
         String path = args[1];
         assert path.endsWith(Printer.FIODL_EXT): "Must provide a .fiodl file.";
 
-        SystemGraph g = new Printer(path).Read();
-        SolutionParser parser = new SolutionParser(g);
+        var parser = new SolutionParser(new Printer(path).Read());
         parser.ParseSolution();
         // parser.PrintSolution();
-        parser.WriteSolution(
-            path.replace(Printer.FIODL_EXT, ".txt")
+        parser.WriteSolution(Paths.PARSED_SOLUTIONS_DIR + "/"
+            + path.substring(path.lastIndexOf('/') + 1, path.lastIndexOf('.'))
+            + "_solution.txt"
         );
     }
 }

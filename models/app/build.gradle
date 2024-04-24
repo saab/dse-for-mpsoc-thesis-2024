@@ -14,7 +14,7 @@ configurations.all {
 
 dependencies {
     implementation "com.github.forsyde.forsyde-io:forsyde-io-java-core:0.7.17"
-    implementation "com.github.forsyde.forsyde-io:forsyde-io-java-libforsyde:proglogic-SNAPSHOT"
+    implementation "com.github.forsyde.forsyde-io:forsyde-io-java-libforsyde:3ab53ed12ad77fa2909d45c2b4bd77874dd2b312"
     implementation ("com.github.forsyde.forsyde-io:forsyde-io-java-graphviz:v0.7.17") {
         exclude group: 'com.github.forsyde.forsyde-io', module: 'forsyde-io-java-libforsyde'
     }
