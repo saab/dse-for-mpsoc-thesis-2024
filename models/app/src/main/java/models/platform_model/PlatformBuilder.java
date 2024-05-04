@@ -307,7 +307,7 @@ public class PlatformBuilder {
             core.operatingFrequencyInHertz(frequency);
             core.modalInstructionsPerCycle(modalInstructions);
 
-            var tdmApu = TimeDivisionMultiplexingRuntime.enforce(sGraph,
+            var tdmApu = SuperLoopRuntime.enforce(sGraph,
                 sGraph.newVertex(coreName + "_Scheduler")
             );
             this.greyBox.addContained(Visualizable.enforce(tdmApu));
