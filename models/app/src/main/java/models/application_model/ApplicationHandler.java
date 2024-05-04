@@ -29,11 +29,11 @@ public class ApplicationHandler {
 
         // ACTOR A
         app.AddActor(ACTOR_A_NAME);
-        app.AddSWImplementation(
-            ACTOR_A_NAME, 
-            Map.of(Requirements.INT_ADD, 1000L), 
-            40000
-        );
+        // app.AddSWImplementation(
+        //     ACTOR_A_NAME, 
+        //     Map.of(Requirements.FLOP, 1000L), 
+        //     40000
+        // );
         app.AddHWImplementation(
             ACTOR_A_NAME, 
             100 * Units.CLOCK_CYCLE, 

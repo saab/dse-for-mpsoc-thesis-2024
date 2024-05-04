@@ -5,8 +5,10 @@ import forsyde.io.core.SystemGraph;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy.*;
 import forsyde.io.lib.hierarchy.platform.hardware.LogicProgrammableModuleViewer;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy.InstrumentedHardwareBehaviour;
+import forsyde.io.lib.hierarchy.ForSyDeHierarchy.InstrumentedSoftwareBehaviour;
 import forsyde.io.lib.hierarchy.implementation.functional.InstrumentedHardwareBehaviourViewer;
 import forsyde.io.lib.hierarchy.implementation.functional.InstrumentedSoftwareBehaviourViewer;
+import models.application_model.ApplicationBuilder;
 import models.platform_model.PlatformBuilder;
 
 import java.util.Map;
@@ -83,10 +85,10 @@ public class FPGATransformer {
      * }
      * }</pre>
      * The actor's hardware requirements are derived and a new Processing Module
-     * is added to the platform. The actor's hardware requirements are then 
-     * updated to reflect the new Processing Module's instructions which results
-     * in an exclusively available Processing Module for the actor.  
-     * for the actor.
+     * is added to the platform to represent the actor's hardware implementation. 
+     * The actor's hardware requirements are then placed as instructions with 
+     * cycle requirement of one (1). Processing Module's instructions which results
+     * in an exclusively available Processing Module for the actor.
      * <pre>{@code
      * "modalInstructions": { // "HW_Impl_Actor_A" (Processing Module)
      *     "HW_Instr_Actor_A": {
@@ -125,37 +127,60 @@ public class FPGATransformer {
             );
         }
 
-        PlatformBuilder builder = new PlatformBuilder(
+        PlatformBuilder platformBuilder = new PlatformBuilder(
             "TransformedPlatform", platform
+        );
+        ApplicationBuilder applicationBuilder = new ApplicationBuilder(
+            "TransformedApplication", application
         );
 
         var hwActors = GetHWActors();
         var swActors = GetSWActors();
-        hwActors.forEach(a -> {
-            String actorName = a.getViewedVertex().getIdentifier();
-            var hwReqs = a.resourceRequirements()
-                .get(Requirements.HW_INSTRUCTIONS);
+        for (var lpm : lpms) {                
+            var lpmFreq = lpm.operatingFrequencyInHertz();
+            var bramSize = lpm.blockRamSizeInBits();
 
-            var correspondingSWActor = swActors.stream()
-                .filter(swA -> swA.getIdentifier().equals(actorName))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(
-                    "No corresponding software implementation found for " + 
-                        actorName
-                ));
-            var swReqs = correspondingSWActor.computationalRequirements();
+            assert lpmFreq > 1L :
+                "LPM must have a defined frequency (not default of 1L).";
+            assert bramSize > 0 :
+                "LPM must have a defined BRAM size > 0.";
 
-            for (var lpm : lpms) {
+            var sw = lpmSwitchConnections.get(lpm.getIdentifier()).get(0);
+
+            var bramName = lpm.getIdentifier() + "_BRAM";
+            var bramSw = bramName + "_BRAM";
+
+            platformBuilder.AddMemory(bramName, lpmFreq, bramSize); 
+            platformBuilder.AddSwitch(bramSw, lpmFreq, sw.flitSizeInBits()); // match flit size
+
+            hwActors.forEach(a -> {
+                String actorName = a.getViewedVertex().getIdentifier();
+                var hwReqs = a.resourceRequirements()
+                    .get(Requirements.HW_INSTRUCTIONS);
+
+                var correspondingSWActor = swActors.stream()
+                    .filter(swA -> swA.getIdentifier().equals(actorName))
+                    .findFirst()
+                    .orElse(null);
+                      
+                if (correspondingSWActor == null) {
+                    applicationBuilder.AddSWImplementation(actorName, null, 0);
+                    swActors.clear();
+                    swActors.addAll(GetSWActors());
+                    correspondingSWActor = swActors.stream()
+                        .filter(swA -> swA.getIdentifier().equals(actorName))
+                        .findFirst()
+                        .orElseThrow();
+                }
+                var swReqs = correspondingSWActor.computationalRequirements();
+
                 var hwInstrsName = lpm.getIdentifier() + "_" +
                     Requirements.HW_INSTRUCTIONS + "_" + actorName;
-                var lpmFreq = lpm.operatingFrequencyInHertz();
-
-                assert lpmFreq > 0 : "LPM must have a defined frequency > 0.";
                 
-                // extract actor's HW requirements and convert into pu instructions
+                // convert hw requirements into sw instructions
                 var hwInstrsPu = hwReqs.keySet().stream()
                     .collect(Collectors.toMap(
-                        instr -> lpm.getIdentifier() + "_" + instr, 
+                        instr -> lpm.getIdentifier() + "_" + actorName + "_" + instr, 
                         instr -> 1.0 
                     ));
 
@@ -174,7 +199,7 @@ public class FPGATransformer {
                 String hwImplName = 
                     lpm.getIdentifier() + "_" + "HW_Impl_" + actorName;
                 int cores = 1;
-                builder.AddCPU(
+                platformBuilder.AddCPU(
                     hwImplName, 
                     cores, 
                     lpmFreq, 
@@ -182,10 +207,11 @@ public class FPGATransformer {
                 );
 
                 // connect tailored processing module to switch
-                var sw = lpmSwitchConnections.get(lpm.getIdentifier()).get(0);
-                builder.Connect(hwImplName, sw.getIdentifier());
-            }
-        });
+                platformBuilder.ConnectTwoWay(hwImplName, sw.getIdentifier());
+                // connect tailored processing module to BRAM
+                platformBuilder.ConnectTwoWay(hwImplName, bramSw);
+            });
+        };
 
         System.out.println(
             "Transformed " + hwActors.size() + " actors: " + 
@@ -195,8 +221,8 @@ public class FPGATransformer {
         );
         
         return Map.of(
-            "platform", builder.GetGraph(),
-            "application", application
+            "platform", platformBuilder.GetGraph(),
+            "application", applicationBuilder.GetGraph()
         );
     }
 }

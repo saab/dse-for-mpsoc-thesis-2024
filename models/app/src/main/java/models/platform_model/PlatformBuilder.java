@@ -38,7 +38,7 @@ public class PlatformBuilder {
             .flatMap(v -> GreyBoxViewer.tryView(g, v).stream())
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException(
-                "No GreyBox, required for visualization, found in the given graph."
+                "No GreyBox for visualization found in the given graph."
             ));
             
         for (var v : g.vertexSet()) {
@@ -58,15 +58,15 @@ public class PlatformBuilder {
                 viewers.put(v.getIdentifier(), view)
             );
         }
-
-        // System.out.println(viewers.size() + " viewers found.");
     }
 
-
+    /**
+     * Get the system graph of the platform.
+     * @return The system graph of the platform.
+     */
     public SystemGraph GetGraph() {
         return this.sGraph;
     }
-
 
     /**
      * Connect two components bidirectionally with explicit port names.
@@ -101,45 +101,89 @@ public class PlatformBuilder {
             b, a, EdgeTraits.StructuralContainment, EdgeTraits.VisualConnection
         );
     }
+
+    /**
+     * Connect two components unidirectionally, thus order of arguments matter.
+     * Can communicate a -> b, but not b -> a.
+     * @param a The first component, source of the edge.
+     * @param b The second component, destination of the edge.
+     * @param portA The port of the first component.
+     * @param portB The port of the second component.
+     */
+    private void CreateDirectedEdge(
+        VertexViewer a, VertexViewer b, String portA, String portB
+    ) {
+        sGraph.connect(
+            a, b, portA, portB, 
+            EdgeTraits.StructuralContainment, EdgeTraits.VisualConnection
+        );
+    }
     
     /**
-     * Connect all components from the given namespace to another component.
-     * @param srcCompNamespace The namespace or exact name of the source components.
-     * (must exist).
-     * @param dstCompName The exact name of the destination component (must exist).
+     * Connect a component uni-directionally to another component.
+     * @param srcCompName The name of the source component (must exist).
+     * @param dstCompName The name of the destination component (must exist).
      */
-    public void Connect(String srcCompNamespace, String dstCompName) {
-        if (!this.viewers.keySet().contains(dstCompName)) {
-            throw new IllegalArgumentException(
-                "No component named " + dstCompName + " found."
+    public void ConnectOneWay(String srcCompName, String dstCompName) {
+        assert this.viewers.keySet().contains(srcCompName) :
+            "No component named " + srcCompName + " found";
+        assert this.viewers.keySet().contains(dstCompName) :
+            "No component named " + dstCompName + " found";
+        var src = this.viewers.get(srcCompName);
+        var dst = this.viewers.get(dstCompName);
+        String dstPort = "from_" + src.getIdentifier();
+        String srcPort = "to_" + dst.getIdentifier();
+        if ((dst instanceof GenericMemoryModuleViewer && 
+            src instanceof InstrumentedProcessingModuleViewer) ||
+            (src instanceof GenericMemoryModuleViewer &&
+            dst instanceof InstrumentedProcessingModuleViewer)
+        ) {
+            throw new UnsupportedOperationException(
+                "Cannot directly connect processing modules and memory."
             );
         }
+
+        dst.addPorts(dstPort);
+        src.addPorts(srcPort);
+        this.CreateDirectedEdge(src, dst, srcPort, dstPort);
+    }
+
+    /**
+     * Connect all components bidirectionally from the given namespace to 
+     * another component.
+     * @param srcCompNamespace The namespace or exact name of the source components.
+     * (must exist).
+     * @param dstCompName The name of the destination component (must exist).
+     */
+    public void ConnectTwoWay(String srcCompNamespace, String dstCompName) {
+        assert this.viewers.keySet().contains(dstCompName) :
+            "No component named " + dstCompName + " found";
+        var dst = this.viewers.get(dstCompName);
         
         List<String> srcCompNames = this.viewers.keySet().stream()
             .filter((key) -> key.contains(srcCompNamespace))
+            .filter((key) -> key.compareTo(dst.getIdentifier()) != 0)
             .toList();
 
-        if (srcCompNames.isEmpty()) {
-            throw new IllegalArgumentException(
-                "No component(s) found for name(space) " + srcCompNamespace +
-                " when trying to add connections to " + dstCompName + "."
-            );
-        }
-            
-        var dst = this.viewers.get(dstCompName);
+        assert !srcCompNames.isEmpty() :
+            "No component(s) found for name(space) " + srcCompNamespace +
+            " when trying to add connections to " + dstCompName;
+        
         srcCompNames.stream()
         .map((srcCompName) -> this.viewers.get(srcCompName))
         .forEach((srcComp) -> {
-            String dstPort = dstCompName + "_to_" + srcComp.getIdentifier();
-            String srcPort = srcComp.getIdentifier() + "_to_" + dstCompName;
+            String dstPort = "to_from_" + srcComp.getIdentifier();
+            String srcPort = "to_from_" + dstCompName;
             if ((dst instanceof GenericMemoryModuleViewer && 
                 srcComp instanceof InstrumentedProcessingModuleViewer) ||
                 (srcComp instanceof GenericMemoryModuleViewer &&
-                dst instanceof InstrumentedProcessingModuleViewer)) {
+                dst instanceof InstrumentedProcessingModuleViewer)
+            ) {
                 throw new UnsupportedOperationException(
                     "Cannot directly connect processing modules and memory."
                 );
             }
+            
             dst.addPorts(dstPort);
             srcComp.addPorts(srcPort);
             this.CreateEdge(srcComp, dst, srcPort, dstPort);
@@ -147,66 +191,7 @@ public class PlatformBuilder {
     }
 
     /**
-     * Connect all components from the given namespace to another component with
-     * a switch in between. One switch is created for each source component to
-     * overcome the IDeSyDe assumption that it can route traffic between its
-     * components when, in reality, just being.
-     * @param srcCompNamespace
-     * @param dstCompName
-     * @param frequency
-     */
-    public void ConnectToMemory(
-        String srcCompNamespace, String memName, long frequency
-    ) {
-        if (!this.viewers.keySet().contains(memName)) {
-            throw new IllegalArgumentException(
-                "No memory named " + memName + " found."
-            );
-        }
-        
-        List<String> srcCompNames = this.viewers.keySet().stream()
-            .filter((key) -> key.contains(srcCompNamespace))
-            .toList();
-
-        if (srcCompNames.isEmpty()) {
-            throw new IllegalArgumentException(
-                "No component(s) found for name(space) " + srcCompNamespace +
-                " when trying to add connections to " + memName + "."
-            );
-        }
-
-        // add switch between each source component and the destination component
-        // to avoid the switch becoming a "router"
-        for (var srcCompName : srcCompNames) {
-            String switchName = memName + "_" + srcCompName + "_SWITCH";
-            // System.out.println("Adding switch " + switchName + " between " + 
-            //     srcCompName + " and " + memName + ".");
-            if (this.viewers.keySet().contains(switchName)) {
-                throw new IllegalArgumentException(
-                    "Switch " + switchName + " already exists."
-                );
-            }
-            this.AddRouter(switchName, frequency);
-            var sw = this.viewers.get(switchName);
-            String swToSrc = switchName + "_to_" + srcCompName;
-            sw.addPorts(swToSrc);
-            String swToDst = switchName + "_to_" + memName;
-            sw.addPorts(swToDst);
-
-            var srcComp = this.viewers.get(srcCompName);
-            String srcToSw = srcCompName + "_to_" + switchName;
-            srcComp.addPorts(srcToSw);
-            var dstComp = this.viewers.get(memName);
-            String dstToSw = memName + "_to_" + switchName;
-            dstComp.addPorts(dstToSw);
-        
-            this.CreateEdge(sw, srcComp, swToSrc, srcToSw);
-            this.CreateEdge(sw, dstComp, swToDst, dstToSw);
-        }
-    }
-
-    /**
-     * Add a memory module to the platform.
+     * Add physical memory to the platform.
      * @param name The identifier for the memory module.
      * @param frequency The operating frequency of the memory module.
      * @param spaceInBits The space in bits of the memory module.
@@ -228,7 +213,7 @@ public class PlatformBuilder {
      * @param name The identifier for the switch.
      * @param frequency The operating frequency of the switch.
      */
-    public void AddRouter(String name, long frequency) {
+    public void AddSwitch(String name, long frequency, long flitInBits) {
         var sw = InstrumentedCommunicationModule.enforce(
             sGraph, sGraph.newVertex(name)
         );
@@ -236,9 +221,66 @@ public class PlatformBuilder {
         this.greyBox.addContained(Visualizable.enforce(sw));
         sw.operatingFrequencyInHertz(frequency);
         sw.initialLatency(0L);
-        sw.flitSizeInBits((long)1 * Units.BYTES_TO_BITS);
-        sw.maxCyclesPerFlit(1);   // cycles to send 1 byte
+        sw.flitSizeInBits(flitInBits);
+        sw.maxCyclesPerFlit(1);   // cycles to send 1 flit
         sw.maxConcurrentFlits(1); //! exactly match the number of connections?
+    }
+
+    /**
+     * Add routes inside a switch that connect ports arbitrarily. Component names
+     * part of `routes` will be mapped to corresponding port names automatically.
+     * @param name The identifier for the switch.
+     * @param routes A map of component names that the switch has ports and
+     * connections to
+     */
+    public void AddInternalSwitchRoutes(
+        String name, Map<String, List<String>> routes
+    ) {
+        var sw = this.viewers.get(name);
+        assert sw != null : "Switch " + name + " not found.";
+        var ports = sw.getPorts();
+
+        routes.forEach((compName, connectsToNames) -> {
+            assert ports.stream().anyMatch(p -> p.contains(compName)) : 
+                "Switch port for " + compName + " not found, ports: " + ports;
+            assert connectsToNames.stream().allMatch(
+                v -> ports.stream().anyMatch(p -> p.contains(v))
+            ) : "Switch port for " + connectsToNames + " not found, ports: " + ports;
+        });
+        
+        HashMap<String, List<String>> portConnections = new HashMap<>();
+        routes.forEach((compName, connectsToNames) -> {
+            String portName = ports.stream()
+                .filter(p -> p.contains(compName))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                    "Port for component " + compName + " not found in " + ports +
+                    " (port connections for " + name + ")"
+                ));
+            var connectsToPorts = connectsToNames.stream()
+                .map(v -> ports.stream()
+                    .filter(p -> p.contains(v))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException(
+                        "Port for component " + v + " not found in " + ports +
+                        " (port connections for " + name + ")"
+                    ))
+                )
+                .toList();
+
+            
+            // System.out.println(name + ": "+compName+" <--> "+connectsToNames);
+            // System.out.println("-   ports: "+ports);
+            // System.out.println("-   port: "+portName);
+            // for (int i = 0; i < connectsToNames.size(); i++) {
+            //     System.out.println("-   "+connectsToNames.get(i)+": "+connectsToPorts.get(i));
+            // }
+            portConnections.put(portName, connectsToPorts);
+        });
+
+        CommunicationModulePortSpecification.enforce(
+            sGraph, sw.getViewedVertex()
+        ).portConnections(portConnections);
     }
 
     /**
@@ -278,11 +320,11 @@ public class PlatformBuilder {
      * Add an FPGA to the platform.
      * @param name The identifier for the FPGA.
      * @param availableLogicArea The available logic area of the FPGA.
-     * @param bramCapacity The capacity of the FPGA's BRAM.
-     * @param frequency The operating frequency of the FPGA.
+     * @param bramSizeInBits The size of the block RAM in bits.
+     * @param frequency The operating frequency of the FPGA and BRAM.
      */
     public void AddFPGA(
-        String name, int availableLogicArea, long bramCapacity, long frequency
+        String name, int availableLogicArea, int bramSizeInBits, long frequency
     ) {
         var fpga = LogicProgrammableModule.enforce(
             sGraph, sGraph.newVertex(name)
@@ -290,6 +332,7 @@ public class PlatformBuilder {
         this.greyBox.addContained(Visualizable.enforce(fpga));
         this.viewers.put(name, fpga);
         fpga.availableLogicArea(availableLogicArea);
+        fpga.blockRamSizeInBits(bramSizeInBits);
         fpga.operatingFrequencyInHertz(frequency);
     }
 }

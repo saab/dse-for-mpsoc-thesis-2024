@@ -5,7 +5,7 @@ CUSTOM_PROJECT_PATH=$ROOT_PATH/models
 ARTIFACTS_PATH=$CUSTOM_PROJECT_PATH/app/src/main/java/models/artifacts
 DSE_PATH=$ROOT_PATH/IDeSyDe
 DSE_EXECUTABLE=idesyde
-DSE_OUTPUT_PARSER=$ROOT_PATH/parse_dse_results.py
+# DSE_OUTPUT_PARSER=$ROOT_PATH/parse_dse_results.py
 DSE_OUTPUT_PATH=$DSE_PATH/run
 
 visualize() {
@@ -66,7 +66,6 @@ rm -rf $DSE_OUTPUT_PATH/*
 # perform dse with constructed system models
 cd $DSE_PATH
 ./$DSE_EXECUTABLE -v DEBUG -p 5 \
-    -o $DSE_OUTPUT_PATH \
     --x-total-time-out 5 \
     $ARTIFACTS_PATH/$plat \
     $ARTIFACTS_PATH/$appl

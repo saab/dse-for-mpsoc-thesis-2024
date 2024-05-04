@@ -9,6 +9,7 @@ import forsyde.io.lib.hierarchy.ForSyDeHierarchy.*;
 import forsyde.io.lib.hierarchy.behavior.moc.sdf.SDFActorViewer;
 import forsyde.io.lib.hierarchy.platform.hardware.StructureViewer;
 import forsyde.io.lib.hierarchy.visualization.GreyBoxViewer;
+import models.App;
 import models.utils.Requirements;
 
 
@@ -24,6 +25,37 @@ public class ApplicationBuilder {
 		this.application = Structure.enforce(sGraph, sGraph.newVertex(name));
 		this.greyBox = GreyBox.enforce(Visualizable.enforce(application));
 		this.sGraph = sGraph;
+	}
+
+	/**
+     * Create an application from an existing graph, by extraction of the viewers.
+     * @param g The existing system graph to use as application base.
+     */
+	public ApplicationBuilder(String name, SystemGraph g) {
+        this.sGraph = g;
+		this.greyBox = g.vertexSet()
+            .stream()
+            .flatMap(v -> GreyBoxViewer.tryView(g, v).stream())
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException(
+                "No GreyBox for visualization found in the given graph."
+            ));
+		this.application = g.vertexSet()
+			.stream()
+			.flatMap(v -> Structure.tryView(g, v).stream())
+			.findFirst()
+			.orElseThrow(() -> new IllegalArgumentException(
+				"No containing 'Structure' found in the given graph."
+			));
+		
+		for (var v : g.vertexSet()) {
+			SDFActor.tryView(g, v).ifPresent(
+				actor -> this.viewers.put(v.getIdentifier(), actor)
+			);
+			SDFChannel.tryView(g, v).ifPresent(
+				chan -> this.viewers.put(v.getIdentifier(), chan)
+			);
+		}
 	}
 
 	/**
@@ -115,10 +147,13 @@ public class ApplicationBuilder {
 		assert instrs.size() > 0 : "Must require at least one instruction type";
 		assert codeSize > 0 : "Must specify a code size in bits";
 
-		sw.computationalRequirements(
-			Map.of(Requirements.SW_INSTRUCTIONS, instrs)
-		);
-		sw.maxSizeInBits(Map.of("impl", codeSize));
+		if (instrs != null) {
+			sw.computationalRequirements(
+				Map.of(Requirements.SW_INSTRUCTIONS, instrs)
+			);
+		}
+		
+		sw.maxSizeInBits(Map.of("discAndRuntimeSize", codeSize));
 	}
 
 	/**
@@ -126,10 +161,10 @@ public class ApplicationBuilder {
 	 * @param actorName Name of the actor (must exist).
 	 * @param clockCycles Clock cycles to run the hardware implementation.
 	 * @param requiredArea Required area for hardware implementation.
-	 * @throws AssertionError if the logic area is not specified.
+	 * @throws AssertionError if the logic area, or block ram size is not specified.
 	 */
 	public void AddHWImplementation(
-		String actorName, long clockCycles, int requiredArea
+		String actorName, long clockCycles, long requiredArea
 	) {
 		var actor = GetActor(actorName);
 		var hw = InstrumentedHardwareBehaviour.enforce(
@@ -140,11 +175,16 @@ public class ApplicationBuilder {
 		assert clockCycles > 0 : "Clock cycles must be >= 1";
 
 		hw.resourceRequirements(
-			Map.of(Requirements.HW_INSTRUCTIONS, Map.of(
-				Requirements.CLOCK_CYCLES, (long) clockCycles
-			))
+			Map.of(
+				Requirements.HW_INSTRUCTIONS, Map.of(
+					Requirements.CLOCK_CYCLES, (long) clockCycles
+				), 
+				Requirements.FPGA, Map.of(
+					Requirements.AREA, requiredArea
+				)
+			)
 		);
-		hw.requiredHardwareImplementationArea(requiredArea);
+		// hw.requiredFPGAHardwareImplementationArea(requiredArea);
 	}
 
 	/**
@@ -202,7 +242,6 @@ public class ApplicationBuilder {
 		currCons.put(inName, numCons);
 		actor.consumption(currCons);
 	}
-
 
 	/**
 	 * Assign a new out channel with static production to the given actor.
