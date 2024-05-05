@@ -212,6 +212,7 @@ public class PlatformBuilder {
      * Adds a switch (communication element) to the platform
      * @param name The identifier for the switch.
      * @param frequency The operating frequency of the switch.
+     * @param flitInBits The size of the flit in bits.
      */
     public void AddSwitch(String name, long frequency, long flitInBits) {
         var sw = InstrumentedCommunicationModule.enforce(
