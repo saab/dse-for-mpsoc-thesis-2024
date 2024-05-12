@@ -72,8 +72,8 @@ public class PlatformHandler {
             Map.of(
                 Requirements.SW_INSTRUCTIONS,
                 Map.of(
-                    Requirements.FLOP, 8,
-                    Requirements.INTOP, 4
+                    Requirements.FLOP, 2,
+                    Requirements.INTOP, 1
                 )
             )
         );
@@ -86,8 +86,8 @@ public class PlatformHandler {
             Map.of(
                 Requirements.SW_INSTRUCTIONS,
                 Map.of(
-                    Requirements.FLOP, 8,
-                    Requirements.INTOP, 4
+                    Requirements.FLOP, 2,
+                    Requirements.INTOP, 1
                 )
             )
         );
