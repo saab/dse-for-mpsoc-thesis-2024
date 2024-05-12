@@ -43,7 +43,7 @@ public class PlatformHandler {
             600 * Units.MHz,
             256 * Units.kB * Units.BYTES_TO_BITS
         );
-        platform.AddSwitch(OCM_SWITCH_NAME, 600 * Units.MHz, 64 * Units.BIT);
+        platform.AddSwitch(OCM_SWITCH_NAME, 200 * Units.MHz, 64 * Units.BIT);
         platform.ConnectTwoWay(OCM_SWITCH_NAME, OCM_NAME);
 
         // Processing System DDR4 Memory
@@ -52,16 +52,16 @@ public class PlatformHandler {
             600 * Units.MHz,
             4 * Units.GB * Units.BYTES_TO_BITS
         );
-        platform.AddSwitch(PS_DDR4_SWITCH_NAME, 600 * Units.MHz, 64 * Units.BIT);
+        platform.AddSwitch(PS_DDR4_SWITCH_NAME, 333 * Units.MHz, 64 * Units.BIT);
         platform.ConnectTwoWay(PS_DDR4_SWITCH_NAME, PS_DDR4_NAME);
 
         // Programmable Logic DDR4 Memory
         platform.AddMemory(
             PL_DDR4_NAME,
             600 * Units.MHz,
-            4 * Units.GB * Units.BYTES_TO_BITS
+            512 * Units.MB * Units.BYTES_TO_BITS
         );
-        platform.AddSwitch(PL_DDR4_SWITCH_NAME, 600 * Units.MHz, 16 * Units.BIT);
+        platform.AddSwitch(PL_DDR4_SWITCH_NAME, 333 * Units.MHz, 16 * Units.BIT);
         platform.ConnectTwoWay(PL_DDR4_NAME, PL_DDR4_SWITCH_NAME);
 
         // Processing System Application Processor Unit
@@ -69,23 +69,31 @@ public class PlatformHandler {
             APU_NAME,
             APU_CORES,
             (long) 1.5 * Units.GHz,
-            Map.of(Requirements.SW_INSTRUCTIONS, Map.of(
-                Requirements.FLOP, 0.04
-            ))
+            Map.of(
+                Requirements.SW_INSTRUCTIONS,
+                Map.of(
+                    Requirements.FLOP, 8,
+                    Requirements.INTOP, 4
+                )
+            )
         );
 
         // Processing System Real-time Processor Unit
         platform.AddCPU(
             RPU_NAME,
             RPU_CORES,
-            (long) 6 * Units.MHz,
-            Map.of(Requirements.SW_INSTRUCTIONS, Map.of(
-                Requirements.FLOP, 0.04
-            ))
+            (long) 600 * Units.MHz,
+            Map.of(
+                Requirements.SW_INSTRUCTIONS,
+                Map.of(
+                    Requirements.FLOP, 8,
+                    Requirements.INTOP, 4
+                )
+            )
         );
 
         // Processing System Real-time Processor Unit Switch
-        platform.AddSwitch(RPU_SWITCH_NAME, 600 * Units.MHz, 64 * Units.BIT);
+        platform.AddSwitch(RPU_SWITCH_NAME, 200 * Units.MHz, 64 * Units.BIT);
         platform.ConnectTwoWay(RPU_NAME, RPU_SWITCH_NAME);
         platform.ConnectTwoWay(RPU_SWITCH_NAME, PS_DDR4_SWITCH_NAME);
         platform.ConnectTwoWay(RPU_SWITCH_NAME, OCM_SWITCH_NAME);
@@ -99,28 +107,28 @@ public class PlatformHandler {
                 128 * Units.kB * Units.BYTES_TO_BITS
             );
             var tcmSwName = tcmName + "_SWITCH";
-            platform.AddSwitch(tcmSwName, 600 * Units.MHz, 64 * Units.BIT);
+            platform.AddSwitch(tcmSwName, 200 * Units.MHz, 64 * Units.BIT);
             platform.ConnectTwoWay(tcmSwName, tcmName);
             platform.ConnectTwoWay(tcmSwName, RPU_NAME + "_C" + i);
         }
 
         // Cache Coherent Interconnect (Switch)
-        platform.AddSwitch(CCI_SWITCH_NAME, 600 * Units.MHz, 128 * Units.BIT);
+        platform.AddSwitch(CCI_SWITCH_NAME, 200 * Units.MHz, 128 * Units.BIT);
         platform.ConnectTwoWay(APU_NAME, CCI_SWITCH_NAME);
-        platform.ConnectOneWay(CCI_SWITCH_NAME, PS_DDR4_SWITCH_NAME);
+        platform.ConnectTwoWay(CCI_SWITCH_NAME, PS_DDR4_SWITCH_NAME);
 
         // Full Power Domain Switch
-        platform.AddSwitch(FPD_SWITCH_NAME, 600 * Units.MHz, 128 * Units.BIT);
+        platform.AddSwitch(FPD_SWITCH_NAME, 200 * Units.MHz, 128 * Units.BIT);
         platform.ConnectTwoWay(FPD_SWITCH_NAME, CCI_SWITCH_NAME);
         platform.ConnectTwoWay(FPD_SWITCH_NAME, OCM_SWITCH_NAME);
 
         // Low Power Domain Switch
-        platform.AddSwitch(LPD_SWITCH_NAME, 600 * Units.MHz, 64 * Units.BIT);
+        platform.AddSwitch(LPD_SWITCH_NAME, 200 * Units.MHz, 128 * Units.BIT);
         platform.ConnectTwoWay(LPD_SWITCH_NAME, FPD_SWITCH_NAME);
         platform.ConnectTwoWay(LPD_SWITCH_NAME, RPU_SWITCH_NAME);
 
         // Programmable Logic Switch
-        platform.AddSwitch(PL_SWITCH_NAME, 600 * Units.MHz, 128 * Units.BIT);
+        platform.AddSwitch(PL_SWITCH_NAME, 200 * Units.MHz, 128 * Units.BIT);
         platform.ConnectTwoWay(PL_SWITCH_NAME, PL_DDR4_SWITCH_NAME);
         platform.ConnectTwoWay(PL_SWITCH_NAME, FPD_SWITCH_NAME);
         platform.ConnectTwoWay(PL_SWITCH_NAME, LPD_SWITCH_NAME);
@@ -130,20 +138,21 @@ public class PlatformHandler {
         platform.AddFPGA(
             FPGA_NAME, 
             600000 * Units.CLB, 
-            4 * (int)Units.MB * Units.BYTES_TO_BITS,
-            100 * Units.MHz
+            4 * (int)Units.MB * Units.BYTES_TO_BITS, // Block RAM
+            200 * Units.MHz // Clock region frequency
         );
-        platform.AddFPGA(
-            FPGA_NAME + "_2", 
-            40000 * Units.CLB, 
-            4 * (int)Units.MB * Units.BYTES_TO_BITS,
-            650 * Units.MHz
-        );
-
-        platform.AddSwitch(FPGA_SWITCH_NAME, 600 * Units.MHz, 128 * Units.BIT);
+        
+        platform.AddSwitch(FPGA_SWITCH_NAME, 200 * Units.MHz, 128 * Units.BIT);
         platform.ConnectTwoWay(FPGA_SWITCH_NAME, FPGA_NAME);
-        platform.ConnectTwoWay(FPGA_SWITCH_NAME, FPGA_NAME + "_2");
         platform.ConnectTwoWay(FPGA_SWITCH_NAME, PL_SWITCH_NAME);
+
+        // platform.AddFPGA(
+        //     FPGA_NAME + "_2", 
+        //     40000 * Units.CLB, 
+        //     4 * (int)Units.MB * Units.BYTES_TO_BITS,
+        //     650 * Units.MHz
+        // );
+        // platform.ConnectTwoWay(FPGA_SWITCH_NAME, FPGA_NAME + "_2");
 
         // port ConnectTwoWayions for ocm switch
         platform.AddInternalSwitchRoutes(OCM_SWITCH_NAME, 
@@ -156,7 +165,7 @@ public class PlatformHandler {
                 )
             ));
 
-        // port ConnectTwoWayions for ps ddr4 switch
+        // port connections for ps ddr4 switch
         platform.AddInternalSwitchRoutes(PS_DDR4_SWITCH_NAME, 
             Map.of(
                 CCI_SWITCH_NAME, new ArrayList<String>(
@@ -167,7 +176,7 @@ public class PlatformHandler {
                 )
             ));
 
-        // port ConnectTwoWayions for pl switch
+        // port connections for pl switch
         platform.AddInternalSwitchRoutes(PL_SWITCH_NAME, 
             Map.of(
                 FPD_SWITCH_NAME, new ArrayList<String>(
@@ -177,8 +186,6 @@ public class PlatformHandler {
                     List.of(PL_DDR4_NAME)
                 )
             ));
-
-
 
         // Information about the platform
         int numComponents = platform.viewers.size();
@@ -195,18 +202,26 @@ public class PlatformHandler {
             "CPU1", 
             1, 
             1 * Units.GHz, 
-            Map.of(Requirements.SW_INSTRUCTIONS, Map.of(
-                Requirements.FLOP, 0.04
-            ))
+            Map.of(
+                Requirements.SW_INSTRUCTIONS, 
+                Map.of(
+                    Requirements.INTOP, 1,
+                    Requirements.FLOP, 4
+                )
+            )
         );
 
         platform.AddCPU(
             "CPU2", 
             1, 
             1 * Units.GHz, 
-            Map.of(Requirements.SW_INSTRUCTIONS, Map.of(
-                Requirements.FLOP, 0.04
-            ))
+            Map.of(
+                Requirements.SW_INSTRUCTIONS, 
+                Map.of(
+                    Requirements.INTOP, 1,
+                    Requirements.FLOP, 2
+                )
+            )
         );
 
         platform.AddMemory(

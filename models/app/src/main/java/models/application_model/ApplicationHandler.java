@@ -8,23 +8,14 @@ import java.util.*;
 
 
 public class ApplicationHandler {
-    
-    // reference applications
-    final static String VC1_APP_NAME = "VC1";
-    final static String VC2_APP_NAME = "VC2";
-    final static String AIC1_APP_NAME = "AIC1";
-    final static String AIC2_APP_NAME = "AIC2";
-    final static String PIXEL1 = "PIXEL1";
-    final static String PIXEL2 = "PIXEL2";
-    final static String STENCIL = "STENCIL";
-    final static String NN = "NN";
-    
     // toy application
-    final static String TOY_SDF_APP_NAME = "ToySDF";
-    final static String ACTOR_A_NAME = "Actor_A";
-    final static String ACTOR_B_NAME = "Actor_B";
+   
 
     public static SystemGraph ToySDFGraph() {
+        final String TOY_SDF_APP_NAME = "ToySDF";
+        final String ACTOR_A_NAME = "Actor_A";
+        final String ACTOR_B_NAME = "Actor_B";
+
         var app = new ApplicationBuilder(TOY_SDF_APP_NAME);
 
         // ACTOR A
@@ -56,113 +47,76 @@ public class ApplicationHandler {
     }
 
     /**
-     * Video Application Chain 1, including actors:
-     * 'pixel1', 'pixel2' and 'stencil'.
+     * Realistic embedded application graph.
      * @return SystemGraph representing the application.
      */
-    public static SystemGraph VC1Graph() {
-        var app = new ApplicationBuilder(VC1_APP_NAME);
-        var a1_name = VC1_APP_NAME + "_" + PIXEL1;
-        var a2_name = VC1_APP_NAME + "_" + PIXEL2;
-        var a3_name = VC1_APP_NAME + "_" + STENCIL;
+    public static SystemGraph RealisticApplicationGraph() {
+        final String REALISTIC_APP_NAME = "RealisticApp";
+        final String GRAY = "Grayscale";
+        final String SYNC_GRAY = "SyncGray";
+        final String SOBEL = "Sobel";
+        final String CNN_OBJ_DET = "Object Detection";
 
-        app.AddActor(a1_name);
+        
+        var app = new ApplicationBuilder(REALISTIC_APP_NAME);
+        var grays = new ArrayList<String>();
+        
+        for (int i = 0; i < 10; i++) {
+            String name = GRAY + i;
+            app.AddActor(name);
+            app.AddSWImplementation(
+                name, 
+                Map.of(Requirements.FLOP, 8L),
+                800
+            );
+            app.AddHWImplementation(
+                name, 
+                1 * Units.CLOCK_CYCLE,
+                100 * Units.CLB
+            );
+            grays.add(name);
+        }
+
+        app.AddActor(SOBEL);
         app.AddSWImplementation(
-            a1_name, 
-            Map.of(Requirements.FLOP, 600L), // "6"
-            6000
+            SOBEL, 
+            Map.of(Requirements.INTOP, 18L),
+            56300
         );
         app.AddHWImplementation(
-            a1_name, 
-            100 * Units.CLOCK_CYCLE, //TODO find reasonble value
-            1000 * Units.CLB //TODO find reasonble value
+            SOBEL,
+            1 * Units.CLOCK_CYCLE,
+            132 * Units.CLB
         );
 
-        app.AddActor(a2_name);
+        app.AddActor(CNN_OBJ_DET);
         app.AddSWImplementation(
-            a2_name, 
-            Map.of(Requirements.FLOP, 2400L), // "24"
-            24000
+            CNN_OBJ_DET, 
+            Map.of(Requirements.FLOP, 21000000L),
+            756000
         );
         app.AddHWImplementation(
-            a2_name,
-            240 * Units.CLOCK_CYCLE, //TODO find reasonble value
-            2400 * Units.CLB); //TODO find reasonble value
+            CNN_OBJ_DET,
+            5600000 * Units.CLOCK_CYCLE,
+            5650 * Units.CLB
+        );
 
-        app.AddActor(a3_name);
+        app.AddActor(SYNC_GRAY);
         app.AddSWImplementation(
-            a3_name, 
-            Map.of(Requirements.FLOP, 600L), // "6"
-            6000
-        );
-        app.AddHWImplementation(
-            a3_name,
-            60 * Units.CLOCK_CYCLE, //TODO find reasonble value
-            600 * Units.CLB //TODO find reasonble value
+            SYNC_GRAY, 
+            Map.of(Requirements.INTOP, 1L),
+            3
         );
 
-        app.SetInputChannel(a1_name, 1);
-        app.CreateChannel(a1_name, a2_name, 1, 5);
-        app.CreateChannel(a2_name, a3_name, 5, 1);
-        app.SetOutputChannel(a3_name, 1);
+        grays.forEach(gray -> {
+            app.SetInputChannel(gray, 1);
+            app.CreateChannel(gray, SYNC_GRAY, 1, 3);
+        });
+
+        app.CreateChannel(SYNC_GRAY, SOBEL, 9, 9);
+        app.CreateChannel(SOBEL, CNN_OBJ_DET, 1, 550*550);
+        app.SetOutputChannel(CNN_OBJ_DET, 10);
 
         return app.GetGraph();
-    }
-
-    /**
-     * Video Application Chain 2, including actors:
-     * 'pixel1', 'pixel2' and 'stencil'.
-     * @return SystemGraph representing the application.
-     */
-    public static SystemGraph VC2Graph() {
-        var app = new ApplicationBuilder(VC2_APP_NAME);
-        var a1_name = VC2_APP_NAME + "_" + PIXEL1;
-        var a2_name = VC2_APP_NAME + "_" + PIXEL2;
-        var a3_name = VC2_APP_NAME + "_" + STENCIL;
-
-        app.AddActor(a1_name);
-        app.AddSWImplementation(
-            a1_name, 
-            Map.of(Requirements.FLOP, 600L), // "6"
-            1
-        );
-
-        app.AddActor(a2_name);
-        app.AddSWImplementation(
-            a2_name, 
-            Map.of(Requirements.FLOP, 2400L), // "24"
-            1
-        );
-
-        app.AddActor(a3_name);
-        app.AddSWImplementation(
-            a3_name, 
-            Map.of(Requirements.FLOP, 200L), // "6"
-            1
-        );
-
-        app.SetInputChannel(a1_name, 1);
-        app.CreateChannel(a1_name, a2_name, 1, 5);
-        app.CreateChannel(a1_name, a3_name, 1, 1);
-        app.CreateChannel(a2_name, a3_name, 5, 1);
-        app.SetOutputChannel(a3_name, 1);
-
-        return app.GetGraph();
-    }
-
-    /**
-     * AI Chain 1.
-     * @return SystemGraph representing the application.
-     */
-    public static SystemGraph AIC1() {
-        throw new UnsupportedOperationException("Not implemented yet.");
-    }
-
-    /**
-     * AI Chain 2.
-     * @return SystemGraph representing the application.
-     */
-    public static SystemGraph AIC2() {
-        throw new UnsupportedOperationException("Not implemented yet.");
     }
 }

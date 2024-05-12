@@ -66,7 +66,7 @@ rm -rf $DSE_OUTPUT_PATH/*
 # perform dse with constructed system models
 cd $DSE_PATH
 ./$DSE_EXECUTABLE -v DEBUG -p 5 \
-    --x-total-time-out 5 \
+    --x-total-time-out 15 \
     $ARTIFACTS_PATH/$plat \
     $ARTIFACTS_PATH/$appl
 

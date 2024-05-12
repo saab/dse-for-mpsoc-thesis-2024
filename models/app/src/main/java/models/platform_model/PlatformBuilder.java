@@ -2,6 +2,7 @@
 package models.platform_model;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import forsyde.io.core.SystemGraph;
 import forsyde.io.core.VertexViewer;
@@ -9,7 +10,7 @@ import forsyde.io.lib.hierarchy.ForSyDeHierarchy.*;
 import forsyde.io.lib.hierarchy.platform.hardware.GenericMemoryModuleViewer;
 import forsyde.io.lib.hierarchy.platform.hardware.InstrumentedProcessingModuleViewer;
 import forsyde.io.lib.hierarchy.visualization.GreyBoxViewer;
-
+import models.utils.Requirements;
 import models.utils.Units;
 
 
@@ -80,25 +81,26 @@ public class PlatformBuilder {
     ) {
         sGraph.connect(
             a, b, portA, portB, 
-            EdgeTraits.StructuralContainment, EdgeTraits.VisualConnection
+            EdgeTraits.PhysicalConnection, EdgeTraits.VisualConnection
         );
         sGraph.connect(
             b, a, portB, portA, 
-            EdgeTraits.StructuralContainment, EdgeTraits.VisualConnection
+            EdgeTraits.PhysicalConnection, EdgeTraits.VisualConnection
         );
     }
 
     /**
-     * Connect two components bidirectionally.
+     * Connect two hardware components bidirectionally and adds visual traits
+     * to the connections as well.
      * @param a The first component.
      * @param b The second component.
      */
     private void CreateEdge(VertexViewer a, VertexViewer b) {
         sGraph.connect(
-            a, b, EdgeTraits.StructuralContainment, EdgeTraits.VisualConnection
+            a, b, EdgeTraits.PhysicalConnection, EdgeTraits.VisualConnection
         );
         sGraph.connect(
-            b, a, EdgeTraits.StructuralContainment, EdgeTraits.VisualConnection
+            b, a, EdgeTraits.PhysicalConnection, EdgeTraits.VisualConnection
         );
     }
 
@@ -290,14 +292,13 @@ public class PlatformBuilder {
      * @param name The identifier for the CPU.
      * @param numCores The number of CPU cores.
      * @param frequency The operating frequency of the CPU.
-     * @param modalInstructions Available CPU instructions and their costs.
+     * @param instructionSet Available CPU instructions and their cycle cost.
      */
     public void AddCPU(String name, int numCores, long frequency,
-                        Map<String, Map<String, Double>> modalInstructions) {
+                    Map<String, Map<String, Integer>> instructionSet) {
         for (int i = 0; i < numCores; i++) {
             String coreName;
-            if (numCores > 1) 
-                coreName = name + "_C" + i;
+            if (numCores > 1) coreName = name + "_C" + i;
             else coreName = name;
             var core = InstrumentedProcessingModule.enforce(
                 sGraph, sGraph.newVertex(coreName)
@@ -306,7 +307,17 @@ public class PlatformBuilder {
             this.greyBox.addContained(Visualizable.enforce(core));
             core.maximumComputationParallelism(1);
             core.operatingFrequencyInHertz(frequency);
-            core.modalInstructionsPerCycle(modalInstructions);
+            core.modalInstructionsPerCycle( //TODO: must test!!!!!!!1
+                instructionSet.entrySet().stream().collect(
+                    Collectors.toMap(
+                        iSet -> iSet.getKey(),
+                        iSet -> iSet.getValue().entrySet().stream().collect(
+                            Collectors.toMap(
+                                inst -> inst.getKey(),
+                                inst -> 1.0 / inst.getValue()
+                            )
+                        )
+                    )));
 
             var tdmApu = SuperLoopRuntime.enforce(sGraph,
                 sGraph.newVertex(coreName + "_Scheduler")

@@ -181,7 +181,7 @@ public class FPGATransformer {
                 var hwInstrsPu = hwReqs.keySet().stream()
                     .collect(Collectors.toMap(
                         instr -> lpm.getIdentifier() + "_" + actorName + "_" + instr, 
-                        instr -> 1.0 
+                        instr -> 1
                     ));
 
                 // match instruction names for tailored processing module

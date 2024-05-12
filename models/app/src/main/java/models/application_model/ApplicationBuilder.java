@@ -134,10 +134,10 @@ public class ApplicationBuilder {
 	 * Add software implementation alternative to an actor.
 	 * @param actorName Name of the actor (must exist).
 	 * @param instrs Software instructions.
-	 * @param codeSize Implementation size in bits.
+	 * @param codeSizeInBits Implementation size in bits.
 	 */
 	public void AddSWImplementation(
-		String actorName, Map<String, Long> instrs, long codeSize
+		String actorName, Map<String, Long> instrs, long codeSizeInBits
 	) {
 		var actor = GetActor(actorName);
 		var sw = InstrumentedSoftwareBehaviour.enforce(
@@ -145,7 +145,7 @@ public class ApplicationBuilder {
 		);
 
 		assert instrs.size() > 0 : "Must require at least one instruction type";
-		assert codeSize > 0 : "Must specify a code size in bits";
+		assert codeSizeInBits > 0 : "Must specify a code size > 0";
 
 		if (instrs != null) {
 			sw.computationalRequirements(
@@ -153,7 +153,7 @@ public class ApplicationBuilder {
 			);
 		}
 		
-		sw.maxSizeInBits(Map.of("discAndRuntimeSize", codeSize));
+		sw.maxSizeInBits(Map.of("discAndRuntimeSize", codeSizeInBits));
 	}
 
 	/**
