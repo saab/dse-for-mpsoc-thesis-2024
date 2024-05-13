@@ -12,29 +12,38 @@ import models.utils.Requirements;
 public class PlatformHandler {
     final static String PLATFORM_NAME = "MPSoC";
 
+    // Real-time Processor Unit
     final static String RPU_NAME = "RPU";
     final static String RPU_SWITCH_NAME = "RPU_SWITCH";
+    final static String TCM_RPU_NAME = "TCM_RPU";
     final static int RPU_CORES = 2;
+
+    // Application Processor Unit
     final static String APU_NAME = "APU";
     final static String APU_SWITCH_NAME = "APU_SWITCH";
     final static int APU_CORES = 4;
+    
+    // FPGA
     final static String FPGA_NAME = "FPGA";
     final static String FPGA_SWITCH_NAME = "FPGA_SWITCH";
     final static String FPGA_BRAM_NAME = "FPGA_BRAM";
 
+    // Interconnect switches
     final static String CCI_SWITCH_NAME = "CCI_SWITCH";
     final static String FPD_SWITCH_NAME = "FPD_SWITCH";
     final static String LPD_SWITCH_NAME = "LPD_SWITCH";
 
     final static String PL_DDR4_NAME = "PL_DDR4";
     final static String PL_DDR4_SWITCH_NAME = "PL_DDR4_SWITCH";
-    final static String PL_SWITCH_NAME = "PL_SWITCH";
     final static String PS_DDR4_NAME = "PS_DDR4";
     final static String PS_DDR4_SWITCH_NAME = "PS_DDR4_SWITCH";
     final static String OCM_NAME = "OCM";
     final static String OCM_SWITCH_NAME = "OCM_SWITCH";
-    final static String TCM_NAME = "TCM_RPU";
 
+    /**
+     * Platform graph for the Xilinx UltraScale+ ZCU102 MPSoC.
+     * @return SystemGraph representing the platform.
+     */
     public static SystemGraph MPSoCGraph() {
         PlatformBuilder platform = new PlatformBuilder(PLATFORM_NAME);
 
@@ -65,7 +74,7 @@ public class PlatformHandler {
         platform.AddSwitch(PL_DDR4_SWITCH_NAME, 333 * Units.MHz, 16 * Units.BIT);
         platform.ConnectTwoWay(PL_DDR4_NAME, PL_DDR4_SWITCH_NAME);
 
-        // Processing System Application Processor Unit
+        // Processing System Application Processor Unit (APU)
         platform.AddCPU(
             APU_NAME,
             APU_CORES,
@@ -81,7 +90,7 @@ public class PlatformHandler {
         platform.AddSwitch(APU_SWITCH_NAME, 200 * Units.MHz, 128 * Units.BIT);
         platform.ConnectTwoWay(APU_NAME, APU_SWITCH_NAME);
 
-        // Processing System Real-time Processor Unit
+        // Processing System Real-time Processor Unit (RPU)
         platform.AddCPU(
             RPU_NAME,
             RPU_CORES,
@@ -94,35 +103,22 @@ public class PlatformHandler {
                 )
             )
         );
-
-        // Processing System Real-time Processor Unit Switch
         platform.AddSwitch(RPU_SWITCH_NAME, 200 * Units.MHz, 64 * Units.BIT);
         platform.ConnectTwoWay(RPU_NAME, RPU_SWITCH_NAME);
-        platform.ConnectTwoWay(RPU_SWITCH_NAME, PS_DDR4_SWITCH_NAME);
-        platform.ConnectTwoWay(RPU_SWITCH_NAME, OCM_SWITCH_NAME);
-
-        // Real-time Processor Unit: Tightly Coupled Memory
+        
+        // Real-time Processor Unit's Tightly Coupled Memory (TCM)
         for (int i = 0; i < RPU_CORES; i++) {
-            String tcmName = TCM_NAME + "_C" + i; //! hardcoding...
+            String tcmName = TCM_RPU_NAME + "_C" + i; //! hardcoding...
             platform.AddMemory(
                 tcmName,
                 600 * Units.MHz,
                 128 * Units.kB * Units.BYTES_TO_BITS
-            );
+                );
             var tcmSwName = tcmName + "_SWITCH";
             platform.AddSwitch(tcmSwName, 200 * Units.MHz, 64 * Units.BIT);
             platform.ConnectTwoWay(tcmSwName, tcmName);
             platform.ConnectTwoWay(tcmSwName, RPU_NAME + "_C" + i);
         }
-
-        // Cache Coherent Interconnect Switch
-        platform.AddSwitch(CCI_SWITCH_NAME, 200 * Units.MHz, 128 * Units.BIT);
-        
-        // Full Power Domain Switch
-        platform.AddSwitch(FPD_SWITCH_NAME, 200 * Units.MHz, 128 * Units.BIT);
-        
-        // Low Power Domain Switch
-        platform.AddSwitch(LPD_SWITCH_NAME, 200 * Units.MHz, 128 * Units.BIT);
 
         // FPGA (with embedded BRAM memory)
         platform.AddFPGA(
@@ -132,8 +128,15 @@ public class PlatformHandler {
             128 * (int) Units.BIT,
             200 * Units.MHz // "Clock region" frequency
         );
+        
+
+        // Interconnect switches
+        platform.AddSwitch(CCI_SWITCH_NAME, 200 * Units.MHz, 128 * Units.BIT);
+        platform.AddSwitch(FPD_SWITCH_NAME, 200 * Units.MHz, 128 * Units.BIT);
+        platform.AddSwitch(LPD_SWITCH_NAME, 200 * Units.MHz, 128 * Units.BIT);
+
             
-        // Connections: Uni-directional or bi-directional´
+        // Connections now: Uni-directional or bi-directional
         // FPGA Connections
         platform.ConnectTwoWay(FPGA_NAME, FPD_SWITCH_NAME);
         platform.ConnectTwoWay(FPGA_NAME, LPD_SWITCH_NAME);
@@ -154,22 +157,8 @@ public class PlatformHandler {
         platform.ConnectTwoWay(FPD_SWITCH_NAME, LPD_SWITCH_NAME);
         platform.ConnectTwoWay(FPD_SWITCH_NAME, OCM_SWITCH_NAME);
 
-        
 
-
-        // platform.AddSwitch(FPGA_SWITCH_NAME, 200 * Units.MHz, 128 * Units.BIT);
-        // platform.ConnectTwoWay(FPGA_SWITCH_NAME, FPGA_NAME);
-        // platform.ConnectTwoWay(FPGA_SWITCH_NAME, PL_SWITCH_NAME);
-
-        // platform.AddFPGA(
-        //     FPGA_NAME + "_2", 
-        //     40000 * Units.CLB, 
-        //     4 * (int)Units.MB * Units.BYTES_TO_BITS,
-        //     650 * Units.MHz
-        // );
-        // platform.ConnectTwoWay(FPGA_SWITCH_NAME, FPGA_NAME + "_2");
-
-        // port connections for ocm switch
+        // Port connections for OCM Switch
         platform.AddInternalSwitchRoutes(OCM_SWITCH_NAME, 
             Map.of(
                 RPU_SWITCH_NAME, new ArrayList<String>(
@@ -180,7 +169,7 @@ public class PlatformHandler {
                 )
             ));
 
-        // port connections for ps ddr4 switch
+        // Port connections for PL DDR4 Switch
         platform.AddInternalSwitchRoutes(PS_DDR4_SWITCH_NAME, 
             Map.of(
                 CCI_SWITCH_NAME, new ArrayList<String>(
