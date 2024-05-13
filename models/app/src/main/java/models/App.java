@@ -119,11 +119,11 @@ public class App {
         
         String applicationType = args[2];
         SystemGraph gApplication = switch (applicationType.toLowerCase()) {
-            case "evaluatorsdf" -> ApplicationHandler.ToySDFGraph();
-            case "realisticsdf" -> ApplicationHandler.RealisticApplicationGraph();
+            case "evaluatorsdf" -> ApplicationHandler.EvaluatorSDFGraph();
+            case "realisticsdf" -> ApplicationHandler.RealisticSDFGraph();
             default -> throw new IllegalStateException(
                 "Unknown application: " + applicationType + 
-                " (realisticSDF, evaluatorSDF)"
+                " (RealisticSDF, EvaluatorSDF)"
             );
         };
             

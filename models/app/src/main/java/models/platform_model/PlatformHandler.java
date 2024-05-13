@@ -16,6 +16,7 @@ public class PlatformHandler {
     final static String RPU_SWITCH_NAME = "RPU_SWITCH";
     final static int RPU_CORES = 2;
     final static String APU_NAME = "APU";
+    final static String APU_SWITCH_NAME = "APU_SWITCH";
     final static int APU_CORES = 4;
     final static String FPGA_NAME = "FPGA";
     final static String FPGA_SWITCH_NAME = "FPGA_SWITCH";
@@ -77,6 +78,8 @@ public class PlatformHandler {
                 )
             )
         );
+        platform.AddSwitch(APU_SWITCH_NAME, 200 * Units.MHz, 128 * Units.BIT);
+        platform.ConnectTwoWay(APU_NAME, APU_SWITCH_NAME);
 
         // Processing System Real-time Processor Unit
         platform.AddCPU(
@@ -100,7 +103,7 @@ public class PlatformHandler {
 
         // Real-time Processor Unit: Tightly Coupled Memory
         for (int i = 0; i < RPU_CORES; i++) {
-            String tcmName = TCM_NAME + "_C" + i;
+            String tcmName = TCM_NAME + "_C" + i; //! hardcoding...
             platform.AddMemory(
                 tcmName,
                 600 * Units.MHz,
@@ -112,39 +115,51 @@ public class PlatformHandler {
             platform.ConnectTwoWay(tcmSwName, RPU_NAME + "_C" + i);
         }
 
-        // Cache Coherent Interconnect (Switch)
+        // Cache Coherent Interconnect Switch
         platform.AddSwitch(CCI_SWITCH_NAME, 200 * Units.MHz, 128 * Units.BIT);
-        platform.ConnectTwoWay(APU_NAME, CCI_SWITCH_NAME);
-        platform.ConnectTwoWay(CCI_SWITCH_NAME, PS_DDR4_SWITCH_NAME);
-
+        
         // Full Power Domain Switch
         platform.AddSwitch(FPD_SWITCH_NAME, 200 * Units.MHz, 128 * Units.BIT);
-        platform.ConnectTwoWay(FPD_SWITCH_NAME, CCI_SWITCH_NAME);
-        platform.ConnectTwoWay(FPD_SWITCH_NAME, OCM_SWITCH_NAME);
-
+        
         // Low Power Domain Switch
         platform.AddSwitch(LPD_SWITCH_NAME, 200 * Units.MHz, 128 * Units.BIT);
-        platform.ConnectTwoWay(LPD_SWITCH_NAME, FPD_SWITCH_NAME);
-        platform.ConnectTwoWay(LPD_SWITCH_NAME, RPU_SWITCH_NAME);
 
-        // Programmable Logic Switch
-        platform.AddSwitch(PL_SWITCH_NAME, 200 * Units.MHz, 128 * Units.BIT);
-        platform.ConnectTwoWay(PL_SWITCH_NAME, PL_DDR4_SWITCH_NAME);
-        platform.ConnectTwoWay(PL_SWITCH_NAME, FPD_SWITCH_NAME);
-        platform.ConnectTwoWay(PL_SWITCH_NAME, LPD_SWITCH_NAME);
-        platform.ConnectTwoWay(PL_SWITCH_NAME, CCI_SWITCH_NAME);
-
-        // FPGA, FPGA Switch and BRAM memory
+        // FPGA (with embedded BRAM memory)
         platform.AddFPGA(
             FPGA_NAME, 
             600000 * Units.CLB, 
-            4 * (int)Units.MB * Units.BYTES_TO_BITS, // Block RAM
-            200 * Units.MHz // Clock region frequency
+            4 * (int) Units.MB * Units.BYTES_TO_BITS, // Block RAM
+            128 * (int) Units.BIT,
+            200 * Units.MHz // "Clock region" frequency
         );
+            
+        // Connections: Uni-directional or bi-directional´
+        // FPGA Connections
+        platform.ConnectTwoWay(FPGA_NAME, FPD_SWITCH_NAME);
+        platform.ConnectTwoWay(FPGA_NAME, LPD_SWITCH_NAME);
+        platform.ConnectTwoWay(FPGA_NAME, PL_DDR4_SWITCH_NAME);
+        platform.ConnectOneWay(FPGA_NAME, CCI_SWITCH_NAME);
+        platform.ConnectOneWay(FPGA_NAME, APU_SWITCH_NAME);
         
-        platform.AddSwitch(FPGA_SWITCH_NAME, 200 * Units.MHz, 128 * Units.BIT);
-        platform.ConnectTwoWay(FPGA_SWITCH_NAME, FPGA_NAME);
-        platform.ConnectTwoWay(FPGA_SWITCH_NAME, PL_SWITCH_NAME);
+        // CCI Switch Connections
+        platform.ConnectTwoWay(CCI_SWITCH_NAME, APU_SWITCH_NAME);
+        platform.ConnectTwoWay(CCI_SWITCH_NAME, FPD_SWITCH_NAME);
+        platform.ConnectTwoWay(CCI_SWITCH_NAME, PS_DDR4_SWITCH_NAME);
+        platform.ConnectOneWay(LPD_SWITCH_NAME, CCI_SWITCH_NAME);
+
+        // Non categorizable switches
+        platform.ConnectTwoWay(RPU_SWITCH_NAME, LPD_SWITCH_NAME);
+        platform.ConnectTwoWay(RPU_SWITCH_NAME, OCM_SWITCH_NAME);
+        platform.ConnectTwoWay(RPU_SWITCH_NAME, PS_DDR4_SWITCH_NAME);
+        platform.ConnectTwoWay(FPD_SWITCH_NAME, LPD_SWITCH_NAME);
+        platform.ConnectTwoWay(FPD_SWITCH_NAME, OCM_SWITCH_NAME);
+
+        
+
+
+        // platform.AddSwitch(FPGA_SWITCH_NAME, 200 * Units.MHz, 128 * Units.BIT);
+        // platform.ConnectTwoWay(FPGA_SWITCH_NAME, FPGA_NAME);
+        // platform.ConnectTwoWay(FPGA_SWITCH_NAME, PL_SWITCH_NAME);
 
         // platform.AddFPGA(
         //     FPGA_NAME + "_2", 
@@ -154,7 +169,7 @@ public class PlatformHandler {
         // );
         // platform.ConnectTwoWay(FPGA_SWITCH_NAME, FPGA_NAME + "_2");
 
-        // port ConnectTwoWayions for ocm switch
+        // port connections for ocm switch
         platform.AddInternalSwitchRoutes(OCM_SWITCH_NAME, 
             Map.of(
                 RPU_SWITCH_NAME, new ArrayList<String>(

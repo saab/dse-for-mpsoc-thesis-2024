@@ -7,23 +7,19 @@ import forsyde.io.core.SystemGraph;
 import forsyde.io.core.VertexViewer;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy.*;
 import forsyde.io.lib.hierarchy.behavior.moc.sdf.SDFActorViewer;
-import forsyde.io.lib.hierarchy.platform.hardware.StructureViewer;
 import forsyde.io.lib.hierarchy.visualization.GreyBoxViewer;
-import models.App;
 import models.utils.Requirements;
 
 
 public class ApplicationBuilder {
 	private SystemGraph sGraph;
     private GreyBoxViewer greyBox;
-	private StructureViewer application;
     private Map<String, VertexViewer> viewers = new HashMap<>();
 
 	public ApplicationBuilder(String name) {
 		SystemGraph sGraph = new SystemGraph();
 
-		this.application = Structure.enforce(sGraph, sGraph.newVertex(name));
-		this.greyBox = GreyBox.enforce(Visualizable.enforce(application));
+		this.greyBox = GreyBox.enforce(Visualizable.enforce(sGraph, sGraph.newVertex(name)));
 		this.sGraph = sGraph;
 	}
 
@@ -40,13 +36,6 @@ public class ApplicationBuilder {
             .orElseThrow(() -> new IllegalArgumentException(
                 "No GreyBox for visualization found in the given graph."
             ));
-		this.application = g.vertexSet()
-			.stream()
-			.flatMap(v -> Structure.tryView(g, v).stream())
-			.findFirst()
-			.orElseThrow(() -> new IllegalArgumentException(
-				"No containing 'Structure' found in the given graph."
-			));
 		
 		for (var v : g.vertexSet()) {
 			SDFActor.tryView(g, v).ifPresent(
@@ -153,7 +142,7 @@ public class ApplicationBuilder {
 			);
 		}
 		
-		sw.maxSizeInBits(Map.of("discAndRuntimeSize", codeSizeInBits));
+		sw.maxSizeInBits(Map.of(Requirements.SW_INSTRUCTIONS, codeSizeInBits));
 	}
 
 	/**
@@ -161,10 +150,13 @@ public class ApplicationBuilder {
 	 * @param actorName Name of the actor (must exist).
 	 * @param clockCycles Clock cycles to run the hardware implementation.
 	 * @param requiredArea Required area for hardware implementation.
+	 * @param frequencyInMHz Frequency of the hardware implementation.
+	 * @param requiredBramInBits Required block ram size in bits for the implementation.
 	 * @throws AssertionError if the logic area, or block ram size is not specified.
 	 */
 	public void AddHWImplementation(
-		String actorName, long clockCycles, long requiredArea
+		String actorName, long clockCycles, long frequencyInMHz,
+		long requiredBramInBits, long requiredArea
 	) {
 		var actor = GetActor(actorName);
 		var hw = InstrumentedHardwareBehaviour.enforce(
@@ -173,18 +165,18 @@ public class ApplicationBuilder {
 
 		assert requiredArea > 0 : "Logic area must be >= 1";
 		assert clockCycles > 0 : "Clock cycles must be >= 1";
+		assert frequencyInMHz > 0 : "Frequency must be >= 1";
 
 		hw.resourceRequirements(
 			Map.of(
-				Requirements.HW_INSTRUCTIONS, Map.of(
-					Requirements.CLOCK_CYCLES, (long) clockCycles
-				), 
 				Requirements.FPGA, Map.of(
-					Requirements.AREA, requiredArea
+					Requirements.AREA, requiredArea,
+					Requirements.BRAM, requiredBramInBits
 				)
 			)
 		);
-		// hw.requiredFPGAHardwareImplementationArea(requiredArea);
+		hw.latencyInSecsNumerators(Map.of(Requirements.FPGA, clockCycles));
+		hw.latencyInSecsDenominators(Map.of(Requirements.FPGA, frequencyInMHz));
 	}
 
 	/**

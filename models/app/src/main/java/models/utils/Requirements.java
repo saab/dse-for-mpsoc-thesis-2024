@@ -12,4 +12,5 @@ public class Requirements {
     public static final String FPGA = "FPGA";
     public static final String CLOCK_CYCLES = "ClockCycles";
     public static final String AREA = "Area";
+    public static final String BRAM = "Bram";
 }

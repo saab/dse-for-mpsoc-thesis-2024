@@ -152,6 +152,7 @@ public class FPGATransformer {
 
             platformBuilder.AddMemory(bramName, lpmFreq, bramSize); 
             platformBuilder.AddSwitch(bramSw, lpmFreq, sw.flitSizeInBits()); // match flit size
+            platformBuilder.ConnectTwoWay(bramName, bramSw);
 
             hwActors.forEach(a -> {
                 String actorName = a.getViewedVertex().getIdentifier();
@@ -184,7 +185,7 @@ public class FPGATransformer {
                         instr -> 1
                     ));
 
-                // match instruction names for tailored processing module
+                // match instruction names for tailored processing mxodule
                 var updatedHwReqs = hwReqs.entrySet().stream()
                     .collect(Collectors.toMap(
                         e -> lpm.getIdentifier() + "_" + actorName + "_" + e.getKey(), 
@@ -214,7 +215,7 @@ public class FPGATransformer {
         };
 
         System.out.println(
-            "Transformed " + hwActors.size() + " actors: " + 
+            "Transformed " + hwActors.size() + " actor(s): " + 
             hwActors.stream().map(a -> 
                 a.getIdentifier()
             ).collect(Collectors.toList())

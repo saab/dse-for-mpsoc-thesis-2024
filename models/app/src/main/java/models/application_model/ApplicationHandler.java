@@ -8,15 +8,13 @@ import java.util.*;
 
 
 public class ApplicationHandler {
-    // toy application
-   
 
-    public static SystemGraph ToySDFGraph() {
-        final String TOY_SDF_APP_NAME = "ToySDF";
+    public static SystemGraph EvaluatorSDFGraph() {
+        final String APP_NAME = "EvaluatorSDF";
         final String ACTOR_A_NAME = "Actor_A";
         final String ACTOR_B_NAME = "Actor_B";
 
-        var app = new ApplicationBuilder(TOY_SDF_APP_NAME);
+        var app = new ApplicationBuilder(APP_NAME);
 
         // ACTOR A
         app.AddActor(ACTOR_A_NAME);
@@ -28,7 +26,9 @@ public class ApplicationHandler {
         app.AddHWImplementation(
             ACTOR_A_NAME, 
             100 * Units.CLOCK_CYCLE, 
-            6000 * Units.CLB
+            300 * Units.MHz,
+            40000,
+            2000 * Units.CLB
         );
 
         // ACTOR B
@@ -50,15 +50,15 @@ public class ApplicationHandler {
      * Realistic embedded application graph.
      * @return SystemGraph representing the application.
      */
-    public static SystemGraph RealisticApplicationGraph() {
-        final String REALISTIC_APP_NAME = "RealisticApp";
+    public static SystemGraph RealisticSDFGraph() {
+        final String APP_NAME = "RealisticSDF";
         final String GRAY = "Grayscale";
         final String SYNC_GRAY = "SyncGray";
         final String SOBEL = "Sobel";
-        final String CNN_OBJ_DET = "Object Detection";
+        final String CNN_OBJ_DET = "ObjectDetection";
 
         
-        var app = new ApplicationBuilder(REALISTIC_APP_NAME);
+        var app = new ApplicationBuilder(APP_NAME);
         var grays = new ArrayList<String>();
         
         for (int i = 0; i < 10; i++) {
@@ -67,11 +67,13 @@ public class ApplicationHandler {
             app.AddSWImplementation(
                 name, 
                 Map.of(Requirements.FLOP, 8L),
-                800
+                100 * Units.BYTES_TO_BITS
             );
             app.AddHWImplementation(
                 name, 
                 1 * Units.CLOCK_CYCLE,
+                300 * Units.MHz,
+                0,
                 100 * Units.CLB
             );
             grays.add(name);
@@ -81,11 +83,13 @@ public class ApplicationHandler {
         app.AddSWImplementation(
             SOBEL, 
             Map.of(Requirements.INTOP, 18L),
-            56300
+            (long)6.7 * Units.kB * Units.BYTES_TO_BITS
         );
         app.AddHWImplementation(
             SOBEL,
             1 * Units.CLOCK_CYCLE,
+            300 * Units.MHz,
+            (long)6.7 * Units.kB * Units.BYTES_TO_BITS,
             132 * Units.CLB
         );
 
@@ -93,11 +97,13 @@ public class ApplicationHandler {
         app.AddSWImplementation(
             CNN_OBJ_DET, 
             Map.of(Requirements.FLOP, 21000000L),
-            756000
+            756 * Units.kB * Units.BYTES_TO_BITS
         );
         app.AddHWImplementation(
             CNN_OBJ_DET,
             5600000 * Units.CLOCK_CYCLE,
+            300 * Units.MHz,
+            756 * Units.kB * Units.BYTES_TO_BITS,
             5650 * Units.CLB
         );
 
@@ -105,7 +111,7 @@ public class ApplicationHandler {
         app.AddSWImplementation(
             SYNC_GRAY, 
             Map.of(Requirements.INTOP, 1L),
-            3
+            3 * Units.BYTES_TO_BITS
         );
 
         grays.forEach(gray -> {

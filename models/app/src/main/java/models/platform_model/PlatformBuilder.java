@@ -161,7 +161,6 @@ public class PlatformBuilder {
         assert this.viewers.keySet().contains(dstCompName) :
             "No component named " + dstCompName + " found";
         var dst = this.viewers.get(dstCompName);
-        
         List<String> srcCompNames = this.viewers.keySet().stream()
             .filter((key) -> key.contains(srcCompNamespace))
             .filter((key) -> key.compareTo(dst.getIdentifier()) != 0)
@@ -212,6 +211,8 @@ public class PlatformBuilder {
 
     /**
      * Adds a switch (communication element) to the platform
+     * traversalTime(dataSize) = initialLatency
+     *  + ceil(dataSize / flitSizeInBits) * (maxCyclesPerFlit / maxConcurrentFlits) / elementFrequency
      * @param name The identifier for the switch.
      * @param frequency The operating frequency of the switch.
      * @param flitInBits The size of the flit in bits.
@@ -225,8 +226,8 @@ public class PlatformBuilder {
         sw.operatingFrequencyInHertz(frequency);
         sw.initialLatency(0L);
         sw.flitSizeInBits(flitInBits);
-        sw.maxCyclesPerFlit(1);   // cycles to send 1 flit
-        sw.maxConcurrentFlits(1); //! exactly match the number of connections?
+        sw.maxCyclesPerFlit(Integer.MAX_VALUE); // EASY TO CHANGE BANDWIDTH HERE
+        sw.maxConcurrentFlits(1);
     }
 
     /**
@@ -333,10 +334,12 @@ public class PlatformBuilder {
      * @param name The identifier for the FPGA.
      * @param availableLogicArea The available logic area of the FPGA.
      * @param bramSizeInBits The size of the block RAM in bits.
+     * @param bramFlitSize The size of the flit in bits for the BRAM.
      * @param frequency The operating frequency of the FPGA and BRAM.
      */
     public void AddFPGA(
-        String name, int availableLogicArea, int bramSizeInBits, long frequency
+        String name, int availableLogicArea, int bramSizeInBits, 
+        int bramFlitSize, long frequency
     ) {
         var fpga = LogicProgrammableModule.enforce(
             sGraph, sGraph.newVertex(name)
@@ -346,5 +349,15 @@ public class PlatformBuilder {
         fpga.availableLogicArea(availableLogicArea);
         fpga.blockRamSizeInBits(bramSizeInBits);
         fpga.operatingFrequencyInHertz(frequency);
+
+        if (bramSizeInBits > 0) {
+            var swName = name + "_BRAM_SWITCH";
+            var bramName = name + "_BRAM";
+
+            AddSwitch(swName, frequency, bramFlitSize);
+            AddMemory(bramName, frequency, bramSizeInBits);
+            ConnectTwoWay(name, swName);
+            ConnectTwoWay(swName, bramName);
+        }
     }
 }
