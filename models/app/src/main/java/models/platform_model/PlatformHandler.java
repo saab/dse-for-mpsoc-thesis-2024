@@ -191,17 +191,6 @@ public class PlatformHandler {
                 )
             ));
 
-        // port connections for pl switch
-        platform.AddInternalSwitchRoutes(PL_SWITCH_NAME, 
-            Map.of(
-                FPD_SWITCH_NAME, new ArrayList<String>(
-                    List.of(PL_DDR4_NAME)
-                ),
-                LPD_SWITCH_NAME, new ArrayList<String>(
-                    List.of(PL_DDR4_NAME)
-                )
-            ));
-
         // Information about the platform
         int numComponents = platform.viewers.size();
         System.out.println(numComponents + " components added to platform");
