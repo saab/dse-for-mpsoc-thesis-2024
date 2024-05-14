@@ -39,8 +39,8 @@ public class ApplicationHandler {
             32000
         );
 
-        app.SetInputChannel(ACTOR_A_NAME, 1);
-        app.CreateChannel(ACTOR_A_NAME, ACTOR_B_NAME, 1, 1);
+        app.SetInputChannel(ACTOR_A_NAME, 5);
+        app.CreateChannel(ACTOR_A_NAME, ACTOR_B_NAME, 15, 3);
         app.SetOutputChannel(ACTOR_B_NAME, 1);
 
         return app.GetGraph();
