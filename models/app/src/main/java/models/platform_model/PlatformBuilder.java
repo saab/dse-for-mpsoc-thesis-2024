@@ -228,6 +228,7 @@ public class PlatformBuilder {
         sw.flitSizeInBits(flitInBits);
         sw.maxConcurrentFlits(1);
         
+        //! used for testing bandwith influence
         // if (name == "CCI_SWITCH" || name == "FPD_SWITCH" || name == "LPD_SWITCH")
         //     sw.maxCyclesPerFlit(Integer.MAX_VALUE);
         // else
@@ -265,7 +266,8 @@ public class PlatformBuilder {
                     "Port for component " + compName + " not found in " + ports +
                     " (port connections for " + name + ")"
                 ));
-            var connectsToPorts = connectsToNames.stream()
+
+            portConnections.put(portName, connectsToNames.stream()
                 .map(v -> ports.stream()
                     .filter(p -> p.contains(v))
                     .findFirst()
@@ -273,17 +275,8 @@ public class PlatformBuilder {
                         "Port for component " + v + " not found in " + ports +
                         " (port connections for " + name + ")"
                     ))
-                )
-                .toList();
-
-            
-            // System.out.println(name + ": "+compName+" <--> "+connectsToNames);
-            // System.out.println("-   ports: "+ports);
-            // System.out.println("-   port: "+portName);
-            // for (int i = 0; i < connectsToNames.size(); i++) {
-            //     System.out.println("-   "+connectsToNames.get(i)+": "+connectsToPorts.get(i));
-            // }
-            portConnections.put(portName, connectsToPorts);
+                ).toList()
+            );
         });
 
         CommunicationModulePortSpecification.enforce(
@@ -312,7 +305,7 @@ public class PlatformBuilder {
             this.greyBox.addContained(Visualizable.enforce(core));
             core.maximumComputationParallelism(1);
             core.operatingFrequencyInHertz(frequency);
-            core.modalInstructionsPerCycle( //TODO: must test!!!!!!!1
+            core.modalInstructionsPerCycle(
                 instructionSet.entrySet().stream().collect(
                     Collectors.toMap(
                         iSet -> iSet.getKey(),

@@ -78,7 +78,7 @@ public class PlatformHandler {
         platform.AddCPU(
             APU_NAME,
             APU_CORES,
-            (long) 1.5 * Units.GHz,
+            1500 * Units.MHz,
             Map.of(
                 Requirements.SW_INSTRUCTIONS,
                 Map.of(
