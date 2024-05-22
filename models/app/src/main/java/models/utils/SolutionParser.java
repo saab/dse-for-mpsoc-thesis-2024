@@ -5,6 +5,7 @@ import forsyde.io.lib.hierarchy.ForSyDeHierarchy.MemoryMapped;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy.Scheduled;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy.AnalyzedBehavior;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy.BoundedBufferLike;
+import forsyde.io.lib.hierarchy.ForSyDeHierarchy.LogicProgrammableSynthetized;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy.SuperLoopRuntime;
 
 import java.io.IOException;
@@ -17,6 +18,7 @@ public class SolutionParser {
     private SystemGraph graph;
     private StringBuilder memoryMappings;
     private StringBuilder schedules;
+    private StringBuilder plMappings;
     private StringBuilder superLoops;
     private StringBuilder actorThroughputs;
     private StringBuilder boundedBuffers;
@@ -29,6 +31,9 @@ public class SolutionParser {
         );
         this.schedules = new StringBuilder(
             "\n" + BOLD + "Schedules:" + STOPBOLD + "\n"
+        );
+        this.plMappings = new StringBuilder(
+            "\n" + BOLD + "PL Mappings:" + STOPBOLD + "\n"
         );
         this.superLoops = new StringBuilder(
             "\n" + BOLD + "Superloops:" + STOPBOLD + "\n"
@@ -56,6 +61,12 @@ public class SolutionParser {
      */
     public void ParseSolution() {
         graph.vertexSet().forEach(v -> {
+            LogicProgrammableSynthetized.tryView(graph, v).ifPresent(lps -> {
+                var mappedTo = lps.hostLogicProgrammableModule();
+                plMappings.append(
+                    v.getIdentifier() + " --> " + mappedTo.getIdentifier()
+                + "\n");
+            });
             MemoryMapped.tryView(graph, v).ifPresent(mm -> {
                 var mappedTo = mm.mappingHost();
                 memoryMappings.append(
@@ -93,6 +104,7 @@ public class SolutionParser {
         
         this.solution = memoryMappings
             .append(schedules)
+            .append(plMappings)
             .append(superLoops)
             .append(actorThroughputs)
             .append(boundedBuffers).toString();
@@ -113,8 +125,9 @@ public class SolutionParser {
             writer.write(stripped);
             writer.close();
             System.out.println("Solution written to " + outPath);
-        } catch (IOException e) {
-            System.err.println("Failed to write solution to " + outPath);
+        } 
+        catch (IOException e) {
+            System.err.println("Failed to write solution to " + outPath + ": " + e.getMessage());
         }
     }
 

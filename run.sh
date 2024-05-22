@@ -5,7 +5,6 @@ CUSTOM_PROJECT_PATH=$ROOT_PATH/models
 ARTIFACTS_PATH=$CUSTOM_PROJECT_PATH/app/src/main/java/models/artifacts
 DSE_PATH=$ROOT_PATH/IDeSyDe
 DSE_EXECUTABLE=idesyde
-# DSE_OUTPUT_PARSER=$ROOT_PATH/parse_dse_results.py
 DSE_OUTPUT_PATH=$DSE_PATH/run
 
 visualize() {
@@ -37,38 +36,28 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-plat=$1.fiodl
-appl=$2.fiodl
+now=$(date +%T)
+mkdir $ARTIFACTS_PATH/$now
+plat=$ARTIFACTS_PATH/$now/$1.fiodl
+appl=$ARTIFACTS_PATH/$now/$2.fiodl
+mv $ARTIFACTS_PATH/$1.fiodl $plat
+mv $ARTIFACTS_PATH/$2.fiodl $appl
+
 
 # visualize initial specifications
-visualize $ARTIFACTS_PATH/$plat
-visualize $ARTIFACTS_PATH/$appl
-
-# transform the specifications, if needed
-gradle run --args="fpga_transform $ARTIFACTS_PATH/$plat $ARTIFACTS_PATH/$appl"
-
-# check if transformation was successful
-if [ $? -eq 1 ]; then
-    echo "Transformation failed"
-    exit 1
-else
-    plat=$1_Intermediate.fiodl
-    appl=$2_Intermediate.fiodl
-
-    # visualizations of transformations
-    visualize $ARTIFACTS_PATH/$plat
-    visualize $ARTIFACTS_PATH/$appl
-fi
+visualize $plat
+visualize $appl
 
 # clear the output directory
 rm -rf $DSE_OUTPUT_PATH/*
 
 # perform dse with constructed system models
 cd $DSE_PATH
+rm -rf $DSE_OUTPUT_PATH
 ./$DSE_EXECUTABLE -v DEBUG -p 5 \
-    --x-total-time-out 15 \
-    $ARTIFACTS_PATH/$plat \
-    $ARTIFACTS_PATH/$appl
+    --x-total-time-out 30 \
+    $plat \
+    $appl
 
 # quit if there are no reverse identifications
 if ! [ "$(ls -A $DSE_OUTPUT_PATH/reversed)" ]; then
@@ -76,18 +65,24 @@ if ! [ "$(ls -A $DSE_OUTPUT_PATH/reversed)" ]; then
     exit 1
 fi
 
-# for each fiodl solution in reversed, create kgt file
+# for each fiodl solution in reversed:
+# - visualize solution (kgt)
+# - parse solution details
 cd $CUSTOM_PROJECT_PATH
+i=1
 for fiodl_file in $DSE_OUTPUT_PATH/reversed/*.fiodl; do
-    visualize $fiodl_file
-    gradle run --args="parse_solution $fiodl_file"
+    file=$ARTIFACTS_PATH/$now/solution_$i.fiodl
+    cp $fiodl_file $file
+
+    visualize $file
+
+    gradle run --args="parse_solution $file"
     if [ $? -ne 0 ]; then
-	echo "Solution parsing failed"
-	exit 1
+        echo "Solution parsing failed (solution $i)"
+        exit 1
     fi
+    i=$((i+1))
 done
 
-#!! DEPRECATED!! #
-# python3 $DSE_OUTPUT_PARSER $DSE_OUTPUT_PATH/explored
-
+cp -r $DSE_OUTPUT_PATH $ARTIFACTS_PATH/$now
 

@@ -4,6 +4,7 @@ package models.application_model;
 import java.util.*;
 
 import forsyde.io.core.SystemGraph;
+import forsyde.io.core.Vertex;
 import forsyde.io.core.VertexViewer;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy.*;
 import forsyde.io.lib.hierarchy.behavior.moc.sdf.SDFActorViewer;
@@ -192,8 +193,9 @@ public class ApplicationBuilder {
 		SDFActorViewer srcActor = GetActor(srcActorName);
 		SDFActorViewer dstActor = GetActor(dstActorName);
 		String chanName = "CH_" + srcActorName + "_" + dstActorName;
+		Vertex chanVertex = sGraph.newVertex(chanName);
 		var chan = SDFChannel.enforce(
-			sGraph, sGraph.newVertex(chanName)
+			sGraph, chanVertex
 		);
 		this.greyBox.addContained(Visualizable.enforce(chan));
 		this.viewers.put(chanName, chan);
@@ -201,6 +203,11 @@ public class ApplicationBuilder {
 		chan.producer(srcActor);
 		chan.consumer(dstActor);
 		
+		// var bufLike = BufferLike.enforce(
+		// 	sGraph, chanVertex
+		// );
+		// bufLike.elementSizeInBits(8L);
+
 		String prodPortName = "to_" + dstActorName;
 		var newProd = this.GetUpdatedProdOrCons(
 			srcActor.production(), prodPortName, numProd

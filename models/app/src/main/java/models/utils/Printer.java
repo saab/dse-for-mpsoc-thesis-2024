@@ -2,6 +2,9 @@ package models.utils;
 
 import org.antlr.v4.parse.ANTLRParser.optionsSpec_return;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import forsyde.io.core.ModelHandler;
 import forsyde.io.core.SystemGraph;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy;
@@ -14,7 +17,6 @@ public class Printer {
     private String filePath;
     private String fileName;
     private String fileDir;
-    private String extension;
 
     public Printer(String filePath) {
         this.filePath = filePath;

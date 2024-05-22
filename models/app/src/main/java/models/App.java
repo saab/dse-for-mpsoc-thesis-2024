@@ -5,12 +5,10 @@ import forsyde.io.core.SystemGraph;
 
 import models.application_model.*;
 import models.platform_model.*;
-import models.utils.FPGATransformer;
+// import models.utils.FPGATransformer;
 import models.utils.Paths;
 import models.utils.Printer;
 import models.utils.SolutionParser;
-
-import java.util.Map;
 
 
 public class App {
@@ -30,7 +28,6 @@ public class App {
         System.exit(1);
     }
 
-    //TODO: extend to multiple platforms and applications (fpga_transform)
     public static void main(String[] args) throws Exception {
         if (args.length < 1)
             SystemExit();
@@ -40,8 +37,6 @@ public class App {
             CreateBuildSpecification(args);
         } else if (action.equals("to_kgt")) {
             ConvertFiodlToKGT(args);
-        } else if (action.equals("fpga_transform")) {
-            FpgaTranform(args);
         } else if (action.equals("parse_solution")) {
             ParseDseSolution(args);
         } else {
@@ -49,40 +44,41 @@ public class App {
         }
     }
 
-    private static void FpgaTranform(String[] args) throws Exception {
-        if (args.length < 3) 
-            SystemExit();
+    // @Deprecated
+    // private static void FpgaTranform(String[] args) throws Exception {
+    //     if (args.length < 3) 
+    //         SystemExit();
         
-        String platformPath = args[1];
-        String applicationPath = args[2];
-        assert platformPath.endsWith(Printer.FIODL_EXT): "Must provide a .fiodl file.";
-        assert applicationPath.endsWith(Printer.FIODL_EXT): "Must provide a .fiodl file.";
+    //     String platformPath = args[1];
+    //     String applicationPath = args[2];
+    //     assert platformPath.endsWith(Printer.FIODL_EXT): "Must provide a .fiodl file.";
+    //     assert applicationPath.endsWith(Printer.FIODL_EXT): "Must provide a .fiodl file.";
 
-        SystemGraph gPlatform = new Printer(platformPath).Read();
-        SystemGraph gApplication = new Printer(applicationPath).Read();
+    //     SystemGraph gPlatform = new Printer(platformPath).Read();
+    //     SystemGraph gApplication = new Printer(applicationPath).Read();
         
-        Map<String, SystemGraph> transformedGraphs = Map.of(
-            "platform", gPlatform, 
-            "application", gApplication
-        );
+    //     Map<String, SystemGraph> transformedGraphs = Map.of(
+    //         "platform", gPlatform, 
+    //         "application", gApplication
+    //     );
 
-        var transformer = new FPGATransformer(gPlatform, gApplication);
-        if (transformer.ShouldTransform()) {
-            transformedGraphs = transformer.Transform();
-        } else {
-            System.out.println(
-                "Both FPGAs and HW actors must exist, no transformation needed."
-            );
-        }
+    //     var transformer = new FPGATransformer(gPlatform, gApplication);
+    //     if (transformer.ShouldTransform()) {
+    //         transformedGraphs = transformer.Transform();
+    //     } else {
+    //         System.out.println(
+    //             "Both FPGAs and HW actors must exist, no transformation needed."
+    //         );
+    //     }
 
-        var printer = new Printer(platformPath);
-        printer.AppendToFileName("_Intermediate");
-        printer.PrintFIODL(transformedGraphs.get("platform"));
+    //     var printer = new Printer(platformPath);
+    //     printer.AppendToFileName("_Intermediate");
+    //     printer.PrintFIODL(transformedGraphs.get("platform"));
         
-        printer = new Printer(applicationPath);
-        printer.AppendToFileName("_Intermediate");
-        printer.PrintFIODL(transformedGraphs.get("application"));
-    }
+    //     printer = new Printer(applicationPath);
+    //     printer.AppendToFileName("_Intermediate");
+    //     printer.PrintFIODL(transformedGraphs.get("application"));
+    // }
 
     private static void ConvertFiodlToKGT(String[] args) throws Exception {
         if (args.length < 2)
@@ -94,7 +90,6 @@ public class App {
 
         Printer printer = new Printer(path);
         SystemGraph g = printer.Read();
-        printer.SetOutDir(Paths.ARTIFACTS_DIR);
         printer.PrintKGT(g);
     }
     
@@ -119,11 +114,14 @@ public class App {
         
         String applicationType = args[2];
         SystemGraph gApplication = switch (applicationType.toLowerCase()) {
-            case "evaluatorsdf" -> ApplicationHandler.EvaluatorSDFGraph();
-            case "realisticsdf" -> ApplicationHandler.RealisticSDFGraph();
+            case "tc1" -> ApplicationHandler.TC1();
+            case "tc2" -> ApplicationHandler.TC2();
+            case "tc3" -> ApplicationHandler.TC3();
+            case "tc45" -> ApplicationHandler.TC4And5();
+            case "realisticsdf" -> ApplicationHandler.Realistic();
             default -> throw new IllegalStateException(
                 "Unknown application: " + applicationType + 
-                " (RealisticSDF, EvaluatorSDF)"
+                " (tc1, tc2, tc3, tc45, real)"
             );
         };
             
@@ -142,10 +140,10 @@ public class App {
 
         var parser = new SolutionParser(new Printer(path).Read());
         parser.ParseSolution();
-        // parser.PrintSolution();
-        parser.WriteSolution(Paths.PARSED_SOLUTIONS_DIR + "/"
-            + path.substring(path.lastIndexOf('/') + 1, path.lastIndexOf('.'))
-            + "_solution.txt"
+        parser.PrintSolution();
+        parser.WriteSolution(
+            path.substring(0, path.lastIndexOf('.'))
+            + ".txt"
         );
     }
 }

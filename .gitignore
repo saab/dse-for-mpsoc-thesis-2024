@@ -10,6 +10,5 @@ build
 experiments/idesyde
 experiments/run
 experiments/modules
-models/app/src/main/java/models/artifacts/*
 IDeSyDe
-app/solution.txt
+models/app/src/main/java/models/artifacts/*

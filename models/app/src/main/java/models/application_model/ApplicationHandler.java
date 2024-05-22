@@ -9,39 +9,174 @@ import java.util.*;
 
 public class ApplicationHandler {
 
-    public static SystemGraph EvaluatorSDFGraph() {
-        final String APP_NAME = "EvaluatorSDF";
-        final String ACTOR_A_NAME = "Actor_A";
-        final String ACTOR_B_NAME = "Actor_B";
+
+    /**
+     * Test case 1 from the thesis.
+     * Goal: Make sure that applications can map both to hardware and software.
+     * @return SystemGraph representing the application.
+     */
+    public static SystemGraph TC1() {
+        final String APP_NAME = "TC1";
+        final String ACTOR_1 = "Actor_1";
+        final String ACTOR_2 = "Actor_2";
+        
+        var app = new ApplicationBuilder(APP_NAME);
+        
+        app.AddActor(ACTOR_1);
+        app.AddHWImplementation(
+            ACTOR_1, 
+            10 * Units.CLOCK_CYCLE, 
+            300 * Units.MHz,
+            2 * Units.kB * Units.BYTES_TO_BITS,
+            110 * Units.CLB
+        );
+        
+        app.AddActor(ACTOR_2);
+        app.AddSWImplementation(
+            ACTOR_2,
+            Map.of(Requirements.FLOP, 8L), 
+            4 * Units.kB * Units.BYTES_TO_BITS
+        );
+  
+        app.SetInputChannel(ACTOR_1, 5);
+        app.CreateChannel(ACTOR_1, ACTOR_2, 15, 3);
+        app.SetOutputChannel(ACTOR_2, 1);
+        
+        return app.GetGraph();
+    }
+
+    /**
+     * Test case 2 from the thesis.
+     * Goal: Make sure that applications map to hardware based on favorable 
+     * hardware specification.
+     * @return SystemGraph representing the application.
+     */
+    public static SystemGraph TC2() {
+        final String APP_NAME = "TC2";
+        final String ACTOR_1 = "Actor_1";
+        final String ACTOR_2 = "Actor_2";
+        
+        var app = new ApplicationBuilder(APP_NAME);
+
+        app.AddActor(ACTOR_1);
+        app.AddHWImplementation(
+            ACTOR_1, 
+            10 * Units.CLOCK_CYCLE, 
+            200 * Units.MHz,
+            2 * Units.kB * Units.BYTES_TO_BITS,
+            110 * Units.CLB
+        );
+        app.AddSWImplementation(
+            ACTOR_1,
+            Map.of(Requirements.FLOP, 9000L), 
+            4 * Units.kB * Units.BYTES_TO_BITS
+        );
+
+        app.AddActor(ACTOR_2);
+        app.AddHWImplementation(
+            ACTOR_2,
+            10 * Units.CLOCK_CYCLE,
+            200 * Units.MHz,
+            2 * Units.kB * Units.BYTES_TO_BITS,
+            90 * Units.CLB
+        );
+        app.AddSWImplementation(
+            ACTOR_2,
+            Map.of(Requirements.FLOP, 8000L), 
+            4 * Units.kB * Units.BYTES_TO_BITS
+        );
+                
+        app.SetInputChannel(ACTOR_1, 5);
+        app.CreateChannel(ACTOR_1, ACTOR_2, 15, 3);
+        app.SetOutputChannel(ACTOR_2, 1);
+        
+        return app.GetGraph();
+    }
+    
+    /**
+     * Test case 3 from the thesis.
+     * Goal: Make sure that the FPGA's resource constraints are respected by
+     * specifying more BRAM and CLBs than available.
+     * @return
+     */
+    public static SystemGraph TC3() {
+        final String APP_NAME = "TC3";
+        final String ACTOR_1 = "Actor_1";
+        final String ACTOR_2 = "Actor_2";
+        
+        var app = new ApplicationBuilder(APP_NAME);
+        
+        app.AddActor(ACTOR_1);
+        app.AddHWImplementation(
+            ACTOR_1, 
+            10 * Units.CLOCK_CYCLE, 
+            200 * Units.MHz,
+            1 * Units.GB * Units.BYTES_TO_BITS,
+            10 * Units.CLB
+        );
+        
+        app.AddActor(ACTOR_2);
+        app.AddHWImplementation(
+            ACTOR_2, 
+            15 * Units.CLOCK_CYCLE, 
+            200 * Units.MHz,
+            2 * Units.kB * Units.BYTES_TO_BITS,
+            600100 * Units.CLB
+        );
+        
+        app.SetInputChannel(ACTOR_1, 5);
+        app.CreateChannel(ACTOR_1, ACTOR_2, 15, 3);
+        app.SetOutputChannel(ACTOR_2, 1);
+        
+        return app.GetGraph();
+    }
+        
+    /**
+     * Test case 4 and 5 from the thesis.
+     * Goal: Make sure that communication bandwidths throughout the platform
+     * are respected. Thus specifying one favorable hardware implementation and
+     * one favorable hardware implementation for each actor, the communication
+     * bandwidth between the PL and PS side.
+     * @return
+     */
+    public static SystemGraph TC4And5() {
+        final String APP_NAME = "TC4And5";
+        final String ACTOR_1 = "Actor_1";
+        final String ACTOR_2 = "Actor_2";
 
         var app = new ApplicationBuilder(APP_NAME);
 
-        // ACTOR A
-        app.AddActor(ACTOR_A_NAME);
-        // app.AddSWImplementation(
-        //     ACTOR_A_NAME, 
-        //     Map.of(Requirements.FLOP, 1000L), 
-        //     40000
-        // );
-        app.AddHWImplementation(
-            ACTOR_A_NAME, 
-            100 * Units.CLOCK_CYCLE, 
-            300 * Units.MHz,
-            40000,
-            2000 * Units.CLB
-        );
-
-        // ACTOR B
-        app.AddActor(ACTOR_B_NAME);
+        app.AddActor(ACTOR_1);
         app.AddSWImplementation(
-            ACTOR_B_NAME, 
-            Map.of(Requirements.FLOP, 1000L), 
-            32000
+            ACTOR_1, 
+            Map.of(Requirements.FLOP, 1L), 
+            4 * Units.kB * Units.BYTES_TO_BITS
+        );
+        app.AddHWImplementation(
+            ACTOR_1, 
+            200000000 * Units.CLOCK_CYCLE, 
+            200 * Units.MHz,
+            2 * Units.MB * Units.BYTES_TO_BITS,
+            110 * Units.CLB
         );
 
-        app.SetInputChannel(ACTOR_A_NAME, 5);
-        app.CreateChannel(ACTOR_A_NAME, ACTOR_B_NAME, 15, 3);
-        app.SetOutputChannel(ACTOR_B_NAME, 1);
+        app.AddActor(ACTOR_2);
+        app.AddSWImplementation(
+            ACTOR_2, 
+            Map.of(Requirements.FLOP, 800000L), 
+            (long) 1.8 * Units.kB * Units.BYTES_TO_BITS
+        );
+        app.AddHWImplementation(
+            ACTOR_2, 
+            15 * Units.CLOCK_CYCLE, 
+            200 * Units.MHz,
+            2 * Units.kB * Units.BYTES_TO_BITS,
+            90 * Units.CLB
+        );
+
+        app.SetInputChannel(ACTOR_1, 5);
+        app.CreateChannel(ACTOR_1, ACTOR_2, 15, 3);
+        app.SetOutputChannel(ACTOR_2, 1);
 
         return app.GetGraph();
     }
@@ -50,7 +185,7 @@ public class ApplicationHandler {
      * Realistic embedded application graph.
      * @return SystemGraph representing the application.
      */
-    public static SystemGraph RealisticSDFGraph() {
+    public static SystemGraph Realistic() {
         final String APP_NAME = "RealisticSDF";
         final String GRAY = "Grayscale";
         final String SYNC_GRAY = "SyncGray";

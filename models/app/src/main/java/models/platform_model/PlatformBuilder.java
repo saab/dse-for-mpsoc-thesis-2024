@@ -226,8 +226,12 @@ public class PlatformBuilder {
         sw.operatingFrequencyInHertz(frequency);
         sw.initialLatency(0L);
         sw.flitSizeInBits(flitInBits);
-        sw.maxCyclesPerFlit(Integer.MAX_VALUE); // EASY TO CHANGE BANDWIDTH HERE
         sw.maxConcurrentFlits(1);
+        
+        // if (name == "CCI_SWITCH" || name == "FPD_SWITCH" || name == "LPD_SWITCH")
+        //     sw.maxCyclesPerFlit(Integer.MAX_VALUE);
+        // else
+            sw.maxCyclesPerFlit(1);
     }
 
     /**
@@ -350,14 +354,14 @@ public class PlatformBuilder {
         fpga.blockRamSizeInBits(bramSizeInBits);
         fpga.operatingFrequencyInHertz(frequency);
 
-        if (bramSizeInBits > 0) {
-            var swName = name + "_BRAM_SWITCH";
-            var bramName = name + "_BRAM";
+        // if (bramSizeInBits > 0) {
+        //     var swName = name + "_BRAM_SWITCH";
+        //     var bramName = name + "_BRAM";
 
-            AddSwitch(swName, frequency, bramFlitSize);
-            AddMemory(bramName, frequency, bramSizeInBits);
-            ConnectTwoWay(name, swName);
-            ConnectTwoWay(swName, bramName);
-        }
+        //     AddSwitch(swName, frequency, bramFlitSize);
+        //     AddMemory(bramName, frequency, bramSizeInBits);
+        //     ConnectTwoWay(name, swName);
+        //     ConnectTwoWay(swName, bramName);
+        // }
     }
 }
