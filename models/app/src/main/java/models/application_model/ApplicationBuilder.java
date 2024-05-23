@@ -203,10 +203,10 @@ public class ApplicationBuilder {
 		chan.producer(srcActor);
 		chan.consumer(dstActor);
 		
-		// var bufLike = BufferLike.enforce(
-		// 	sGraph, chanVertex
-		// );
-		// bufLike.elementSizeInBits(8L);
+		var bufLike = BufferLike.enforce(
+			sGraph, chanVertex
+		);
+		bufLike.elementSizeInBits(8L);
 
 		String prodPortName = "to_" + dstActorName;
 		var newProd = this.GetUpdatedProdOrCons(

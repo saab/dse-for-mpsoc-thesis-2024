@@ -10,7 +10,6 @@ import forsyde.io.lib.hierarchy.ForSyDeHierarchy.*;
 import forsyde.io.lib.hierarchy.platform.hardware.GenericMemoryModuleViewer;
 import forsyde.io.lib.hierarchy.platform.hardware.InstrumentedProcessingModuleViewer;
 import forsyde.io.lib.hierarchy.visualization.GreyBoxViewer;
-import models.utils.Requirements;
 import models.utils.Units;
 
 
@@ -117,7 +116,7 @@ public class PlatformBuilder {
     ) {
         sGraph.connect(
             a, b, portA, portB, 
-            EdgeTraits.StructuralContainment, EdgeTraits.VisualConnection
+            EdgeTraits.PhysicalConnection, EdgeTraits.VisualConnection
         );
     }
     
@@ -347,14 +346,14 @@ public class PlatformBuilder {
         fpga.blockRamSizeInBits(bramSizeInBits);
         fpga.operatingFrequencyInHertz(frequency);
 
-        // if (bramSizeInBits > 0) {
-        //     var swName = name + "_BRAM_SWITCH";
-        //     var bramName = name + "_BRAM";
+        if (bramSizeInBits > 0) {
+            var swName = name + "_BRAM_SWITCH";
+            var bramName = name + "_BRAM";
 
-        //     AddSwitch(swName, frequency, bramFlitSize);
-        //     AddMemory(bramName, frequency, bramSizeInBits);
-        //     ConnectTwoWay(name, swName);
-        //     ConnectTwoWay(swName, bramName);
-        // }
+            AddSwitch(swName, frequency, bramFlitSize);
+            AddMemory(bramName, frequency, bramSizeInBits);
+            ConnectTwoWay(name, swName);
+            ConnectTwoWay(swName, bramName);
+        }
     }
 }
