@@ -62,6 +62,7 @@ rm -rf $DSE_OUTPUT_PATH
 # quit if there are no reverse identifications
 if ! [ "$(ls -A $DSE_OUTPUT_PATH/reversed)" ]; then
     echo "No solution found"
+    mv $ARTIFACTS_PATH/$now $ARTIFACTS_PATH/$now\-FAILED
     exit 1
 fi
 
