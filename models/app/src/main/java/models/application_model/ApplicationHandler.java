@@ -48,7 +48,7 @@ public class ApplicationHandler {
     /**
      * Test case 2 from the thesis.
      * Goal: Make sure that applications map to hardware based on favorable 
-     * hardware specification.
+     * hardware implementations.
      * @return SystemGraph representing the application.
      */
     public static SystemGraph TC2() {
@@ -163,7 +163,7 @@ public class ApplicationHandler {
         app.AddActor(ACTOR_2);
         app.AddSWImplementation(
             ACTOR_2, 
-            Map.of(Requirements.FLOP, 800000L), 
+            Map.of(Requirements.FLOP, 8000000L), 
             (long) 1.8 * Units.kB * Units.BYTES_TO_BITS
         );
         app.AddHWImplementation(
@@ -255,7 +255,7 @@ public class ApplicationHandler {
         });
 
         app.CreateChannel(SYNC_GRAY, SOBEL, 9, 9);
-        app.CreateChannel(SOBEL, CNN_OBJ_DET, 1, 550*550);
+        app.CreateChannel(SOBEL, CNN_OBJ_DET, 1, 240*240);
         app.SetOutputChannel(CNN_OBJ_DET, 10);
 
         return app.GetGraph();

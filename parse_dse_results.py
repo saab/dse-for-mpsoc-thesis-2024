@@ -33,20 +33,21 @@ def parse_dse_results(dirp: str) -> None:
 
         # multiple dataflows (applications?)
         dataflow: dict = res.get("aperiodic_asynchronous_dataflows", [])[0]
-
         actors = dataflow.get("processes", [])
 
         actor_min_throughput: dict = dataflow.get(
             "process_minimum_throughput", {a: None for a in actors}
         )
+        actor_min_throughput.update({a: "undef" for a in actors if a not in actor_min_throughput})
 
         actor_mapping: dict = res.get(
             "processes_to_runtime_scheduling", {a: None for a in actors}
         ) | res.get("processes_to_logic_programmable_areas", {a: None for a in actors})
-        breakpoint()
+        
         execution_times: dict = res.get(
             "instrumented_computation_times", {a: None for a in actors}
         )
+        execution_times.update({a: "predefined" for a in actors if a not in execution_times})
         wcet: dict = execution_times.get(
             "worst_execution_times", {a: None for a in actors}
         )

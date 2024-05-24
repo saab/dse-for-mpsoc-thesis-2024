@@ -55,14 +55,14 @@ rm -rf $DSE_OUTPUT_PATH/*
 cd $DSE_PATH
 rm -rf $DSE_OUTPUT_PATH
 ./$DSE_EXECUTABLE -v DEBUG -p 5 \
-    --x-total-time-out 30 \
+    --x-total-time-out 300 \
     $plat \
     $appl
 
 # quit if there are no reverse identifications
 if ! [ "$(ls -A $DSE_OUTPUT_PATH/reversed)" ]; then
     echo "No solution found"
-    mv $ARTIFACTS_PATH/$now $ARTIFACTS_PATH/$now\-FAILED
+    mv $ARTIFACTS_PATH/$now $ARTIFACTS_PATH/$now\-\(failed\)
     exit 1
 fi
 

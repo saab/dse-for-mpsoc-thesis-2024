@@ -222,16 +222,17 @@ public class PlatformBuilder {
         );
         this.viewers.put(name, sw);
         this.greyBox.addContained(Visualizable.enforce(sw));
-        sw.operatingFrequencyInHertz(frequency);
-        sw.initialLatency(0L);
         sw.flitSizeInBits(flitInBits);
         sw.maxConcurrentFlits(1);
         
         //! used for testing bandwith influence
-        // if (name == "CCI_SWITCH" || name == "FPD_SWITCH" || name == "LPD_SWITCH")
+        // if (name == "CCI_SWITCH" || name == "FPD_SWITCH" || name == "LPD_SWITCH") {
+        //     sw.operatingFrequencyInHertz(1000);
         //     sw.maxCyclesPerFlit(Integer.MAX_VALUE);
-        // else
+        // } else {
+            sw.operatingFrequencyInHertz(frequency);
             sw.maxCyclesPerFlit(1);
+        // }
     }
 
     /**
