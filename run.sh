@@ -55,7 +55,7 @@ rm -rf $DSE_OUTPUT_PATH/*
 cd $DSE_PATH
 rm -rf $DSE_OUTPUT_PATH
 ./$DSE_EXECUTABLE -v DEBUG -p 5 \
-    --x-total-time-out 300 \
+    --x-total-time-out 50000 \
     $plat \
     $appl
 

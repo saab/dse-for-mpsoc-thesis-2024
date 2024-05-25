@@ -196,7 +196,7 @@ public class ApplicationHandler {
         var app = new ApplicationBuilder(APP_NAME);
         var grays = new ArrayList<String>();
         
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 3; i++) {
             String name = GRAY + i;
             app.AddActor(name);
             app.AddSWImplementation(
@@ -218,13 +218,13 @@ public class ApplicationHandler {
         app.AddSWImplementation(
             SOBEL, 
             Map.of(Requirements.INTOP, 18L),
-            (long)6.7 * Units.kB * Units.BYTES_TO_BITS
+            (long) 6.7 * Units.kB * Units.BYTES_TO_BITS
         );
         app.AddHWImplementation(
             SOBEL,
             1 * Units.CLOCK_CYCLE,
             300 * Units.MHz,
-            (long)6.7 * Units.kB * Units.BYTES_TO_BITS,
+            (long) 6.7 * Units.kB * Units.BYTES_TO_BITS,
             132 * Units.CLB
         );
 
@@ -251,10 +251,11 @@ public class ApplicationHandler {
 
         grays.forEach(gray -> {
             app.SetInputChannel(gray, 1);
-            app.CreateChannel(gray, SYNC_GRAY, 1, 3);
+            app.CreateChannel(gray, SYNC_GRAY, 1, 1);
         });
 
         app.CreateChannel(SYNC_GRAY, SOBEL, 9, 9);
+        // app.SetOutputChannel(SOBEL, 1);
         app.CreateChannel(SOBEL, CNN_OBJ_DET, 1, 240*240);
         app.SetOutputChannel(CNN_OBJ_DET, 10);
 
