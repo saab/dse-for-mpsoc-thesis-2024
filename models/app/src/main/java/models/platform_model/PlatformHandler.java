@@ -113,7 +113,7 @@ public class PlatformHandler {
                 tcmName,
                 600 * Units.MHz,
                 128 * Units.kB * Units.BYTES_TO_BITS
-                );
+            );
             var tcmSwName = tcmName + "_SWITCH";
             platform.AddSwitch(tcmSwName, 200 * Units.MHz, 64 * Units.BIT);
             platform.ConnectTwoWay(tcmSwName, tcmName);

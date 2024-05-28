@@ -105,13 +105,7 @@ public class App {
             default -> throw new IllegalStateException(
                 "Unknown platform: " + platformType + " (mpsoc, zynq, mm)"
             );
-        };
-            
-        String platformPath = 
-            Paths.ARTIFACTS_DIR + "/" + platformType + Printer.FIODL_EXT;
-        Printer platformPrinter = new Printer(platformPath);
-        platformPrinter.PrintFIODL(gPlatform);
-        
+        }; 
         String applicationType = args[2];
         SystemGraph gApplication = switch (applicationType.toLowerCase()) {
             case "tc1" -> ApplicationHandler.TC1();
@@ -124,6 +118,11 @@ public class App {
                 " (tc1, tc2, tc3, tc45, real)"
             );
         };
+            
+        String platformPath = 
+            Paths.ARTIFACTS_DIR + "/" + platformType + Printer.FIODL_EXT;
+        Printer platformPrinter = new Printer(platformPath);
+        platformPrinter.PrintFIODL(gPlatform);
             
         String applicationPath = 
             Paths.ARTIFACTS_DIR + "/" + applicationType + Printer.FIODL_EXT;

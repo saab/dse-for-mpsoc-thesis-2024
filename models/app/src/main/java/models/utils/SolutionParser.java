@@ -90,14 +90,16 @@ public class SolutionParser {
                 var num = ab.throughputInSecsNumerator();
                 var den = ab.throughputInSecsDenominator();
                 actorThroughputs.append(
-                    ab.getIdentifier()  + ": " + 
-                    num + "/" + den + " (" + num / den + ")"
+                    ab.getIdentifier()  + " = " + num + "/" + den + " tokens/sec"
                 + "\n");
             });
             BoundedBufferLike.tryView(graph, v).ifPresent(bb -> {
+                var tokens = bb.maxElements();
+                var bits = bb.elementSizeInBits();
                 boundedBuffers.append(
-                    bb.getIdentifier() + " --> " + bb.maxElements() + 
-                    " elements * " + bb.elementSizeInBits() + " bits\n"
+                    bb.getIdentifier() + ": " + tokens + 
+                    " tokens * " + bits + " bits (" 
+                    + (tokens * bits / 8) + " Bytes)\n"
                 );
             });
         });

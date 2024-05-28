@@ -37,16 +37,17 @@ if [ $? -ne 0 ]; then
 fi
 
 now=$(date +%T)
-mkdir $ARTIFACTS_PATH/$now
-plat=$ARTIFACTS_PATH/$now/$1.fiodl
-appl=$ARTIFACTS_PATH/$now/$2.fiodl
+dirname=$1-$2-$now
+mkdir $ARTIFACTS_PATH/$dirname
+plat=$ARTIFACTS_PATH/$dirname/$1.fiodl
+appl=$ARTIFACTS_PATH/$dirname/$2.fiodl
 mv $ARTIFACTS_PATH/$1.fiodl $plat
 mv $ARTIFACTS_PATH/$2.fiodl $appl
 
 
 # visualize initial specifications
-visualize $plat
-visualize $appl
+# visualize $plat
+# visualize $appl
 
 # clear the output directory
 rm -rf $DSE_OUTPUT_PATH/*
@@ -55,15 +56,17 @@ rm -rf $DSE_OUTPUT_PATH/*
 cd $DSE_PATH
 rm -rf $DSE_OUTPUT_PATH
 ./$DSE_EXECUTABLE -v DEBUG -p 5 \
-    --x-total-time-out 50000 \
+    --x-total-time-out 60 \
     $plat \
     $appl
 
 # quit if there are no reverse identifications
 if ! [ "$(ls -A $DSE_OUTPUT_PATH/reversed)" ]; then
     echo "No solution found"
-    mv $ARTIFACTS_PATH/$now $ARTIFACTS_PATH/$now\-\(failed\)
+    mv $ARTIFACTS_PATH/$dirname $ARTIFACTS_PATH/$dirname\-\(failed\)
     exit 1
+else
+    cp -r $DSE_OUTPUT_PATH $ARTIFACTS_PATH/$dirname
 fi
 
 # for each fiodl solution in reversed:
@@ -72,10 +75,10 @@ fi
 cd $CUSTOM_PROJECT_PATH
 i=1
 for fiodl_file in $DSE_OUTPUT_PATH/reversed/*.fiodl; do
-    file=$ARTIFACTS_PATH/$now/solution_$i.fiodl
+    file=$ARTIFACTS_PATH/$dirname/solution_$i.fiodl
     cp $fiodl_file $file
 
-    visualize $file
+    # visualize $file
 
     gradle run --args="parse_solution $file"
     if [ $? -ne 0 ]; then
@@ -84,6 +87,4 @@ for fiodl_file in $DSE_OUTPUT_PATH/reversed/*.fiodl; do
     fi
     i=$((i+1))
 done
-
-cp -r $DSE_OUTPUT_PATH $ARTIFACTS_PATH/$now
 

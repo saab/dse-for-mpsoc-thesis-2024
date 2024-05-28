@@ -204,8 +204,8 @@ public class PlatformBuilder {
         this.viewers.put(memoryName, mem);
         this.greyBox.addContained(Visualizable.enforce(mem));
 
-        mem.operatingFrequencyInHertz(600 * Units.MHz);
-        mem.spaceInBits(4 * Units.GB * Units.BYTES_TO_BITS);
+        mem.operatingFrequencyInHertz(frequency);
+        mem.spaceInBits(spaceInBits);
     }
 
     /**
@@ -226,13 +226,13 @@ public class PlatformBuilder {
         sw.maxConcurrentFlits(1);
         
         //! used for testing bandwith influence
-        // if (name == "CCI_SWITCH" || name == "FPD_SWITCH" || name == "LPD_SWITCH") {
-        //     sw.operatingFrequencyInHertz(1000);
-        //     sw.maxCyclesPerFlit(Integer.MAX_VALUE);
-        // } else {
+        if (name == "CCI_SWITCH" || name == "FPD_SWITCH" || name == "LPD_SWITCH") {
+            sw.operatingFrequencyInHertz(1000);
+            sw.maxCyclesPerFlit(Integer.MAX_VALUE);
+        } else {
             sw.operatingFrequencyInHertz(frequency);
             sw.maxCyclesPerFlit(1);
-        // }
+        }
     }
 
     /**
