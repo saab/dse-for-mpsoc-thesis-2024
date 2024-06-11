@@ -192,7 +192,7 @@ public class ApplicationHandler {
         final String GRAY = "Grayscale";
         final String SOBEL = "Sobel";
         final String CNN_OBJ_DET = "ObjectDetection";
-        final int FRAME_SIZE = 3840*2160;
+        final int FRAME_SIZE = 1; //3840*2160;
         final int RGB_FRAME_SIZE = FRAME_SIZE*3;
 
         
@@ -205,13 +205,13 @@ public class ApplicationHandler {
             Map.of(Requirements.INTOP, 1L),
             3 * Units.BYTES_TO_BITS
         );
-        // app.AddHWImplementation(
-        //     SPLIT_INPUT_ACTOR, 
-        //     200 * Units.CLOCK_CYCLE,
-        //     300 * Units.MHz,
-        //     8,
-        //     100 * Units.CLB
-        // );
+        app.AddHWImplementation(
+            SPLIT_INPUT_ACTOR, 
+            200 * Units.CLOCK_CYCLE,
+            300 * Units.MHz,
+            8,
+            100 * Units.CLB
+        );
         app.SetInputChannel(SPLIT_INPUT_ACTOR, RGB_FRAME_SIZE);
 
         app.AddActor(SYNC_AND_RESIZE_ACTOR);
@@ -221,7 +221,7 @@ public class ApplicationHandler {
             3 * Units.BYTES_TO_BITS
         );
 
-        int par_grays = 6;
+        int par_grays = 5;
         for (int i = 0; i < par_grays; i++) {
             String grayName = GRAY + i;
             app.AddActor(grayName);
@@ -230,35 +230,32 @@ public class ApplicationHandler {
                 Map.of(Requirements.FLOP, 8L * FRAME_SIZE / par_grays),
                 100 * Units.BYTES_TO_BITS
             );
-            // app.AddHWImplementation(
-            //     grayName, 
-            //     2070000 * Units.CLOCK_CYCLE / par_grays,
-            //     300 * Units.MHz,
-            //     0,
-            //     100 * Units.CLB
-            // );
-            // app.CreateChannel(grayName, SYNC_AND_RESIZE_ACTOR, FRAME_SIZE / par_grays, FRAME_SIZE / par_grays);
+            app.AddHWImplementation(
+                grayName, 
+                2070000 * Units.CLOCK_CYCLE / par_grays,
+                300 * Units.MHz,
+                0,
+                100 * Units.CLB
+            );
+            app.CreateChannel(SPLIT_INPUT_ACTOR, grayName, RGB_FRAME_SIZE / par_grays, RGB_FRAME_SIZE / par_grays);  
             
             String sobelName = SOBEL + i;
             app.AddActor(sobelName);
             app.AddSWImplementation(
                 sobelName, 
                 Map.of(Requirements.INTOP, 18L * FRAME_SIZE / par_grays),
-                (long) 6.7 * Units.kB * Units.BYTES_TO_BITS // correct?
+                (long) 6.7 * Units.kB * Units.BYTES_TO_BITS
             );
-            // app.AddHWImplementation(
-                //     SOBEL,
-                //     2250000 * Units.CLOCK_CYCLE,
-                //     300 * Units.MHz,
-                //     (long) 6.7 * Units.kB * Units.BYTES_TO_BITS,
-                //     132 * Units.CLB
-                // ); 
-            app.CreateChannel(SPLIT_INPUT_ACTOR, grayName, RGB_FRAME_SIZE / par_grays, RGB_FRAME_SIZE / par_grays);  
+            app.AddHWImplementation(
+                sobelName,
+                2250000 * Units.CLOCK_CYCLE,
+                300 * Units.MHz,
+                (long) 6.7 * Units.kB * Units.BYTES_TO_BITS,
+                132 * Units.CLB
+            ); 
             app.CreateChannel(grayName, sobelName, FRAME_SIZE / par_grays, FRAME_SIZE / par_grays);
             app.CreateChannel(sobelName, SYNC_AND_RESIZE_ACTOR, FRAME_SIZE / par_grays, FRAME_SIZE / par_grays);
         }
-        
-        // app.CreateChannel(SYNC_AND_RESIZE_ACTOR, SOBEL, FRAME_SIZE, FRAME_SIZE);
 
         app.AddActor(CNN_OBJ_DET);
         app.AddSWImplementation(
@@ -266,16 +263,84 @@ public class ApplicationHandler {
             Map.of(Requirements.FLOP, 21000000L),
             756 * Units.kB * Units.BYTES_TO_BITS
         );
-        // app.AddHWImplementation(
-        //     CNN_OBJ_DET,
-        //     5600000 * Units.CLOCK_CYCLE,
-        //     300 * Units.MHz,
-        //     756 * Units.kB * Units.BYTES_TO_BITS,
-        //     5650 * Units.CLB
-        // );
+        app.AddHWImplementation(
+            CNN_OBJ_DET,
+            5600000 * Units.CLOCK_CYCLE,
+            300 * Units.MHz,
+            756 * Units.kB * Units.BYTES_TO_BITS,
+            5650 * Units.CLB
+        );
 
         app.CreateChannel(SYNC_AND_RESIZE_ACTOR, CNN_OBJ_DET, FRAME_SIZE, FRAME_SIZE);
         app.SetOutputChannel(CNN_OBJ_DET, 10);
+
+        return app.GetGraph();
+    }
+
+    public static SystemGraph Test() {
+        var app = new ApplicationBuilder("Test");
+
+        int numActors = 10;
+        // var actors = new String[numActors];
+        // var flopValues = new Long[numActors];
+
+        // for (int i = 0; i < numActors; i++) {
+        //     actors[i] = "Actor_" + (i+1);
+        //     flopValues[i] = 80L;
+        // }
+
+        String prevActorName = null;
+        for (int i = 0; i < numActors; i++) {
+            var name = "Actor_" + (i+1);
+            app.AddActor(name);
+            app.AddSWImplementation(
+                name,
+                Map.of(Requirements.FLOP, 80L), 
+                4 * Units.BYTES_TO_BITS
+            );
+            app.AddHWImplementation(
+                name, 
+                10 * Units.CLOCK_CYCLE, 
+                200 * Units.MHz,
+                2 * Units.BYTES_TO_BITS,
+                110 * Units.CLB
+            );
+            if (prevActorName != null) {
+                app.CreateChannel(prevActorName, name, 5, 5);
+            } else {
+                app.SetInputChannel(name, 5);
+            }
+            prevActorName = name;
+        }
+
+        app.SetOutputChannel(prevActorName, 5);
+
+        // var maxActors = 2;
+        // String prevActorName = null;
+        // for (int i = 0; i < maxActors; i++) {
+        //     var name = "Actor_" + (i+1);
+        //     app.AddActor(name);
+        //     app.AddHWImplementation(
+        //         name, 
+        //         10 * Units.CLOCK_CYCLE, 
+        //         200 * Units.MHz,
+        //         2 * Units.kB * Units.BYTES_TO_BITS,
+        //         110 * Units.CLB
+        //     );
+        //     app.AddSWImplementation(
+        //         name,
+        //         Map.of(Requirements.FLOP, 9000L), 
+        //         4 * Units.kB * Units.BYTES_TO_BITS
+        //     );
+
+        //     if (prevActorName != null) {
+        //         app.CreateChannel(prevActorName, name, 1, 1);
+        //     } else {
+        //         app.SetInputChannel(name, 1);
+        //     }
+        //     prevActorName = name;
+        // }
+        // app.SetOutputChannel(prevActorName, 1);
 
         return app.GetGraph();
     }

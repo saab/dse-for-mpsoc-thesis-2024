@@ -226,13 +226,13 @@ public class PlatformBuilder {
         sw.maxConcurrentFlits(1);
         
         //! used for testing bandwith influence
-        if (name == "CCI_SWITCH" || name == "FPD_SWITCH" || name == "LPD_SWITCH") {
-            sw.operatingFrequencyInHertz(1000);
-            sw.maxCyclesPerFlit(Integer.MAX_VALUE);
-        } else {
+        // if (name == "CCI_SWITCH" || name == "FPD_SWITCH" || name == "LPD_SWITCH") {
+        //     sw.operatingFrequencyInHertz(1000);
+        //     sw.maxCyclesPerFlit(Integer.MAX_VALUE);
+        // } else {
             sw.operatingFrequencyInHertz(frequency);
             sw.maxCyclesPerFlit(1);
-        }
+        // }
     }
 
     /**

@@ -15,7 +15,7 @@ configurations.all {
 
 dependencies {
     implementation "com.github.forsyde.forsyde-io:forsyde-io-java-core:0.7.17"
-    implementation "com.github.forsyde.forsyde-io:forsyde-io-java-libforsyde:develop-SNAPSHOT"
+    implementation "com.github.forsyde.forsyde-io:forsyde-io-java-libforsyde:a76515c"
     implementation ("com.github.forsyde.forsyde-io:forsyde-io-java-graphviz:v0.7.17") {
         exclude group: 'com.github.forsyde.forsyde-io', module: 'forsyde-io-java-libforsyde'
     }

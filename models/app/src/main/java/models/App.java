@@ -113,9 +113,10 @@ public class App {
             case "tc3" -> ApplicationHandler.TC3();
             case "tc45" -> ApplicationHandler.TC4And5();
             case "real" -> ApplicationHandler.Realistic();
+            case "test" -> ApplicationHandler.Test();
             default -> throw new IllegalStateException(
                 "Unknown application: " + applicationType + 
-                " (tc1, tc2, tc3, tc45, real)"
+                " (tc1, tc2, tc3, tc45, real, test)"
             );
         };
             

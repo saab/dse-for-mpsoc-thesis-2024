@@ -47,7 +47,7 @@ mv $ARTIFACTS_PATH/$2.fiodl $appl
 
 # visualize initial specifications
 # visualize $plat
-# visualize $appl
+visualize $appl
 
 # clear the output directory
 rm -rf $DSE_OUTPUT_PATH/*
@@ -56,7 +56,7 @@ rm -rf $DSE_OUTPUT_PATH/*
 cd $DSE_PATH
 rm -rf $DSE_OUTPUT_PATH
 ./$DSE_EXECUTABLE -v DEBUG -p 5 \
-    --x-total-time-out 60 \
+    --x-total-time-out 6000 \
     $plat \
     $appl
 
