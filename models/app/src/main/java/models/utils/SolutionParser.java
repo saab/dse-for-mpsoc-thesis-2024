@@ -12,6 +12,9 @@ import java.io.IOException;
 import java.io.FileWriter;
 
 
+/**
+ * Functionality to derive concise information from DSE solutions.
+ */
 public class SolutionParser {
     private final String BOLD = "\033[1m";
     private final String STOPBOLD = "\033[0m";
@@ -24,6 +27,10 @@ public class SolutionParser {
     private StringBuilder boundedBuffers;
     private String solution;
 
+    /**
+     * Create a new instance of the parser.
+     * @param g The DSE solution as a SystemGraph.
+     */
     public SolutionParser(SystemGraph g) {
         this.graph = g;
         this.memoryMappings = new StringBuilder(
@@ -47,15 +54,17 @@ public class SolutionParser {
     }
     
     /**
-     * Parses the DSE solution given in <graph>, including:
+     * Parses the DSE solution given in <graph>, producing:
      * <p>
-     * - Memory mappings - Where actors and data buffers are placed in memory
+     * - Memory mappings: Where application code and SDF channels are placed in memory
      * <p>
-     * - Schedules - Where an actor should be executed (processing unit)
+     * - Schedules: Where actors mapped to software (CPU) should be executed
      * <p>
-     * - Analyzed behaviors
+     * - Execuction mappings: Where an actor should be executed (processing unit)
      * <p>
-     * - Bounded buffers
+     * - Analyzed behaviors: How many tokens the actor can produce per second
+     * <p>
+     * - Bounded buffers: Calculated capacity requirement for the SDF channels
      * <p>
      * - Super loop runtimes
      */
@@ -112,11 +121,18 @@ public class SolutionParser {
             .append(boundedBuffers).toString();
     }
 
+    /**
+     * Write the solution to stdout.
+     */
     public void PrintSolution() {
         assert solution != null : "Solution must be parsed first.";
         System.out.println(solution);
     }
 
+    /**
+     * Write the solution to a file.
+     * @param outPath Where to save the file to.
+     */
     public void WriteSolution(String outPath) {
         assert solution != null : "Solution must be parsed first.";
         var stripped = solution

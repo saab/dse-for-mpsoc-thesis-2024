@@ -9,6 +9,11 @@ import forsyde.io.core.SystemGraph;
 import models.utils.Units;
 import models.utils.Requirements;
 
+/**
+ * Class for simple creation of platform specifications. Currently supports a 
+ * small memory mappable platform, a Zynq CPU platform and the Zynq UltraScale+ 
+ * XCZU9EG MPSoC.
+ */
 public class PlatformHandler {
     final static String PLATFORM_NAME = "MPSoC";
 
@@ -41,7 +46,8 @@ public class PlatformHandler {
     final static String OCM_SWITCH_NAME = "OCM_SWITCH";
 
     /**
-     * Platform graph for the Xilinx UltraScale+ ZCU102 MPSoC.
+     * Platform graph for the Xilinx UltraScale+ ZCU102 MPSoC, limited to 
+     * the two CPUs (APU, RPU) and the FPGA.
      * @return SystemGraph representing the platform.
      */
     public static SystemGraph MPSoCGraph() {
@@ -187,7 +193,11 @@ public class PlatformHandler {
         return platform.GetGraph();
     }
 
-    // minimal platform for the MemoryMappableMultiCore decision model
+    /**
+     * Minimal platform that can be identified to the MemoryMappableMultiCore
+     * decision model in IDeSyDe.
+     * @return SystemGraph representing the platform.
+     */
     public static SystemGraph MMGraph() {
         var platform = new PlatformBuilder("Minimal_MM");
 
@@ -230,6 +240,11 @@ public class PlatformHandler {
         return platform.GetGraph();
     }
 
+    /**
+     * Sample Zynq platform with only CPUs as processing units.
+     * @return SystemGraph representing the platform.
+     * @throws Exception
+     */
     public static SystemGraph ZynqGraph() throws Exception {
         Zynq zynq = new Zynq();
         return zynq.sGraph;

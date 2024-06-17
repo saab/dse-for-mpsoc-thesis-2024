@@ -10,9 +10,12 @@ import forsyde.io.lib.hierarchy.ForSyDeHierarchy.*;
 import forsyde.io.lib.hierarchy.platform.hardware.GenericMemoryModuleViewer;
 import forsyde.io.lib.hierarchy.platform.hardware.InstrumentedProcessingModuleViewer;
 import forsyde.io.lib.hierarchy.visualization.GreyBoxViewer;
-import models.utils.Units;
 
 
+/**
+ * Class for managing an arbitrary platform specification. Supports specification
+ * of memory, switches, CPUs, FPGAs, and varying connections between components.
+ */
 public class PlatformBuilder {
     private SystemGraph sGraph;
     private GreyBoxViewer greyBox;
@@ -301,6 +304,7 @@ public class PlatformBuilder {
             var core = InstrumentedProcessingModule.enforce(
                 sGraph, sGraph.newVertex(coreName)
             );
+
             this.viewers.put(coreName, core);
             this.greyBox.addContained(Visualizable.enforce(core));
             core.maximumComputationParallelism(1);
@@ -317,12 +321,12 @@ public class PlatformBuilder {
                         )
                     )));
 
-            var tdmApu = SuperLoopRuntime.enforce(sGraph,
+            var runtime = SuperLoopRuntime.enforce(sGraph,
                 sGraph.newVertex(coreName + "_Scheduler")
             );
-            this.greyBox.addContained(Visualizable.enforce(tdmApu));
-            tdmApu.addManaged(core);
-            this.CreateEdge(core, tdmApu);
+            this.greyBox.addContained(Visualizable.enforce(runtime));
+            runtime.addManaged(core);
+            this.CreateEdge(core, runtime);
         }
     }
 

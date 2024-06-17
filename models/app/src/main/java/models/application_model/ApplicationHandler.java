@@ -1,3 +1,4 @@
+
 package models.application_model;
 
 import forsyde.io.core.SystemGraph;
@@ -7,8 +8,12 @@ import models.utils.Units;
 import java.util.*;
 
 
+/**
+ * Class for simple creation of SDF application specifications. Includes 5 test
+ * cases, a realistic video streaming application and parameterized creation of
+ * a sequential SDF application used for benchmarking performance of IDeSyDe.
+ */
 public class ApplicationHandler {
-
 
     /**
      * Test case 1 from the thesis.
@@ -97,7 +102,7 @@ public class ApplicationHandler {
      * Test case 3 from the thesis.
      * Goal: Make sure that the FPGA's resource constraints are respected by
      * specifying more BRAM and CLBs than available.
-     * @return
+     * @return SystemGraph representing the application.
      */
     public static SystemGraph TC3() {
         final String APP_NAME = "TC3";
@@ -137,7 +142,7 @@ public class ApplicationHandler {
      * are respected. Thus specifying one favorable hardware implementation and
      * one favorable hardware implementation for each actor, the communication
      * bandwidth between the PL and PS side.
-     * @return
+     * @return SystemGraph representing the application.
      */
     public static SystemGraph TC4And5() {
         final String APP_NAME = "TC4And5";
@@ -192,7 +197,7 @@ public class ApplicationHandler {
         final String GRAY = "Grayscale";
         final String SOBEL = "Sobel";
         final String CNN_OBJ_DET = "ObjectDetection";
-        final int FRAME_SIZE = 1; //3840*2160;
+        final int FRAME_SIZE = 3840*2160;
         final int RGB_FRAME_SIZE = FRAME_SIZE*3;
 
         
@@ -277,70 +282,43 @@ public class ApplicationHandler {
         return app.GetGraph();
     }
 
-    public static SystemGraph Test() {
-        var app = new ApplicationBuilder("Test");
+    /**
+     * Parameterized SDF application with a sequential actor network and identical
+     * productions and consumptions. 
+     * @param name The name of the application.
+     * @param actors The total number of actors.
+     * @param hwImplActors How many actors supporting a hardware implementation.
+     * @return SystemGraph representing the application
+     */
+    public static SystemGraph SequentialSDF(String name, int actors, int hwImplActors) {
+        final int MIN_ACTORS = 2;
+        var app = new ApplicationBuilder(name);
 
-        int numActors = 10;
-        // var actors = new String[numActors];
-        // var flopValues = new Long[numActors];
-
-        // for (int i = 0; i < numActors; i++) {
-        //     actors[i] = "Actor_" + (i+1);
-        //     flopValues[i] = 80L;
-        // }
-
-        String prevActorName = null;
-        for (int i = 0; i < numActors; i++) {
-            var name = "Actor_" + (i+1);
-            app.AddActor(name);
+        // time for 2-10 actors where 1-10 specifies hw impl
+        for (int a = MIN_ACTORS; a < actors + MIN_ACTORS; a++) {
+            String actorName = "Actor_" + (a-1);
+            app.AddActor(actorName);
             app.AddSWImplementation(
-                name,
+                actorName,
                 Map.of(Requirements.FLOP, 80L), 
                 4 * Units.BYTES_TO_BITS
             );
-            app.AddHWImplementation(
-                name, 
-                10 * Units.CLOCK_CYCLE, 
-                200 * Units.MHz,
-                2 * Units.BYTES_TO_BITS,
-                110 * Units.CLB
-            );
-            if (prevActorName != null) {
-                app.CreateChannel(prevActorName, name, 5, 5);
-            } else {
-                app.SetInputChannel(name, 5);
+            if (a - MIN_ACTORS < hwImplActors) {
+                app.AddHWImplementation(
+                    actorName, 
+                    10 * Units.CLOCK_CYCLE, 
+                    200 * Units.MHz,
+                    2 * Units.BYTES_TO_BITS,
+                    110 * Units.CLB
+                );
             }
-            prevActorName = name;
+            if (a > MIN_ACTORS) {
+                app.CreateChannel("Actor_" + (a-2), actorName, 5, 5);
+            } else {
+                app.SetInputChannel(actorName, 5);
+            }
         }
-
-        app.SetOutputChannel(prevActorName, 5);
-
-        // var maxActors = 2;
-        // String prevActorName = null;
-        // for (int i = 0; i < maxActors; i++) {
-        //     var name = "Actor_" + (i+1);
-        //     app.AddActor(name);
-        //     app.AddHWImplementation(
-        //         name, 
-        //         10 * Units.CLOCK_CYCLE, 
-        //         200 * Units.MHz,
-        //         2 * Units.kB * Units.BYTES_TO_BITS,
-        //         110 * Units.CLB
-        //     );
-        //     app.AddSWImplementation(
-        //         name,
-        //         Map.of(Requirements.FLOP, 9000L), 
-        //         4 * Units.kB * Units.BYTES_TO_BITS
-        //     );
-
-        //     if (prevActorName != null) {
-        //         app.CreateChannel(prevActorName, name, 1, 1);
-        //     } else {
-        //         app.SetInputChannel(name, 1);
-        //     }
-        //     prevActorName = name;
-        // }
-        // app.SetOutputChannel(prevActorName, 1);
+        app.SetOutputChannel("Actor_" + (actors-1), 5);
 
         return app.GetGraph();
     }

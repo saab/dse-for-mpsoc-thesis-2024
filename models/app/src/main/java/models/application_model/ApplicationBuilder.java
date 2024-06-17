@@ -7,12 +7,17 @@ import forsyde.io.core.SystemGraph;
 import forsyde.io.core.Vertex;
 import forsyde.io.core.VertexViewer;
 import forsyde.io.lib.hierarchy.ForSyDeHierarchy.*;
-import forsyde.io.lib.hierarchy.behavior.DataTypeLike;
 import forsyde.io.lib.hierarchy.behavior.moc.sdf.SDFActorViewer;
 import forsyde.io.lib.hierarchy.visualization.GreyBoxViewer;
 import models.utils.Requirements;
 
 
+/**
+ * Class for managing an arbitrary SDF application specification. Supports 
+ * specification of actors, software implementations, hardware
+ * implementations, connection of actors with production and consumption, and 
+ * setting the input and output channels of the entire application.
+ */
 public class ApplicationBuilder {
 	private SystemGraph sGraph;
     private GreyBoxViewer greyBox;
@@ -106,12 +111,20 @@ public class ApplicationBuilder {
 		);
 	}
 
+	/**
+	 * Set the production or consumption from the input Map.
+	 * @param current The current Map of production and consumption.
+	 * @param port What the new production/consumption entry should be named.
+	 * @param numTokens How many tokens to specify as production or consumption. 
+	 * @return The updated Map of production and consumption specifications.
+	 * @exception RuntimeException If port for prod/cons already exists.
+	 */
 	private Map<String, Integer> GetUpdatedProdOrCons(
 		Map<String, Integer> current, String port, int numTokens
 	) {
 		if (current.get(port) != null) {
-			throw new RuntimeException( // might be allowed tho?
-				"Consumption port already exists: " + port
+			throw new RuntimeException(
+				"Consumption/Production port already exists: " + port
 			);
 		} else {
 			current = new LinkedHashMap<String, Integer>(current);
