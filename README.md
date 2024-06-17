@@ -1,5 +1,5 @@
 
-# Master's Thesis
+# Design Space Exploration Master's Thesis
 ### Automated Design Space Exploration for Hardware and Software Implementations on Heterogeneous MPSoCs
 The [thesis](https://www.diva-portal.org/smash/search.jsf?dswid=-5961) tackled the problem of providing design space exploration support for platforms with both hardware- and software-programmable processing units. It is focusing on exploring how application execution can best be distributed to an FPGA and CPUs on the [Zynq UltraScale+ MPSoC ZCU102 Evaluation Kit](https://www.xilinx.com/products/boards-and-kits/ek-u1-zcu102-g.html#inside) to achieve best throughput and use the least amount of processing units.
 
@@ -23,7 +23,7 @@ The *relevant* parts of the Gradle app is structured as follows (`app`):
 ## Development Environment
 The development environment used for this project was:
 - Ubuntu 22.04 LTS
-- Gradle 8.1.1
+- Gradle 8.1
 - IDeSyDe 0.8.3 
 
 ## Development Setup
