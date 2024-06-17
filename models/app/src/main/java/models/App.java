@@ -128,16 +128,17 @@ public class App {
      * @throws Exception If the file can't be written.
      */
     private static void CreateBenchApplication(String[] args) throws Exception {
-        if (args.length != 3)
+        if (args.length != 4)
             SystemExit();
         int actors = Integer.parseInt(args[1]);
         int hwImpls = Integer.parseInt(args[2]);
+        String dir = args[3];
 
         String appName = "A" + actors + "_" + "HW" + hwImpls;
         SystemGraph g = ApplicationHandler.SequentialSDF(
             appName, actors, hwImpls
         );
-        String outPath = Paths.ARTIFACTS_DIR + "/bench/" + appName + Printer.FIODL_EXT;
+        String outPath = dir + "/" + appName + Printer.FIODL_EXT;
         new Printer(outPath).PrintFIODL(g);
     }
         
