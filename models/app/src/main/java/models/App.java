@@ -23,7 +23,7 @@ public class App {
                 build <platformType> <applicationType> |
                 to_kgt <path> |
                 parse_solution <solutionPath> |
-                build_bench_application <numActors> <numHwImpls>
+                build_bench_application <numActors> <numHwImpls> <outDir>
             ]\"
 
             \033[4mbuild\033[0m - build system specifications:
@@ -35,6 +35,7 @@ public class App {
             \033[4mbuild_bench_application\033[0m - create sequential SDF application
             \t<numActors>: number of actors
             \t<numHwImpls>: how many actors having hw and sw implementations
+            \t<outDir>: where to store the resulting specification
         """;
         System.out.println(USAGE);
         System.exit(1);
@@ -128,7 +129,8 @@ public class App {
      * @throws Exception If the file can't be written.
      */
     private static void CreateBenchApplication(String[] args) throws Exception {
-        if (args.length != 4)
+        System.out.println(args.toString());
+        if (args.length < 4)
             SystemExit();
         int actors = Integer.parseInt(args[1]);
         int hwImpls = Integer.parseInt(args[2]);

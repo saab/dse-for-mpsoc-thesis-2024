@@ -1,0 +1,3 @@
+[submodule "IDeSyDe"]
+	path = IDeSyDe
+	url = git@github.com:forsyde/IDeSyDe.git
