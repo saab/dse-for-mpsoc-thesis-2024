@@ -1,16 +1,9 @@
 .vscode
 .bsp
-
-
-# Ignore Gradle project-specific cache directory
+.metals
+.venv
 .gradle
-
-# Ignore Gradle build output directory
 build
 
-# Custom
-experiments/idesyde
-experiments/run
-experiments/modules
-IDeSyDe
+# custom
 models/app/src/main/java/models/artifacts/*

@@ -20,19 +20,60 @@ The *relevant* parts of the Gradle app is structured as follows (`app`):
     - `models/artifacts`: Each invocation of the run-script creates a new subfolder here. The subfolder contains the created system models (`.fiodl`), the design solutions (`solutionX.fiodl`) and cleartext solutions (`solutionX.txt`).
     - `models/utils`: Folder for storing utility functions used in the app. Includes units, constants, the parser for design solutions among other necessities. 
 
-## Development Environment
-The development environment used for this project was:
-- Ubuntu 22.04 LTS
-- Gradle 8.1
-- IDeSyDe 0.8.3 
+## Development Setup using Docker
+The development setup used VSCode for all interaction with ForSyDe IO and IDeSyDe. Using the 
 
-## Development Setup
-The IDeSyDe tool is used through an executable and some supporting folders. The IDeSyDe version that covers hardware-software design space exploration can be downloaded from this [link](https://github.com/forsyde/IDeSyDe/releases/tag/v0.8.3) (this requires [minizinc](https://www.minizinc.org/) version 2.8.5). Unzip the release in the top level directory and update the paths accordingly in `run.sh`. These **changes** are needed as development currently has the IDeSyDe repository cloned in the top level directory, and `IDeSyDe/scripts/make-all-linux.sh` is used to produce the executable.
+Clone this repository:
 
-The Gradle application is built automatically with required dependencies when the run-script is executed.
+`git clone git@github.com:saab/dse-for-mpsoc-thesis-2024.git`
+
+Initialize the IDeSyDe submodule:
+
+`git submodule init`
+
+Pull the latest content from the IDeSyDe submodule:
+
+`git submodule update`
+
+Create the Docker image:
+
+`docker build -t <arbitrary_name> .`
+
+<!-- Create the Docker container and interact with it:
+
+`docker run -it <same_name_as_above> /bin/bash` -->
+
+Run IDeSyDe through the `idesyde-wrapper` executable (wraps Docker container):
+`./idesyde-wrapper <idesyde_args>`
+
+### Run a Test Case for HW/SW DSE
+`./run.sh mpsoc tc1`
 
 ## Creating New or Altering System Specifications
-Extending the platform or application specifications ...
+The experimental flow originates from the command line arguments given to the run script: 
+```
+./run.sh <platform> <application>
+```
+
+The entrypoint to the Gradle app is `App.java` and the initial functionality recognizes the given command line option and then parses which specifications to build. 
+
+```java
+public static void main(...) {
+    ...
+    if (action.equals("build")) {
+        CreateBuildSpecification(args);
+    }
+    ...
+}
+
+private static void CreateBuildSpecification(...) {
+    ...
+    case "mpsoc" -> PlatformHandler.MPSoCGraph();
+    ...
+}
+```
+
+Each unique application and platform type has its own specification function in either `ApplicationBuilder.java` or `PlatformBuilder.java`. Thus these should be extended to support new specifications. These functions interface with the corresponding functions defined in `PlatformHandler.java` and `ApplicationHandler.java`.
 
 
 

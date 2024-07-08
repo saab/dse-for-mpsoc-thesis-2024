@@ -24,6 +24,9 @@ fi
 
 #? create system specification files
 cd $CUSTOM_PROJECT_PATH
+if [ ! -d "$ARTIFACTS_PATH" ]; then
+    mkdir "$ARTIFACTS_PATH"
+fi
 gradle_run build $1 $2
 
 #? store files in special folder for this run
