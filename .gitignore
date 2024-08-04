@@ -4,6 +4,7 @@
 .venv
 .gradle
 build
+IDeSyDe
 
 # custom
 models/app/src/main/java/models/artifacts/*

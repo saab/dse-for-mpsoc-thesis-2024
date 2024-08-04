@@ -21,32 +21,24 @@ The *relevant* parts of the Gradle app is structured as follows (`app`):
     - `models/utils`: Folder for storing utility functions used in the app. Includes units, constants, the parser for design solutions among other necessities. 
 
 ## Development Setup using Docker
-The development setup used VSCode for all interaction with ForSyDe IO and IDeSyDe. Using the 
+_NOTE: This is only tested to work on **Ubuntu 22:04**, other Linux distributions are unknown and Windows is ensured to not be compatible (IDeSyDe image cannot be built)_
 
-Clone this repository:
+The development setup used VSCode for all interaction with `ForSyDe IO` and `IDeSyDe`, having this repo open and the run script available in the integrated terminal. Docker is used to host the runtime environment so it needs to be [installed](https://docs.docker.com/engine/install/) first.
+
+**Clone this repository**:
 
 `git clone git@github.com:saab/dse-for-mpsoc-thesis-2024.git`
 
-Initialize the IDeSyDe submodule:
+**Initialize the IDeSyDe submodule**:
 
 `git submodule init`
 
-Pull the latest content from the IDeSyDe submodule:
+**Pull the latest content from the IDeSyDe submodule**:
 
 `git submodule update`
 
-Create the Docker image:
-
-`docker build -t <arbitrary_name> .`
-
-<!-- Create the Docker container and interact with it:
-
-`docker run -it <same_name_as_above> /bin/bash` -->
-
-Run IDeSyDe through the `idesyde-wrapper` executable (wraps Docker container):
-`./idesyde-wrapper <idesyde_args>`
-
-### Run a Test Case for HW/SW DSE
+**Run a Test Case for HW/SW DSE**:
+This may take some time since relevant Docker containers must be built.
 `./run.sh mpsoc tc1`
 
 ## Creating New or Altering System Specifications
@@ -54,6 +46,7 @@ The experimental flow originates from the command line arguments given to the ru
 ```
 ./run.sh <platform> <application>
 ```
+
 
 The entrypoint to the Gradle app is `App.java` and the initial functionality recognizes the given command line option and then parses which specifications to build. 
 
@@ -74,7 +67,3 @@ private static void CreateBuildSpecification(...) {
 ```
 
 Each unique application and platform type has its own specification function in either `ApplicationBuilder.java` or `PlatformBuilder.java`. Thus these should be extended to support new specifications. These functions interface with the corresponding functions defined in `PlatformHandler.java` and `ApplicationHandler.java`.
-
-
-
-

@@ -1,71 +1,67 @@
 #!/bin/bash
 
-export ROOT_DIR=$(pwd)
-CUSTOM_PROJECT_PATH=$ROOT_DIR/models
-ARTIFACTS_PATH=$CUSTOM_PROJECT_PATH/app/src/main/java/models/artifacts
-DSE_PATH=$ROOT_DIR/IDeSyDe
-DSE_EXECUTABLE=idesyde
-
+ROOT_DIR=$(pwd)
+CONTAINER_ARTIFACTS_DIR=/models/app/src/main/java/models/artifacts
+HOST_ARTIFACTS_DIR=$ROOT_DIR$CONTAINER_ARTIFACTS_DIR
 
 gradle_run() {
-    args="$@ --ROOT-DIR=$ROOT_DIR"
-    gradle run --args="${args}"
-    if [ $? -ne 0 ]; then
-        echo "Gradle command '$@' failed"
+    $ROOT_DIR/saab-dse-wrapper.sh "--args=$@"
+
+    if [[ $? -ne 0 ]]; then
+        echo "Gradle command 'gradle run $@' failed"
         exit 1
     fi
 }
 
-
-if [ $# -lt 2 ]; then
+if [[ $# -lt 2 ]]; then
     echo "USAGE: ./run.sh <platform_name> <application_name>";
     exit 1
 fi
 
-#? create system specification files
-cd $CUSTOM_PROJECT_PATH
-if [ ! -d "$ARTIFACTS_PATH" ]; then
-    mkdir "$ARTIFACTS_PATH"
-fi
-gradle_run build $1 $2
+### store created files in unique folder
+dirname=$1-$2-$(date +%T)
+host_dirp=$HOST_ARTIFACTS_DIR/$dirname
+mkdir -p $host_dirp
+container_dirp=$CONTAINER_ARTIFACTS_DIR/$dirname
 
-#? store files in special folder for this run
-now=$(date +%T)
-dirname=$1-$2-$now
-mkdir $ARTIFACTS_PATH/$dirname
-plat=$ARTIFACTS_PATH/$dirname/$1.fiodl
-appl=$ARTIFACTS_PATH/$dirname/$2.fiodl
-mv $ARTIFACTS_PATH/$1.fiodl $plat
-mv $ARTIFACTS_PATH/$2.fiodl $appl
+gradle_run "build $1 $2 $container_dirp"
 
-#? visualize initial specifications
-# gradle_run to_kgt $plat
-# gradle_run to_kgt $appl
+plat=$1.fiodl
+appl=$2.fiodl
 
-#? perform dse with constructed system models
-cd $DSE_PATH
-./$DSE_EXECUTABLE -v DEBUG -p 5 \
-    --x-total-time-out 6000 \
-    --run-path $ARTIFACTS_PATH/$dirname \
-    $plat \
-    $appl
+### visualize specifications
+gradle_run "to_kgt $container_dirp/$plat $container_dirp"
+gradle_run "to_kgt $container_dirp/$appl $container_dirp"
 
-#? quit if there are no reverse identifications
-if ! [ "$(ls -A $ARTIFACTS_PATH/$dirname/reversed)" ]; then
-    echo "No solution found"
-    mv $ARTIFACTS_PATH/$dirname $ARTIFACTS_PATH/$dirname\-\(failed\)
+### dse on constructed system models
+$ROOT_DIR/idesyde-wrapper.sh \
+    "$container_dirp/$plat" \
+    "$container_dirp/$appl" \
+    --run-path $container_dirp \
+    -v DEBUG \
+    --x-total-time-out 6000
+
+if [[ $? -ne 0 ]]; then
+    echo "DSE failed"
     exit 1
 fi
 
-#? visualize and parse solution
-cd $CUSTOM_PROJECT_PATH
-i=1
-for fiodl_file in $ARTIFACTS_PATH/$dirname/reversed/*.fiodl; do
-    file=$ARTIFACTS_PATH/$dirname/solution_$i.fiodl
-    cp $fiodl_file $file
+### quit if there are no reverse identified solutions
+if [[ -z "$(ls -A $host_dirp/reversed)" ]]; then
+    echo "No solution found"
+    exit 1
+fi
 
-    # gradle_run to_kgt $file
-    gradle_run parse_solution $file
+### visualize and parse solution
+i=1
+for fiodl_file in $host_dirp/reversed/*.fiodl; do
+    solution_name=solution_$i.fiodl
+    echo "Copying $fiodl_file to $host_dirp/$solution_name"
+    cp $fiodl_file $host_dirp/$solution_name
+
+    container_solultion_path=$container_dirp/$solution_name
+    gradle_run "to_kgt $container_solultion_path $container_dirp"
+    gradle_run "parse_solution $container_solultion_path $container_dirp"
     ((i++))
 done
 
