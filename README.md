@@ -1,7 +1,7 @@
 
 # Design Space Exploration Master's Thesis
 ### Automated Design Space Exploration for Hardware and Software Implementations on Heterogeneous MPSoCs
-The [thesis](https://www.diva-portal.org/smash/search.jsf?dswid=-5961) tackled the problem of providing design space exploration support for platforms with both hardware- and software-programmable processing units. It is focusing on exploring how application execution can best be distributed to an FPGA and CPUs on the [Zynq UltraScale+ MPSoC ZCU102 Evaluation Kit](https://www.xilinx.com/products/boards-and-kits/ek-u1-zcu102-g.html#inside) to achieve best throughput and use the least amount of processing units.
+The [thesis](http://www.diva-portal.org/smash/record.jsf?dswid=5562&pid=diva2%3A1912301&c=1&searchType=SIMPLE&language=sv&query=Automated+design+space+exploration+of+heterogeneous&af=%5B%5D&aq=%5B%5B%5D%5D&aq2=%5B%5B%5D%5D&aqe=%5B%5D&noOfRows=50&sortOrder=author_sort_asc&sortOrder2=title_sort_asc&onlyFullText=true&sf=undergraduate) tackled the problem of providing design space exploration support for platforms with both hardware- and software-programmable processing units. It is focusing on exploring how application execution can best be distributed to an FPGA and CPUs on the [Zynq UltraScale+ MPSoC ZCU102 Evaluation Kit](https://www.xilinx.com/products/boards-and-kits/ek-u1-zcu102-g.html#inside) to achieve best throughput and use the least amount of processing units.
 
 ## Incorporated Tools
 The thesis was done in collaboration with the ForSyDe research group at KTH Kista and uses [ForSyDe IO](https://github.com/forsyde/forsyde-io) to create the system models (applications, platform) and [IDeSyDe](https://github.com/forsyde/IDeSyDe/) to perform automated design space exploration.
