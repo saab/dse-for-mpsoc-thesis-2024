@@ -43,7 +43,7 @@ public class App {
 
             \033[4mbuild\033[0m - build system specifications:
             \t<platformType>: 'mpsoc', 'zynq', 'mm' 
-            \t<applicationType>: 'tc1', tc2', 'tc3', 'tc45', 'real'
+            \t<applicationType>: 'tc1', 'tc2', 'tc3', 'tc45', 'real'
             \t<outDir>: where to store the resulting specification
             \033[4mto_kgt\033[0m - convert fiodl to kgt (visualization format)
             \t<inPath>: path to the solution file (fiodl)

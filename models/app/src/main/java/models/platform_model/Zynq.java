@@ -19,7 +19,7 @@ import forsyde.io.lib.hierarchy.ForSyDeHierarchy.*;
 
 /**
  * Sample Zynq platform with CPUs.
- * Translated fiodl file from into programmatic creation: https://github.com/forsyde/IDeSyDe/blob/develop/examples_and_benchmarks/EARLY_BIRD/corrected_summer_project_2023/zynq.fiodl
+ * Translated fiodl file into programmatic creation: https://github.com/forsyde/IDeSyDe/blob/develop/examples_and_benchmarks/EARLY_BIRD/corrected_summer_project_2023/zynq.fiodl
  */
 public class Zynq {
 

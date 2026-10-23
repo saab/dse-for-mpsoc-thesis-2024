@@ -74,7 +74,7 @@ public class SolutionParser {
      * <p>
      * - Schedules: Where actors mapped to software (CPU) should be executed
      * <p>
-     * - Execuction mappings: Where an actor should be executed (processing unit)
+     * - Execution mappings: Where an actor should be executed (processing unit)
      * <p>
      * - Analyzed behaviors: How many tokens the actor can produce per second
      * <p>
